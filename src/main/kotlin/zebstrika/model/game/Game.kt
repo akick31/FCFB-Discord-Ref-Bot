@@ -250,7 +250,8 @@ enum class RunoffType(val description: String) {
 
 enum class Scenario(val description: String) {
     GAME_START("GAME_START"),
-    COIN_TOSS("COIN_TOSS"),
+    COIN_TOSS_CHOICE("COIN_TOSS_CHOICE"),
+    KICKOFF_NUMBER_REQUEST("KICKOFF_NUMBER_REQUEST"),
     TURNOVER_TOUCHDOWN("TURNOVER_TOUCHDOWN"),
     TURNOVER_PLUS_20("TURNOVER_PLUS_20"),
     TURNOVER_PLUS_15("TURNOVER_PLUS_15"),

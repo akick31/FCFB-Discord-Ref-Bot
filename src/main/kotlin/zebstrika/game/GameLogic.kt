@@ -3,11 +3,13 @@ package zebstrika.game
 import dev.kord.common.entity.Snowflake
 import dev.kord.core.Kord
 import dev.kord.core.entity.Message
+import dev.kord.core.entity.channel.thread.TextChannelThread
 import utils.Logger
 import zebstrika.api.GameClient
 import zebstrika.model.game.CoinTossWinner
 import zebstrika.model.game.Game
 import zebstrika.model.game.GameStatus
+import zebstrika.model.game.Scenario
 import zebstrika.utils.DiscordMessages
 
 class GameLogic {
@@ -24,9 +26,11 @@ class GameLogic {
 
         if (game.gameStatus == GameStatus.PREGAME && game.coinTossWinner == null) {
             handleCoinToss(client, game, message)
+            Logger.info("Coin toss was performed")
         } else if (game.gameStatus == GameStatus.PREGAME && game.coinTossWinner != null) {
             handleCoinTossChoice(client, game, message)
-            Logger.info("Game status is PREGAME but coin toss winner is already set")
+
+            Logger.info("Team has made a choice after the coin toss, game is ready to start.")
         } else {
             Logger.info("Game status is not PREGAME")
         }
@@ -66,18 +70,9 @@ class GameLogic {
             gameClient.makeCoinTossChoice(game.gameId, message.content.uppercase())
                 ?: return discordMessages.sendErrorMessage(message, "There was an issue making the coin toss choice in Arceus.")
 
-            val homeCoach = client.getUser(Snowflake(game.homeCoachDiscordId!!))
-                ?: return discordMessages.sendErrorMessage(message, "Could not retrieve the home coach's discord user")
-            val awayCoach = client.getUser(Snowflake(game.awayCoachDiscordId!!))
-                ?: return discordMessages.sendErrorMessage(message, "Could not retrieve the away coach's discord user")
+            discordMessages.sendGameThreadMessageFromMessage(client, game, message, Scenario.COIN_TOSS_CHOICE)
+            discordMessages.sendNumberRequestPrivateMessage(client, game, Scenario.KICKOFF_NUMBER_REQUEST)
 
-            if (message.content.lowercase() == "receive" && game.coinTossWinner == CoinTossWinner.HOME) {
-                val messageContent = "${homeCoach.mention} will receive the ball to start the game and has been messaged for their number. ${awayCoach.mention} will kick off."
-                discordMessages.sendMessage(message, messageContent)
-            } else if (message.content.lowercase() == "defer" && game.coinTossWinner == CoinTossWinner.HOME) {
-                val messageContent = "${awayCoach.mention} will receive the ball to start the game and has been messaged for their number. ${homeCoach.mention} will kick off."
-                discordMessages.sendMessage(message, messageContent)
-            }
         } else {
             return discordMessages.sendErrorMessage(message, "Invalid game message. Waiting on the coin toss winning coach to call **receive** or **defer**.")
         }

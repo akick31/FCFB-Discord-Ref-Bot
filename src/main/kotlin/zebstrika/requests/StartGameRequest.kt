@@ -14,39 +14,8 @@ import zebstrika.utils.Properties
 
 class StartGameRequest {
     private val Properties = Properties()
-    private val GameWriteupClient = GameWriteupClient()
     private val discordProperties = Properties.getDiscordProperties()
     private val discordMessages = DiscordMessages()
-
-    // TODO: Prompt for coin toss
-    private suspend fun sendMessage(
-        client: Kord,
-        game: Game,
-        gameThread: TextChannelThread,
-        scenario: Scenario
-    ): Message? {
-        var messageContent = GameWriteupClient.getGameMessageByScenario(scenario)
-        val homeCoachDiscordId = game.homeCoachDiscordId ?: return null
-        val awayCoachDiscordId = game.awayCoachDiscordId ?: return null
-        val homeCoach = client.getUser(Snowflake(homeCoachDiscordId)) ?: return null
-        val awayCoach = client.getUser(Snowflake(awayCoachDiscordId)) ?: return null
-
-        // Replace the placeholders in the message
-        if ("{home_coach}" in messageContent) {
-            messageContent = messageContent.replace("{home_coach}", homeCoach.mention)
-        }
-        if ("{away_coach}" in messageContent) {
-            messageContent = messageContent.replace("{away_coach}", awayCoach.mention)
-        }
-        if ("<br>" in messageContent) {
-            messageContent = messageContent.replace("<br>", "\n")
-        }
-
-        // Append the users to ping to the message
-        messageContent += "\n\n${homeCoach.mention} ${awayCoach.mention}"
-
-        return discordMessages.sendTextChannelMessage(gameThread, messageContent)
-    }
 
     /**
      * Start a new Discord game thread
@@ -91,7 +60,7 @@ class StartGameRequest {
                 }
             }
 
-            val message = sendMessage(client, game, gameThread, Scenario.GAME_START)
+            val message = discordMessages.sendGameThreadMessageFromTextChannel(client, game, gameThread, Scenario.GAME_START)
             if (message == null) {
                 Logger.error("Failed to send message to game thread")
                 gameThread.delete()
