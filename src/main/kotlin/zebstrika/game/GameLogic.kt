@@ -3,13 +3,12 @@ package zebstrika.game
 import dev.kord.common.entity.Snowflake
 import dev.kord.core.Kord
 import dev.kord.core.entity.Message
-import dev.kord.core.entity.channel.thread.TextChannelThread
 import utils.Logger
 import zebstrika.api.GameClient
-import zebstrika.model.game.CoinTossWinner
 import zebstrika.model.game.Game
 import zebstrika.model.game.GameStatus
 import zebstrika.model.game.Scenario
+import zebstrika.model.game.TeamSide
 import zebstrika.utils.DiscordMessages
 
 class GameLogic {
@@ -82,8 +81,8 @@ class GameLogic {
         game: Game,
     ): String? {
         return when (game.coinTossWinner) {
-            CoinTossWinner.HOME -> game.homeCoachDiscordId
-            CoinTossWinner.AWAY -> game.awayCoachDiscordId
+            TeamSide.HOME -> game.homeCoachDiscordId
+            TeamSide.AWAY -> game.awayCoachDiscordId
             else -> null
         }
     }

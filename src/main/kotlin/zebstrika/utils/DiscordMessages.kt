@@ -9,7 +9,7 @@ import dev.kord.core.entity.channel.thread.TextChannelThread
 import utils.Logger
 import zebstrika.api.GameWriteupClient
 import zebstrika.model.game.Game
-import zebstrika.model.game.Possession
+import zebstrika.model.game.TeamSide
 import zebstrika.model.game.Scenario
 
 class DiscordMessages {
@@ -62,13 +62,13 @@ class DiscordMessages {
         val homeCoach = game.homeCoachDiscordId?.let { client.getUser(Snowflake(it)) } ?: return null
         val awayCoach = game.awayCoachDiscordId?.let { client.getUser(Snowflake(it)) } ?: return null
 
-        val (offensiveCoach, defensiveCoach) = if (game.possession == Possession.HOME) {
+        val (offensiveCoach, defensiveCoach) = if (game.possession == TeamSide.HOME) {
             homeCoach to awayCoach
         } else {
             awayCoach to homeCoach
         }
 
-        val (offensiveTeam, defensiveTeam) = if (game.possession == Possession.HOME) {
+        val (offensiveTeam, defensiveTeam) = if (game.possession == TeamSide.HOME) {
             game.homeTeam to game.awayTeam
         } else {
             game.awayTeam to game.homeTeam

@@ -28,7 +28,7 @@ class GameClient {
      * @return OngoingGame
      */
     internal suspend fun fetchGameByThreadId(channelId: String): Game? {
-        val endpointUrl = "$baseUrl/game/discord?channelId=$channelId"
+        val endpointUrl = "$baseUrl/game/discord_channel?channelId=$channelId"
 
         return try {
             val response: HttpResponse = httpClient.get(endpointUrl) {
@@ -43,6 +43,32 @@ class GameClient {
         }
     }
 
+    /**
+     * Fetch the ongoing game by the user id
+     * @param userId
+     * @return OngoingGame
+     */
+    internal suspend fun fetchGameByUserId(userId: String): Game? {
+        val endpointUrl = "$baseUrl/game/discord_user?userId=$userId"
+
+        return try {
+            val response: HttpResponse = httpClient.get(endpointUrl) {
+                contentType(ContentType.Application.Json)
+            }
+            val jsonResponse: String = response.bodyAsText()
+            val objectMapper = ObjectMapper()
+            objectMapper.readValue(jsonResponse, Game::class.java)
+        } catch (e: Exception) {
+            Logger.error(e.message!!)
+            null
+        }
+    }
+
+    /**
+     * Call the coin toss in Arceus
+     * @param gameId
+     * @param coinTossCall
+     */
     internal suspend fun callCoinToss(
         gameId: Int,
         coinTossCall: String
@@ -61,6 +87,11 @@ class GameClient {
         }
     }
 
+    /**
+     * Make the coin toss choice in Arceus
+     * @param gameId
+     * @param coinTossChoice
+     */
     internal suspend fun makeCoinTossChoice(
         gameId: Int,
         coinTossChoice: String

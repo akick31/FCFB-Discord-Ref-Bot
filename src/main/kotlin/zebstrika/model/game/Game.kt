@@ -19,7 +19,7 @@ data class Game(
     @JsonProperty("away_defensive_playbook") val awayDefensivePlaybook: DefensivePlaybook,
     @JsonProperty("home_score") val homeScore: Int,
     @JsonProperty("away_score") val awayScore: Int,
-    @JsonProperty("possession") val possession: Possession?,
+    @JsonProperty("possession") val possession: TeamSide?,
     @JsonProperty("quarter") val quarter: Int,
     @JsonProperty("clock") val clock: String,
     @JsonProperty("ball_location") val ballLocation: Int?,
@@ -38,20 +38,20 @@ data class Game(
     @JsonProperty("win_probability") val winProbability: Double?,
     @JsonProperty("season") val season: Int?,
     @JsonProperty("week") val week: Int?,
-    @JsonProperty("waiting_on") val waitingOn: String?,
+    @JsonProperty("waiting_on") val waitingOn: TeamSide?,
     @JsonProperty("win_probability_plot") val winProbabilityPlot: String?,
     @JsonProperty("score_plot") val scorePlot: String?,
     @JsonProperty("num_plays") val numPlays: Int,
     @JsonProperty("home_timeouts") val homeTimeouts: Int,
     @JsonProperty("away_timeouts") val awayTimeouts: Int,
-    @JsonProperty("coin_toss_winner") val coinTossWinner: CoinTossWinner?,
+    @JsonProperty("coin_toss_winner") val coinTossWinner: TeamSide?,
     @JsonProperty("coin_toss_choice") val coinTossChoice: CoinTossChoice?,
     @JsonProperty("home_platform") val homePlatform: Platform?,
     @JsonProperty("home_platform_id") val homePlatformId: String?,
     @JsonProperty("away_platform") val awayPlatform: Platform?,
     @JsonProperty("away_platform_id") val awayPlatformId: String?,
     @JsonProperty("game_timer") val gameTimer: String?,
-    @JsonProperty("current_play_type") val currentPlayType: String?,
+    @JsonProperty("current_play_type") val currentPlayType: PlayType?,
     @JsonProperty("current_play_id") val currentPlayId: Int?,
     @JsonProperty("scrimmage") val scrimmage: Boolean?,
     @JsonProperty("clock_stopped") val clockStopped: Boolean?,
@@ -307,7 +307,7 @@ enum class Scenario(val description: String) {
     // TODO: Add kickoffs, punts, field goals, etc
 }
 
-enum class Possession(val description: String) {
+enum class TeamSide(val description: String) {
     HOME("home"),
     AWAY("away")
 }
@@ -315,11 +315,6 @@ enum class Possession(val description: String) {
 enum class CoinTossChoice(val description: String) {
     RECEIVE("receive"),
     DEFER("defer")
-}
-
-enum class CoinTossWinner(val description: String) {
-    HOME("home"),
-    AWAY("away")
 }
 
 enum class CoinTossCall(val description: String) {
