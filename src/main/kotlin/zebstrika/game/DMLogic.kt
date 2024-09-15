@@ -1,11 +1,15 @@
 package zebstrika.game
 
+import dev.kord.common.entity.Snowflake
 import dev.kord.core.Kord
 import dev.kord.core.entity.Message
+import dev.kord.core.entity.channel.thread.TextChannelThread
 import utils.Logger
 import zebstrika.api.GameClient
 import zebstrika.api.PlayClient
+import zebstrika.model.game.Platform
 import zebstrika.model.game.PlayType
+import zebstrika.model.game.Scenario
 import zebstrika.utils.DiscordMessages
 import zebstrika.utils.GameUtils
 
@@ -32,6 +36,17 @@ class DMLogic {
             } else {
                 discordMessages.sendMessage(message, "I've got $number as your number.")
             }
+
+            val gameThread = if (game.homePlatform == Platform.DISCORD) {
+                client.getChannel(Snowflake(game.homePlatformId.toString())) as TextChannelThread
+            } else if (game.awayPlatform == Platform.DISCORD) {
+                client.getChannel(Snowflake(game.awayPlatformId.toString())) as TextChannelThread
+            } else {
+                return discordMessages.sendErrorMessage(message, "Could not find a game thread for this game.")
+            }
+
+            discordMessages.sendGameThreadMessageFromTextChannel(client, game, gameThread, Scenario.NORMAL_NUMBER_REQUEST)
+
         } else {
             Logger.info("Not waiting on a message from this user.")
             return discordMessages.sendErrorMessage(message, "I'm not waiting on a message from you in your game.")

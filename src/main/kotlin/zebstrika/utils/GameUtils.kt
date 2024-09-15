@@ -3,6 +3,9 @@ package zebstrika.utils
 import dev.kord.core.entity.Message
 import utils.Logger
 import zebstrika.model.game.Game
+import zebstrika.model.game.PlayCall
+import zebstrika.model.game.PlayType
+import zebstrika.model.game.RunoffType
 import zebstrika.model.game.TeamSide
 
 class GameUtils {
@@ -72,6 +75,75 @@ class GameUtils {
         } else {
             Logger.info("The message does not contain 'timeout'.")
             false
+        }
+    }
+
+    fun parsePlayCallFromMessage(message: Message): PlayCall? {
+        // Check if "run" (case insensitive) is present in the message content
+        val containsRun = message.content.contains("run", ignoreCase = true)
+        val containsPass = message.content.contains("pass", ignoreCase = true)
+        val containsSpike = message.content.contains("spike", ignoreCase = true)
+        val containsKneel = message.content.contains("kneel", ignoreCase = true)
+        val containsFieldGoal = message.content.contains("field goal", ignoreCase = true)
+        val containsPunt = message.content.contains("punt", ignoreCase = true)
+        val containsPAT = message.content.contains("pat", ignoreCase = true)
+        val containsTwoPoint = message.content.contains("two point", ignoreCase = true)
+        val containsNormal = message.content.contains("normal", ignoreCase = true)
+        val containsSquib = message.content.contains("squib", ignoreCase = true)
+        val containsOnside = message.content.contains("onside", ignoreCase = true)
+
+        return if (containsRun && !containsPass && !containsSpike && !containsKneel && !containsFieldGoal && !containsPunt && !containsPAT && !containsTwoPoint && !containsNormal && !containsSquib && !containsOnside) {
+            Logger.info("The message contains 'run'.")
+            PlayCall.RUN
+        } else if (!containsRun && containsPass && !containsSpike && !containsKneel && !containsFieldGoal && !containsPunt && !containsPAT && !containsTwoPoint && !containsNormal && !containsSquib && !containsOnside) {
+            Logger.info("The message contains 'pass'.")
+            PlayCall.PASS
+        } else if (!containsRun && !containsPass && containsSpike && !containsKneel && !containsFieldGoal && !containsPunt && !containsPAT && !containsTwoPoint && !containsNormal && !containsSquib && !containsOnside) {
+            Logger.info("The message contains 'spike'.")
+            PlayCall.SPIKE
+        } else if (!containsRun && !containsPass && !containsSpike && containsKneel && !containsFieldGoal && !containsPunt && !containsPAT && !containsTwoPoint && !containsNormal && !containsSquib && !containsOnside) {
+            Logger.info("The message contains 'kneel'.")
+            PlayCall.KNEEL
+        } else if (!containsRun && !containsPass && !containsSpike && !containsKneel && containsFieldGoal && !containsPunt && !containsPAT && !containsTwoPoint && !containsNormal && !containsSquib && !containsOnside) {
+            Logger.info("The message contains 'field goal'.")
+            PlayCall.FIELD_GOAL
+        } else if (!containsRun && !containsPass && !containsSpike && !containsKneel && !containsFieldGoal && containsPunt && !containsPAT && !containsTwoPoint && !containsNormal && !containsSquib && !containsOnside) {
+            Logger.info("The message contains 'punt'.")
+            PlayCall.PUNT
+        } else if (!containsRun && !containsPass && !containsSpike && !containsKneel && !containsFieldGoal && !containsPunt && containsPAT && !containsTwoPoint && !containsNormal && !containsSquib && !containsOnside) {
+            Logger.info("The message contains 'pat'.")
+            PlayCall.PAT
+        } else if (!containsRun && !containsPass && !containsSpike && !containsKneel && !containsFieldGoal && !containsPunt && !containsPAT && containsTwoPoint && !containsNormal && !containsSquib && !containsOnside) {
+            Logger.info("The message contains 'two point'.")
+            PlayCall.TWO_POINT
+        } else if (!containsRun && !containsPass && !containsSpike && !containsKneel && !containsFieldGoal && !containsPunt && !containsPAT && !containsTwoPoint && containsNormal && !containsSquib && !containsOnside) {
+            Logger.info("The message contains 'normal'.")
+            PlayCall.KICKOFF_NORMAL
+        } else if (!containsRun && !containsPass && !containsSpike && !containsKneel && !containsFieldGoal && !containsPunt && !containsPAT && !containsTwoPoint && !containsNormal && containsSquib && !containsOnside) {
+            Logger.info("The message contains 'squib'.")
+            PlayCall.KICKOFF_ONSIDE
+        } else if (!containsRun && !containsPass && !containsSpike && !containsKneel && !containsFieldGoal && !containsPunt && !containsPAT && !containsTwoPoint && !containsNormal && !containsSquib && containsOnside) {
+            Logger.info("The message contains 'onside'.")
+            PlayCall.KICKOFF_SQUIB
+        } else {
+            Logger.info("The message does not contain a valid play call.")
+            null
+        }
+    }
+
+    fun parseRunoffTypeFromMessage(message: Message): RunoffType {
+        // Check if "runoff" (case insensitive) is present in the message content
+        val containsHurry = message.content.contains("hurry", ignoreCase = true)
+        val containsChew = message.content.contains("chew", ignoreCase = true)
+
+        return if (containsHurry && !containsChew) {
+            Logger.info("The message contains 'hurry'.")
+            RunoffType.HURRY
+        } else if (!containsHurry && containsChew) {
+            Logger.info("The message contains 'chew'.")
+            RunoffType.CHEW
+        } else {
+            RunoffType.NORMAL
         }
     }
 }

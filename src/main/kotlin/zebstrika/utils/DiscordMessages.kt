@@ -9,6 +9,7 @@ import dev.kord.core.entity.channel.thread.TextChannelThread
 import utils.Logger
 import zebstrika.api.GameWriteupClient
 import zebstrika.model.game.Game
+import zebstrika.model.game.PlayType
 import zebstrika.model.game.TeamSide
 import zebstrika.model.game.Scenario
 
@@ -102,6 +103,17 @@ class DiscordMessages {
                 else -> game.quarter.toString()
             },
             "{dog_deadline}" to game.gameTimer.toString(),
+            "{play_options}" to when {
+                game.currentPlayType == PlayType.KICKOFF -> "**normal**, **squib**, or **onside**"
+                game.currentPlayType == PlayType.NORMAL && game.down != 4 -> "**run**, **pass**"
+                game.currentPlayType == PlayType.NORMAL && game.down == 4 -> if (game.ballLocation!! >= 52)
+                    "**run**, **pass**, **field goal**, or **punt**"
+                else
+                    "**run**, **pass**, or **punt**"
+
+                game.currentPlayType == PlayType.PAT -> "**pat** or **two point**"
+                else -> "**COULD NOT DETERMINE PLAY OPTIONS, PLEASE USE YOUR BEST JUDGEMENT**"
+            },
             "<br>" to "\n"
         )
 
