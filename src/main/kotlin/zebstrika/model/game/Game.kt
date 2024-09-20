@@ -80,11 +80,11 @@ enum class Subdivision(val description: String) {
 }
 
 enum class OffensivePlaybook(val description: String) {
-    FLEXBONE("Flexbone"),
-    AIR_RAID("Air Raid"),
-    PRO("Pro"),
-    SPREAD("Spread"),
-    WEST_COAST("West Coast");
+    FLEXBONE("FLEXBONE"),
+    AIR_RAID("AIR RAID"),
+    PRO("PRO"),
+    SPREAD("SPREAD"),
+    WEST_COAST("WEST COAST");
 
     companion object {
         fun fromString(description: String): OffensivePlaybook? {
@@ -143,7 +143,39 @@ enum class PlayType(val description: String) {
     PAT("PAT"),
 }
 
-enum class Result(val description: String) {
+enum class ActualResult(val description: String) {
+    FIRST_DOWN("FIRST DOWN"),
+    GAIN("GAIN"),
+    NO_GAIN("NO GAIN"),
+    TURNOVER_ON_DOWNS("TURNOVER ON DOWNS"),
+    TOUCHDOWN("TOUCHDOWN"),
+    SAFETY("SAFETY"),
+    TURNOVER("TURNOVER"),
+    TURNOVER_TOUCHDOWN("TURNOVER TOUCHDOWN"),
+    KICKING_TEAM_TOUCHDOWN("KICKING TEAM TOUCHDOWN"),
+    RETURN_TOUCHDOWN("KICKING TEAM TOUCHDOWN"),
+    MUFFED_KICK("MUFFED KICK"),
+    KICKOFF("KICKOFF"),
+    SUCCESSFUL_ONSIDE("SUCCESSFUL ONSIDE"),
+    FAILED_ONSIDE("FAILED ONSIDE"),
+    GOOD("GOOD"),
+    NO_GOOD("NO GOOD"),
+    DEFENSE_TWO_POINT("DEFENSE TWO POINT")
+}
+
+enum class RunoffType(val description: String) {
+    CHEW("CHEW"),
+    HURRY("HURRY"),
+    NORMAL("NORMAL"),
+}
+
+enum class Scenario(val description: String) {
+    GAME_START("GAME_START"),
+    PLAY_RESULT("PLAY_RESULT"),
+    COIN_TOSS("COIN_TOSS"),
+    COIN_TOSS_CHOICE("COIN_TOSS_CHOICE"),
+    KICKOFF_NUMBER_REQUEST("KICKOFF_NUMBER_REQUEST"),
+    NORMAL_NUMBER_REQUEST("NORMAL_NUMBER_REQUEST"),
     GOOD("GOOD"),
     NO_GOOD("NO GOOD"),
     NO_GAIN("NO GAIN"),
@@ -216,109 +248,23 @@ enum class Result(val description: String) {
     DEFENSE_TWO_POINT("DEFENSE TWO POINT");
 
     companion object {
-        fun fromString(description: String): Result? {
-            return Result.values().find { it.description == description }
+        fun fromString(description: String): Scenario? {
+            return Scenario.values().find { it.description == description }
         }
     }
 }
 
-enum class ActualResult(val description: String) {
-    FIRST_DOWN("FIRST DOWN"),
-    GAIN("GAIN"),
-    NO_GAIN("NO GAIN"),
-    TURNOVER_ON_DOWNS("TURNOVER ON DOWNS"),
-    TOUCHDOWN("TOUCHDOWN"),
-    SAFETY("SAFETY"),
-    TURNOVER("TURNOVER"),
-    TURNOVER_TOUCHDOWN("TURNOVER TOUCHDOWN"),
-    KICKING_TEAM_TOUCHDOWN("KICKING TEAM TOUCHDOWN"),
-    RETURN_TOUCHDOWN("KICKING TEAM TOUCHDOWN"),
-    MUFFED_KICK("MUFFED KICK"),
-    KICKOFF("KICKOFF"),
-    SUCCESSFUL_ONSIDE("SUCCESSFUL ONSIDE"),
-    FAILED_ONSIDE("FAILED ONSIDE"),
-    GOOD("GOOD"),
-    NO_GOOD("NO GOOD"),
-    DEFENSE_TWO_POINT("DEFENSE TWO POINT")
-}
-
-enum class RunoffType(val description: String) {
-    CHEW("CHEW"),
-    HURRY("HURRY"),
-    NORMAL("NORMAL"),
-}
-
-enum class Scenario(val description: String) {
-    GAME_START("GAME_START"),
-    COIN_TOSS_CHOICE("COIN_TOSS_CHOICE"),
-    KICKOFF_NUMBER_REQUEST("KICKOFF_NUMBER_REQUEST"),
-    NORMAL_NUMBER_REQUEST("NORMAL_NUMBER_REQUEST"),
-    TURNOVER_TOUCHDOWN("TURNOVER_TOUCHDOWN"),
-    TURNOVER_PLUS_20("TURNOVER_PLUS_20"),
-    TURNOVER_PLUS_15("TURNOVER_PLUS_15"),
-    TURNOVER_PLUS_10("TURNOVER_PLUS_10"),
-    TURNOVER_PLUS_5("TURNOVER_PLUS_5"),
-    TURNOVER("TURNOVER"),
-    TURNOVER_MINUS_5("TURNOVER_MINUS_5"),
-    TURNOVER_MINUS_10("TURNOVER_MINUS_10"),
-    TURNOVER_MINUS_15("TURNOVER_MINUS_15"),
-    TURNOVER_MINUS_20("TURNOVER_MINUS_20"),
-    LOSS_OF_10("LOSS_OF_10"),
-    LOSS_OF_5("LOSS_OF_5"),
-    LOSS_OF_3("LOSS_OF_3"),
-    LOSS_OF_1("LOSS_OF_1"),
-    NO_GAIN("NO_GAIN"),
-    INCOMPLETE("INCOMPLETE"),
-    GAIN_OF_1("GAIN_OF_1"),
-    GAIN_OF_2("GAIN_OF_2"),
-    GAIN_OF_3("GAIN_OF_3"),
-    GAIN_OF_4("GAIN_OF_4"),
-    GAIN_OF_5("GAIN_OF_5"),
-    GAIN_OF_6("GAIN_OF_6"),
-    GAIN_OF_7("GAIN_OF_7"),
-    GAIN_OF_8("GAIN_OF_8"),
-    GAIN_OF_9("GAIN_OF_9"),
-    GAIN_OF_10("GAIN_OF_10"),
-    GAIN_OF_11("GAIN_OF_11"),
-    GAIN_OF_12("GAIN_OF_12"),
-    GAIN_OF_13("GAIN_OF_13"),
-    GAIN_OF_14("GAIN_OF_14"),
-    GAIN_OF_15("GAIN_OF_15"),
-    GAIN_OF_16("GAIN_OF_16"),
-    GAIN_OF_17("GAIN_OF_17"),
-    GAIN_OF_18("GAIN_OF_18"),
-    GAIN_OF_19("GAIN_OF_19"),
-    GAIN_OF_20("GAIN_OF_20"),
-    GAIN_OF_25("GAIN_OF_25"),
-    GAIN_OF_30("GAIN_OF_30"),
-    GAIN_OF_35("GAIN_OF_35"),
-    GAIN_OF_40("GAIN_OF_40"),
-    GAIN_OF_45("GAIN_OF_45"),
-    GAIN_OF_50("GAIN_OF_50"),
-    GAIN_OF_55("GAIN_OF_55"),
-    GAIN_OF_60("GAIN_OF_60"),
-    GAIN_OF_65("GAIN_OF_65"),
-    GAIN_OF_70("GAIN_OF_70"),
-    GAIN_OF_75("GAIN_OF_75"),
-    GAIN_OF_80("GAIN_OF_80"),
-    GAIN_OF_85("GAIN_OF_85"),
-    GAIN_OF_90("GAIN_OF_90"),
-    GAIN_OF_95("GAIN_OF_95"),
-    TOUCHDOWN("TOUCHDOWN"),
-    // TODO: Add kickoffs, punts, field goals, etc
-}
-
 enum class TeamSide(val description: String) {
-    HOME("home"),
-    AWAY("away")
+    HOME("HOME"),
+    AWAY("AWAY")
 }
 
 enum class CoinTossChoice(val description: String) {
-    RECEIVE("receive"),
-    DEFER("defer")
+    RECEIVE("RECEIVE"),
+    DEFER("DEFER")
 }
 
 enum class CoinTossCall(val description: String) {
-    HEADS("heads"),
-    TAILS("tails")
+    HEADS("HEADS"),
+    TAILS("TAILS")
 }

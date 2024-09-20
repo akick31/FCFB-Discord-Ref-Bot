@@ -45,7 +45,7 @@ class DMLogic {
                 return discordMessages.sendErrorMessage(message, "Could not find a game thread for this game.")
             }
 
-            discordMessages.sendGameThreadMessageFromTextChannel(client, game, gameThread, Scenario.NORMAL_NUMBER_REQUEST)
+            discordMessages.sendGameThreadMessageFromTextChannel(client, game, gameThread, Scenario.NORMAL_NUMBER_REQUEST, null)
 
         } else {
             Logger.info("Not waiting on a message from this user.")

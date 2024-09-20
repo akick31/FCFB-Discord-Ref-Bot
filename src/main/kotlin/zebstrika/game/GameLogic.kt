@@ -58,14 +58,14 @@ class GameLogic {
         val playOutcome = playClient.submitOffensiveNumber(game.gameId, number, playCall, runoffType, timeoutCalled)
             ?: return discordMessages.sendErrorMessage(message, "There was an issue submitting the offensive number.")
 
-        // TODO: Parse play outcome and send message to game thread
+        discordMessages.sendGameThreadMessageFromMessage(client, game, message, playOutcome.result!!, playOutcome)
         if (timeoutCalled) {
             discordMessages.sendMessage(message, "I've got $number as your number. Attempting to call a timeout.")
         } else {
             discordMessages.sendMessage(message, "I've got $number as your number.")
         }
 
-        discordMessages.sendGameThreadMessageFromMessage(client, game, message, Scenario.NORMAL_NUMBER_REQUEST)
+        discordMessages.sendGameThreadMessageFromMessage(client, game, message, Scenario.NORMAL_NUMBER_REQUEST, null)
     }
 
     suspend fun handleCoinToss(
@@ -102,8 +102,8 @@ class GameLogic {
             gameClient.makeCoinTossChoice(game.gameId, message.content.uppercase())
                 ?: return discordMessages.sendErrorMessage(message, "There was an issue making the coin toss choice in Arceus.")
 
-            discordMessages.sendGameThreadMessageFromMessage(client, game, message, Scenario.COIN_TOSS_CHOICE)
-            discordMessages.sendNumberRequestPrivateMessage(client, game, Scenario.KICKOFF_NUMBER_REQUEST)
+            discordMessages.sendGameThreadMessageFromMessage(client, game, message, Scenario.COIN_TOSS_CHOICE, null)
+            discordMessages.sendNumberRequestPrivateMessage(client, game, Scenario.KICKOFF_NUMBER_REQUEST, null)
 
         } else {
             return discordMessages.sendErrorMessage(message, "Invalid game message. Waiting on the coin toss winning coach to call **receive** or **defer**.")

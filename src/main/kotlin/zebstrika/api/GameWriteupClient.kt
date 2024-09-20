@@ -4,6 +4,7 @@ import io.ktor.client.HttpClient
 import io.ktor.client.request.get
 import io.ktor.client.statement.HttpResponse
 import io.ktor.client.statement.bodyAsText
+import zebstrika.model.game.PlayCall
 import zebstrika.model.game.Scenario
 import java.util.Properties
 
@@ -22,8 +23,15 @@ class GameWriteupClient {
      * @param scenario
      * @return String
      */
-    internal suspend fun getGameMessageByScenario(scenario: Scenario): String {
-        val endpointUrl = "$baseUrl/game_writeup/$scenario"
+    internal suspend fun getGameMessageByScenario(
+        scenario: Scenario,
+        passOrRun: PlayCall?,
+    ): String {
+        val endpointUrl = if (passOrRun != null && (passOrRun == PlayCall.PASS || passOrRun == PlayCall.RUN)) {
+            "$baseUrl/game_writeup/$scenario/$passOrRun"
+        } else {
+            "$baseUrl/game_writeup/$scenario"
+        }
         val response: HttpResponse = httpClient.get(endpointUrl)
         return response.bodyAsText()
     }

@@ -9,9 +9,11 @@ import dev.kord.core.entity.channel.thread.TextChannelThread
 import utils.Logger
 import zebstrika.api.GameWriteupClient
 import zebstrika.model.game.Game
+import zebstrika.model.game.PlayCall
 import zebstrika.model.game.PlayType
 import zebstrika.model.game.TeamSide
 import zebstrika.model.game.Scenario
+import zebstrika.model.play.Play
 
 class DiscordMessages {
     private val gameWriteupClient = GameWriteupClient()
@@ -52,9 +54,17 @@ class DiscordMessages {
     suspend fun getGameWriteupMessageAndDefendingCoach(
         client: Kord,
         game: Game,
-        scenario: Scenario
+        scenario: Scenario,
+        play: Play?,
     ): Pair<String, User>? {
-        var messageContent = gameWriteupClient.getGameMessageByScenario(scenario)
+        var playWriteup: String? = null
+        var messageContent: String?
+        if (play!!.playCall == PlayCall.PASS || play.playCall == PlayCall.RUN) {
+            playWriteup = gameWriteupClient.getGameMessageByScenario(scenario, play.playCall)
+            messageContent = gameWriteupClient.getGameMessageByScenario(Scenario.PLAY_RESULT, null)
+        } else {
+            messageContent = gameWriteupClient.getGameMessageByScenario(scenario, null)
+        }
         if (messageContent == "") {
             return null
         }
@@ -84,6 +94,7 @@ class DiscordMessages {
             "{defensive_coach}" to defensiveCoach.mention,
             "{offensive_team}" to offensiveTeam,
             "{defensive_team}" to defensiveTeam,
+            "{play_writeup}" to playWriteup,
             "{down_and_distance}" to "${
                 when (game.down) {
                     1 -> "1st"
@@ -102,6 +113,14 @@ class DiscordMessages {
                 4 -> "4th"
                 else -> game.quarter.toString()
             },
+            "{offensive_number}" to play.offensiveNumber.toString(),
+            "{defensive_number}" to play.defensiveNumber.toString(),
+            "{difference}" to play.difference.toString(),
+            "{actual_result}" to play.actualResult.toString(),
+            "{clock_status}" to when {
+                game.clockStopped == true -> "The clock is stopped"
+                else -> "The clock is running"
+            },
             "{dog_deadline}" to game.gameTimer.toString(),
             "{play_options}" to when {
                 game.currentPlayType == PlayType.KICKOFF -> "**normal**, **squib**, or **onside**"
@@ -119,23 +138,28 @@ class DiscordMessages {
 
         // Replace placeholders with actual values
         replacements.forEach { (placeholder, replacement) ->
-            if (placeholder in messageContent) {
-                messageContent = messageContent.replace(placeholder, replacement)
+            if (placeholder in messageContent!!) {
+                messageContent = messageContent!!.replace(placeholder, replacement!!)
             }
         }
 
         // Append the users to ping to the message
-        messageContent += "\n\n${homeCoach.mention} ${awayCoach.mention}"
-        return messageContent to defensiveCoach
+        messageContent += if (game.waitingOn == TeamSide.HOME) {
+            "\n\n${homeCoach.mention}"
+        } else {
+            "\n\n${awayCoach.mention}"
+        }
+        return messageContent!! to defensiveCoach
     }
 
     suspend fun sendGameThreadMessageFromTextChannel(
         client: Kord,
         game: Game,
         gameThread: TextChannelThread,
-        scenario: Scenario
+        scenario: Scenario,
+        play: Play?
     ): Message? {
-        val messageContent = getGameWriteupMessageAndDefendingCoach(client, game, scenario) ?: run {
+        val messageContent = getGameWriteupMessageAndDefendingCoach(client, game, scenario, play) ?: run {
             sendTextChannelErrorMessage(gameThread, "There was an issue getting the writeup message")
             Logger.error("There was an issue getting the writeup message")
             return null
@@ -147,9 +171,10 @@ class DiscordMessages {
         client: Kord,
         game: Game,
         message: Message,
-        scenario: Scenario
+        scenario: Scenario,
+        play: Play?
     ): Message? {
-        val messageContent = getGameWriteupMessageAndDefendingCoach(client, game, scenario) ?: run {
+        val messageContent = getGameWriteupMessageAndDefendingCoach(client, game, scenario, play) ?: run {
             sendErrorMessage(message, "There was an issue getting the writeup message")
             Logger.error("There was an issue getting the writeup message")
             return null
@@ -161,8 +186,9 @@ class DiscordMessages {
         client: Kord,
         game: Game,
         scenario: Scenario,
+        play: Play?
     ): Message? {
-        val messageContent = getGameWriteupMessageAndDefendingCoach(client, game, scenario) ?: run {
+        val messageContent = getGameWriteupMessageAndDefendingCoach(client, game, scenario, play) ?: run {
             Logger.error("There was an issue getting the writeup message")
             return null
         }

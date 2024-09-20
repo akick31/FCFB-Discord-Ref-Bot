@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.databind.PropertyNamingStrategies
 import com.fasterxml.jackson.databind.annotation.JsonNaming
 import zebstrika.model.game.PlayCall
-import zebstrika.model.game.Result
+import zebstrika.model.game.Scenario
 import zebstrika.model.game.ActualResult
 import zebstrika.model.game.TeamSide
 
@@ -26,7 +26,7 @@ data class Play(
     @JsonProperty("defensive_submitter") val defensiveSubmitter: String?,
     @JsonProperty("offensive_submitter") val offensiveSubmitter: String?,
     @JsonProperty("play_call") val playCall: PlayCall?,
-    @JsonProperty("result") val result: Result?,
+    @JsonProperty("result") val result: Scenario?,
     @JsonProperty("difference") val difference: Int?,
     @JsonProperty("actual_result") val actualResult: ActualResult?,
     @JsonProperty("yards") val yards: Int?,
