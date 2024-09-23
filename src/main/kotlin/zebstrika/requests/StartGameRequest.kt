@@ -24,6 +24,7 @@ class StartGameRequest {
         client: Kord,
         game: Game
     ): Snowflake? {
+        var gameThread: TextChannelThread? = null
         return try {
             val guild = client.getGuild(Snowflake(discordProperties.guildId))
             val gameChannel = guild.getChannel(Snowflake(discordProperties.gameChannelId)) as ForumChannel
@@ -52,7 +53,7 @@ class StartGameRequest {
             // Get the thread content
             val threadContent = "[INSERT FCFB WEBSITE LINK HERE]"
 
-            val gameThread = gameChannel.startPublicThread(threadName) {
+            gameThread = gameChannel.startPublicThread(threadName) {
                 name = threadName
                 appliedTags = tagsToApply
                 message {
@@ -71,6 +72,7 @@ class StartGameRequest {
             gameThread.id
         } catch (e: Exception) {
             Logger.error(e.message!!)
+            gameThread?.delete()
             null
         }
     }

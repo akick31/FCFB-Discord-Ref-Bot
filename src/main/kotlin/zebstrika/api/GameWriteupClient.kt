@@ -30,7 +30,7 @@ class GameWriteupClient {
         val endpointUrl = if (passOrRun != null && (passOrRun == PlayCall.PASS || passOrRun == PlayCall.RUN)) {
             "$baseUrl/game_writeup/$scenario/$passOrRun"
         } else {
-            "$baseUrl/game_writeup/$scenario"
+            "$baseUrl/game_writeup/$scenario/NONE"
         }
         val response: HttpResponse = httpClient.get(endpointUrl)
         return response.bodyAsText()

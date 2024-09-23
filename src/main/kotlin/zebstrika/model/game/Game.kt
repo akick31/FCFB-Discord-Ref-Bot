@@ -1,5 +1,6 @@
 package zebstrika.model.game
 
+import com.fasterxml.jackson.annotation.JsonCreator
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.databind.PropertyNamingStrategies
 import com.fasterxml.jackson.databind.annotation.JsonNaming
@@ -7,24 +8,24 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy::class)
 data class Game(
     @JsonProperty("game_id") val gameId: Int,
-    @JsonProperty("home_team") val homeTeam: String,
-    @JsonProperty("away_team") val awayTeam: String,
-    @JsonProperty("home_coach") val homeCoach: String,
-    @JsonProperty("away_coach") val awayCoach: String,
+    @JsonProperty("home_team") val homeTeam: String?,
+    @JsonProperty("away_team") val awayTeam: String?,
+    @JsonProperty("home_coach") val homeCoach: String?,
+    @JsonProperty("away_coach") val awayCoach: String?,
     @JsonProperty("home_coach_discord_id") val homeCoachDiscordId: String?,
     @JsonProperty("away_coach_discord_id") val awayCoachDiscordId: String?,
-    @JsonProperty("home_offensive_playbook") val homeOffensivePlaybook: OffensivePlaybook,
-    @JsonProperty("away_offensive_playbook") val awayOffensivePlaybook: OffensivePlaybook,
-    @JsonProperty("home_defensive_playbook") val homeDefensivePlaybook: DefensivePlaybook,
-    @JsonProperty("away_defensive_playbook") val awayDefensivePlaybook: DefensivePlaybook,
-    @JsonProperty("home_score") val homeScore: Int,
-    @JsonProperty("away_score") val awayScore: Int,
+    @JsonProperty("home_offensive_playbook") val homeOffensivePlaybook: OffensivePlaybook?,
+    @JsonProperty("away_offensive_playbook") val awayOffensivePlaybook: OffensivePlaybook?,
+    @JsonProperty("home_defensive_playbook") val homeDefensivePlaybook: DefensivePlaybook?,
+    @JsonProperty("away_defensive_playbook") val awayDefensivePlaybook: DefensivePlaybook?,
+    @JsonProperty("home_score") val homeScore: Int?,
+    @JsonProperty("away_score") val awayScore: Int?,
     @JsonProperty("possession") val possession: TeamSide?,
-    @JsonProperty("quarter") val quarter: Int,
-    @JsonProperty("clock") val clock: String,
+    @JsonProperty("quarter") val quarter: Int?,
+    @JsonProperty("clock") val clock: String?,
     @JsonProperty("ball_location") val ballLocation: Int?,
-    @JsonProperty("down") val down: Int,
-    @JsonProperty("yards_to_go") val yardsToGo: Int,
+    @JsonProperty("down") val down: Int?,
+    @JsonProperty("yards_to_go") val yardsToGo: Int?,
     @JsonProperty("tv_channel") val tvChannel: TVChannel?,
     @JsonProperty("start_time") val startTime: String?,
     @JsonProperty("location") val location: String?,
@@ -41,9 +42,9 @@ data class Game(
     @JsonProperty("waiting_on") val waitingOn: TeamSide?,
     @JsonProperty("win_probability_plot") val winProbabilityPlot: String?,
     @JsonProperty("score_plot") val scorePlot: String?,
-    @JsonProperty("num_plays") val numPlays: Int,
-    @JsonProperty("home_timeouts") val homeTimeouts: Int,
-    @JsonProperty("away_timeouts") val awayTimeouts: Int,
+    @JsonProperty("num_plays") val numPlays: Int?,
+    @JsonProperty("home_timeouts") val homeTimeouts: Int?,
+    @JsonProperty("away_timeouts") val awayTimeouts: Int?,
     @JsonProperty("coin_toss_winner") val coinTossWinner: TeamSide?,
     @JsonProperty("coin_toss_choice") val coinTossChoice: CoinTossChoice?,
     @JsonProperty("home_platform") val homePlatform: Platform?,
@@ -59,13 +60,21 @@ data class Game(
 )
 
 enum class GameStatus(val description: String) {
-    PREGAME("Pregame"),
-    OPENING_KICKOFF("Opening Kickoff"),
-    IN_PROGRESS("In Progress"),
-    HALFTIME("Halftime"),
-    FINAL("Final"),
-    END_OF_REGULATION("End of Regulation"),
-    OVERTIME("Overtime")
+    PREGAME("PREGAME"),
+    OPENING_KICKOFF("OPENING KICKOFF"),
+    IN_PROGRESS("IN PROGRESS"),
+    HALFTIME("HALFTIME"),
+    FINAL("FINAL"),
+    END_OF_REGULATION("END OF REGULATION"),
+    OVERTIME("OVERTIME");
+
+    companion object {
+        @JsonCreator
+        @JvmStatic
+        fun fromString(description: String): GameStatus? {
+            return GameStatus.values().find { it.description == description }
+        }
+    }
 }
 
 enum class Subdivision(val description: String) {
@@ -73,6 +82,8 @@ enum class Subdivision(val description: String) {
     FCS("FCS");
 
     companion object {
+        @JsonCreator
+        @JvmStatic
         fun fromString(description: String): Subdivision? {
             return Subdivision.values().find { it.description == description }
         }
@@ -87,6 +98,8 @@ enum class OffensivePlaybook(val description: String) {
     WEST_COAST("WEST COAST");
 
     companion object {
+        @JsonCreator
+        @JvmStatic
         fun fromString(description: String): OffensivePlaybook? {
             return OffensivePlaybook.values().find { it.description == description }
         }
@@ -101,6 +114,8 @@ enum class DefensivePlaybook(val description: String) {
     THREE_THREE_FIVE("3-3-5");
 
     companion object {
+        @JsonCreator
+        @JvmStatic
         fun fromString(description: String): DefensivePlaybook? {
             return DefensivePlaybook.values().find { it.description == description }
         }
@@ -115,12 +130,28 @@ enum class TVChannel(val description: String) {
     FOX("FOX"),
     FS1("FS1"),
     FS2("FS2"),
-    NBC("NBC"),
+    NBC("NBC");
+
+    companion object {
+        @JsonCreator
+        @JvmStatic
+        fun fromString(description: String): TVChannel? {
+            return TVChannel.values().find { it.description == description }
+        }
+    }
 }
 
 enum class Platform(val description: String) {
-    DISCORD("Discord"),
-    REDDIT("Reddit"),
+    DISCORD("DISCORD"),
+    REDDIT("REDDIT");
+
+    companion object {
+        @JsonCreator
+        @JvmStatic
+        fun fromString(description: String): Platform? {
+            return Platform.values().find { it.description == description }
+        }
+    }
 }
 
 enum class PlayCall(val description: String) {
@@ -134,13 +165,29 @@ enum class PlayCall(val description: String) {
     TWO_POINT("TWO POINT"),
     KICKOFF_NORMAL("KICKOFF NORMAL"),
     KICKOFF_ONSIDE("KICKOFF ONSIDE"),
-    KICKOFF_SQUIB("KICKOFF SQUIB"),
+    KICKOFF_SQUIB("KICKOFF SQUIB");
+
+    companion object {
+        @JsonCreator
+        @JvmStatic
+        fun fromString(description: String): PlayCall? {
+            return PlayCall.values().find { it.description == description }
+        }
+    }
 }
 
 enum class PlayType(val description: String) {
     NORMAL("NORMAL"),
     KICKOFF("KICKOFF"),
-    PAT("PAT"),
+    PAT("PAT");
+
+    companion object {
+        @JsonCreator
+        @JvmStatic
+        fun fromString(description: String): PlayType? {
+            return PlayType.values().find { it.description == description }
+        }
+    }
 }
 
 enum class ActualResult(val description: String) {
@@ -160,13 +207,29 @@ enum class ActualResult(val description: String) {
     FAILED_ONSIDE("FAILED ONSIDE"),
     GOOD("GOOD"),
     NO_GOOD("NO GOOD"),
-    DEFENSE_TWO_POINT("DEFENSE TWO POINT")
+    DEFENSE_TWO_POINT("DEFENSE TWO POINT");
+
+    companion object {
+        @JsonCreator
+        @JvmStatic
+        fun fromString(description: String): ActualResult? {
+            return ActualResult.values().find { it.description == description }
+        }
+    }
 }
 
 enum class RunoffType(val description: String) {
     CHEW("CHEW"),
     HURRY("HURRY"),
-    NORMAL("NORMAL"),
+    NORMAL("NORMAL");
+
+    companion object {
+        @JsonCreator
+        @JvmStatic
+        fun fromString(description: String): RunoffType? {
+            return RunoffType.values().find { it.description == description }
+        }
+    }
 }
 
 enum class Scenario(val description: String) {
@@ -256,15 +319,16 @@ enum class Scenario(val description: String) {
 
 enum class TeamSide(val description: String) {
     HOME("HOME"),
-    AWAY("AWAY")
+    AWAY("AWAY");
+
+    companion object {
+        fun fromString(description: String): TeamSide? {
+            return TeamSide.values().find { it.description == description }
+        }
+    }
 }
 
 enum class CoinTossChoice(val description: String) {
     RECEIVE("RECEIVE"),
     DEFER("DEFER")
-}
-
-enum class CoinTossCall(val description: String) {
-    HEADS("HEADS"),
-    TAILS("TAILS")
 }

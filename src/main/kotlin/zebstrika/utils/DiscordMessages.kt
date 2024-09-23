@@ -59,7 +59,7 @@ class DiscordMessages {
     ): Pair<String, User>? {
         var playWriteup: String? = null
         var messageContent: String?
-        if (play!!.playCall == PlayCall.PASS || play.playCall == PlayCall.RUN) {
+        if (play?.playCall == PlayCall.PASS || play?.playCall == PlayCall.RUN) {
             playWriteup = gameWriteupClient.getGameMessageByScenario(scenario, play.playCall)
             messageContent = gameWriteupClient.getGameMessageByScenario(Scenario.PLAY_RESULT, null)
         } else {
@@ -73,16 +73,28 @@ class DiscordMessages {
         val homeCoach = game.homeCoachDiscordId?.let { client.getUser(Snowflake(it)) } ?: return null
         val awayCoach = game.awayCoachDiscordId?.let { client.getUser(Snowflake(it)) } ?: return null
 
-        val (offensiveCoach, defensiveCoach) = if (game.possession == TeamSide.HOME) {
+        val (offensiveCoach, defensiveCoach) = if (game.possession == TeamSide.HOME && game.currentPlayType != PlayType.KICKOFF) {
+            homeCoach to awayCoach
+        } else if (game.possession == TeamSide.AWAY && game.currentPlayType != PlayType.KICKOFF) {
+            awayCoach to homeCoach
+        } else if (game.possession == TeamSide.HOME && game.currentPlayType == PlayType.KICKOFF) {
+            awayCoach to homeCoach
+        } else if (game.possession == TeamSide.AWAY && game.currentPlayType == PlayType.KICKOFF) {
             homeCoach to awayCoach
         } else {
-            awayCoach to homeCoach
+            return null
         }
 
-        val (offensiveTeam, defensiveTeam) = if (game.possession == TeamSide.HOME) {
+        val (offensiveTeam, defensiveTeam) = if (game.possession == TeamSide.HOME && game.currentPlayType != PlayType.KICKOFF) {
+            game.homeTeam to game.awayTeam
+        } else if (game.possession == TeamSide.AWAY && game.currentPlayType != PlayType.KICKOFF) {
+            game.awayTeam to game.homeTeam
+        } else if (game.possession == TeamSide.HOME && game.currentPlayType == PlayType.KICKOFF) {
+            game.awayTeam to game.homeTeam
+        } else if (game.possession == TeamSide.AWAY && game.currentPlayType == PlayType.KICKOFF) {
             game.homeTeam to game.awayTeam
         } else {
-            game.awayTeam to game.homeTeam
+            return null
         }
 
         // Mapping placeholders to their corresponding replacements
@@ -113,10 +125,10 @@ class DiscordMessages {
                 4 -> "4th"
                 else -> game.quarter.toString()
             },
-            "{offensive_number}" to play.offensiveNumber.toString(),
-            "{defensive_number}" to play.defensiveNumber.toString(),
-            "{difference}" to play.difference.toString(),
-            "{actual_result}" to play.actualResult.toString(),
+            "{offensive_number}" to play?.offensiveNumber.toString(),
+            "{defensive_number}" to play?.defensiveNumber.toString(),
+            "{difference}" to play?.difference.toString(),
+            "{actual_result}" to play?.actualResult.toString(),
             "{clock_status}" to when {
                 game.clockStopped == true -> "The clock is stopped"
                 else -> "The clock is running"
@@ -144,7 +156,7 @@ class DiscordMessages {
         }
 
         // Append the users to ping to the message
-        messageContent += if (game.waitingOn == TeamSide.HOME) {
+        messageContent += if (game.possession == TeamSide.HOME) {
             "\n\n${homeCoach.mention}"
         } else {
             "\n\n${awayCoach.mention}"

@@ -59,13 +59,7 @@ class GameLogic {
             ?: return discordMessages.sendErrorMessage(message, "There was an issue submitting the offensive number.")
 
         discordMessages.sendGameThreadMessageFromMessage(client, game, message, playOutcome.result!!, playOutcome)
-        if (timeoutCalled) {
-            discordMessages.sendMessage(message, "I've got $number as your number. Attempting to call a timeout.")
-        } else {
-            discordMessages.sendMessage(message, "I've got $number as your number.")
-        }
-
-        discordMessages.sendGameThreadMessageFromMessage(client, game, message, Scenario.NORMAL_NUMBER_REQUEST, null)
+        discordMessages.sendNumberRequestPrivateMessage(client, game, Scenario.NORMAL_NUMBER_REQUEST, playOutcome)
     }
 
     suspend fun handleCoinToss(

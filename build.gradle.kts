@@ -23,6 +23,8 @@ dependencies {
     implementation("dev.kord:kord-core:0.13.1")
     implementation("ch.qos.logback:logback-classic:1.4.12")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.12.5")
+    implementation("org.jetbrains.kotlin:kotlin-stdlib:1.6.2")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.2")
 }
 
 tasks.test {
