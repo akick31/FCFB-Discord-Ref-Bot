@@ -10,7 +10,7 @@ import zebstrika.model.game.TeamSide
 
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy::class)
 data class Play(
-    @JsonProperty("play_id") val playId: Int,
+    @JsonProperty("play_id") val playId: Int?,
     @JsonProperty("game_id") val gameId: Int?,
     @JsonProperty("play_number") val playNumber: Int?,
     @JsonProperty("home_score") val homeScore: Int?,
