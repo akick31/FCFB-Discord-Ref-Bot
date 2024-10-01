@@ -32,9 +32,9 @@ class DMLogic {
             val timeoutCalled = gameUtils.parseTimeoutFromMessage(message)
             playClient.submitDefensiveNumber(game.gameId, number, timeoutCalled) ?: return discordMessages.sendErrorMessage(message, "There was an issue submitting the defensive number.")
             if (timeoutCalled) {
-                discordMessages.sendMessage(message, "I've got $number as your number. Attempting to call a timeout.")
+                discordMessages.sendMessage(message, "I've got $number as your number. Attempting to call a timeout.", null)
             } else {
-                discordMessages.sendMessage(message, "I've got $number as your number.")
+                discordMessages.sendMessage(message, "I've got $number as your number.", null)
             }
 
             val gameThread = if (game.homePlatform == Platform.DISCORD) {

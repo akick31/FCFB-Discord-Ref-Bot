@@ -6,6 +6,7 @@ import dev.kord.core.entity.Message
 import utils.Logger
 import zebstrika.api.GameClient
 import zebstrika.api.PlayClient
+import zebstrika.model.game.ActualResult
 import zebstrika.model.game.Game
 import zebstrika.model.game.GameStatus
 import zebstrika.model.game.Scenario
@@ -35,7 +36,7 @@ class GameLogic {
             Logger.info("Team has made a choice after the coin toss, game is ready to start.")
         } else if (game.gameStatus != GameStatus.PREGAME && game.gameStatus != GameStatus.FINAL
             && isGameIsWaitingOnUser(game, message) && game.waitingOn == game.possession) {
-            handleOffensiveNumberSubmission(client, game, message)
+            handleOffensiveNumberSubmission(client, game.gameId, message)
         } else if (isGameIsWaitingOnUser(game, message) && game.waitingOn != game.possession) {
             discordMessages.sendErrorMessage(message, "This game is waiting on a message from you in your DMs")
         } else if (!isGameIsWaitingOnUser(game, message)){
@@ -47,7 +48,7 @@ class GameLogic {
 
     suspend fun handleOffensiveNumberSubmission(
         client: Kord,
-        game: Game,
+        gameId: Int,
         message: Message
     ) {
         val number = gameUtils.parseValidNumberFromMessage(message)
@@ -55,11 +56,15 @@ class GameLogic {
         val playCall = gameUtils.parsePlayCallFromMessage(message) ?: return discordMessages.sendErrorMessage(message, "Could not parse the play call from the message.")
         val runoffType = gameUtils.parseRunoffTypeFromMessage(message)
         val timeoutCalled = gameUtils.parseTimeoutFromMessage(message)
-        val playOutcome = playClient.submitOffensiveNumber(game.gameId, number, playCall, runoffType, timeoutCalled)
+        val playOutcome = playClient.submitOffensiveNumber(gameId, number, playCall, runoffType, timeoutCalled)
             ?: return discordMessages.sendErrorMessage(message, "There was an issue submitting the offensive number.")
 
-        discordMessages.sendGameThreadMessageFromMessage(client, game, message, playOutcome.result!!, playOutcome)
-        discordMessages.sendNumberRequestPrivateMessage(client, game, Scenario.NORMAL_NUMBER_REQUEST, playOutcome)
+        // Get updated game
+        val game = gameClient.fetchGameByThreadId(message.channelId.value.toString())
+            ?: return discordMessages.sendErrorMessage(message, "Could not find a game associated with this thread.")
+        val scenario = if(playOutcome.actualResult == ActualResult.TOUCHDOWN) Scenario.TOUCHDOWN else playOutcome.result!!
+        discordMessages.sendGameThreadMessageFromMessage(client, game, message, scenario, playOutcome)
+        discordMessages.sendNumberRequestPrivateMessage(client, game, Scenario.DM_NUMBER_REQUEST, playOutcome)
     }
 
     suspend fun handleCoinToss(
@@ -78,7 +83,7 @@ class GameLogic {
                 ?: return discordMessages.sendErrorMessage(message, "Could not retrieve the coin toss winner's discord user")
 
             val messageContent = "${coinTossWinningCoach.mention} wins the coin toss! Please choose whether you want to **receive** or **defer**."
-            discordMessages.sendMessage(message, messageContent)
+            discordMessages.sendMessage(message, messageContent, null)
         } else {
             return discordMessages.sendErrorMessage(message, "Invalid game message. Waiting on the away coach to call **heads** or **tails**.")
         }

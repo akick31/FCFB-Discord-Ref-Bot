@@ -1,23 +1,34 @@
 package zebstrika.utils
 
 import dev.kord.common.entity.Snowflake
+import dev.kord.common.entity.optional.Optional
 import dev.kord.core.Kord
 import dev.kord.core.behavior.channel.createMessage
+import dev.kord.core.cache.data.EmbedData
+import dev.kord.core.cache.data.EmbedImageData
 import dev.kord.core.entity.Message
 import dev.kord.core.entity.User
 import dev.kord.core.entity.channel.thread.TextChannelThread
+import dev.kord.rest.builder.message.EmbedBuilder
+import dev.kord.rest.builder.message.addFile
 import utils.Logger
 import zebstrika.api.GameWriteupClient
+import zebstrika.api.ScorebugClient
+import zebstrika.model.game.ActualResult
 import zebstrika.model.game.Game
 import zebstrika.model.game.PlayCall
 import zebstrika.model.game.PlayType
 import zebstrika.model.game.TeamSide
 import zebstrika.model.game.Scenario
 import zebstrika.model.play.Play
+import java.io.File
+import java.nio.file.Files
+import java.nio.file.StandardOpenOption
+import kotlin.io.path.Path
 
 class DiscordMessages {
     private val gameWriteupClient = GameWriteupClient()
-    private val gameUtils = GameUtils()
+    private val scorebugClient = ScorebugClient()
 
     suspend fun sendErrorMessage(
         message: Message,
@@ -37,16 +48,38 @@ class DiscordMessages {
 
     suspend fun sendMessage(
         message: Message,
-        messageContent: String
+        messageContent: String,
+        embed: EmbedData?
     ): Message {
-        return message.getChannel().createMessage(messageContent)
+        val url = embed?.image?.value?.url?.value.toString()
+        return message.getChannel().createMessage {
+            if (embed != null) {
+                val file = addFile(Path(url))
+                embeds = mutableListOf(EmbedBuilder().apply {
+                    title = embed.title.value
+                    description = embed.description.value
+                    image = file.url
+                })
+            }
+            content = messageContent
+        }
     }
 
     suspend fun sendTextChannelMessage(
         textChannel: TextChannelThread,
-        messageContent: String
+        messageContent: String,
+        embed: EmbedData?
     ): Message {
+        val url = embed?.image?.value?.url?.value.toString()
         return textChannel.createMessage {
+            if (embed != null) {
+                val file = addFile(Path(url))
+                embeds = mutableListOf(EmbedBuilder().apply {
+                    title = embed.title.value
+                    description = embed.description.value
+                    image = file.url
+                })
+            }
             content = messageContent
         }
     }
@@ -56,14 +89,35 @@ class DiscordMessages {
         game: Game,
         scenario: Scenario,
         play: Play?,
-    ): Pair<String, User>? {
+    ): Pair<Pair<String, EmbedData?>, User>? {
         var playWriteup: String? = null
         var messageContent: String?
-        if (play?.playCall == PlayCall.PASS || play?.playCall == PlayCall.RUN) {
-            playWriteup = gameWriteupClient.getGameMessageByScenario(scenario, play.playCall)
-            messageContent = gameWriteupClient.getGameMessageByScenario(Scenario.PLAY_RESULT, null)
+
+        // Get scorebug
+        val scorebug = scorebugClient.getGameScorebugByGameId(game.gameId)
+        val url = if (scorebug != null) {
+            val file = File("images/scorebugs", game.homeTeam?.replace(" ", "_") + "_" + game.awayTeam?.replace(" ", "_") + ".png")
+            file.toPath().let { Files.write(it, scorebug, StandardOpenOption.CREATE) }
+            "images/scorebugs/" + game.homeTeam?.replace(" ", "_") + "_" + game.awayTeam?.replace(" ", "_") + ".png"
         } else {
-            messageContent = gameWriteupClient.getGameMessageByScenario(scenario, null)
+            null
+        }
+
+        // Get message content but not play result for number requests, game start, and coin toss
+        if (scenario == Scenario.DM_NUMBER_REQUEST || scenario == Scenario.KICKOFF_NUMBER_REQUEST
+            || scenario == Scenario.NORMAL_NUMBER_REQUEST || scenario == Scenario.GAME_START
+            || scenario == Scenario.COIN_TOSS_CHOICE) {
+            messageContent = gameWriteupClient.getGameMessageByScenario(scenario, null) ?: return null
+        }
+        // Get message content and play result for run and pass (includes play call)
+        else if (play?.playCall == PlayCall.PASS || play?.playCall == PlayCall.RUN) {
+            playWriteup = gameWriteupClient.getGameMessageByScenario(scenario, play.playCall) ?: return null
+            messageContent = gameWriteupClient.getGameMessageByScenario(Scenario.PLAY_RESULT, null) ?: return null
+        }
+        // Get message content and play result for all other scenarios
+        else {
+            playWriteup = gameWriteupClient.getGameMessageByScenario(scenario, null) ?: return null
+            messageContent = gameWriteupClient.getGameMessageByScenario(Scenario.PLAY_RESULT, null) ?: return null
         }
         if (messageContent == "") {
             return null
@@ -77,9 +131,11 @@ class DiscordMessages {
             homeCoach to awayCoach
         } else if (game.possession == TeamSide.AWAY && game.currentPlayType != PlayType.KICKOFF) {
             awayCoach to homeCoach
-        } else if (game.possession == TeamSide.HOME && game.currentPlayType == PlayType.KICKOFF) {
+        } else if (game.possession == TeamSide.HOME && (play?.playCall == PlayCall.KICKOFF_NORMAL
+                    || play?.playCall == PlayCall.KICKOFF_SQUIB || play?.playCall == PlayCall.KICKOFF_ONSIDE)) {
             awayCoach to homeCoach
-        } else if (game.possession == TeamSide.AWAY && game.currentPlayType == PlayType.KICKOFF) {
+        } else if (game.possession == TeamSide.AWAY && (play?.playCall == PlayCall.KICKOFF_NORMAL
+                    || play?.playCall == PlayCall.KICKOFF_SQUIB || play?.playCall == PlayCall.KICKOFF_ONSIDE)) {
             homeCoach to awayCoach
         } else {
             return null
@@ -107,16 +163,6 @@ class DiscordMessages {
             "{offensive_team}" to offensiveTeam,
             "{defensive_team}" to defensiveTeam,
             "{play_writeup}" to playWriteup,
-            "{down_and_distance}" to "${
-                when (game.down) {
-                    1 -> "1st"
-                    2 -> "2nd"
-                    3 -> "3rd"
-                    4 -> "4th"
-                    else -> game.down.toString()
-                }
-            } & ${game.yardsToGo}",
-            "{ball_location}" to gameUtils.convertBallLocationToText(game),
             "{clock}" to game.clock,
             "{quarter}" to when (game.quarter) {
                 1 -> "1st"
@@ -128,16 +174,47 @@ class DiscordMessages {
             "{offensive_number}" to play?.offensiveNumber.toString(),
             "{defensive_number}" to play?.defensiveNumber.toString(),
             "{difference}" to play?.difference.toString(),
-            "{actual_result}" to play?.actualResult.toString(),
+            "{actual_result}" to play?.actualResult?.description,
+            "{result}" to play?.result?.name,
             "{clock_status}" to when {
                 game.clockStopped == true -> "The clock is stopped"
                 else -> "The clock is running"
+            },
+            "{ball_location_scenario}" to when {
+                play?.actualResult == ActualResult.TOUCHDOWN && game.possession == TeamSide.HOME -> "${game.homeTeam} just scored."
+                play?.actualResult == ActualResult.TOUCHDOWN && game.possession == TeamSide.AWAY -> "${game.awayTeam} just scored."
+                play?.actualResult == ActualResult.TURNOVER_TOUCHDOWN && game.possession == TeamSide.HOME -> "${game.awayTeam} just scored."
+                play?.actualResult == ActualResult.TURNOVER_TOUCHDOWN && game.possession == TeamSide.AWAY -> "${game.homeTeam} just scored."
+                else -> {
+                    val downDescription = when (game.down) {
+                        1 -> "1st"
+                        2 -> "2nd"
+                        3 -> "3rd"
+                        4 -> "4th"
+                        else -> "Unknown down"
+                    }
+
+                    val yardsToGoDescription = when {
+                        (game.yardsToGo?.plus((game.ballLocation ?: 0)) ?: 0) >= 100 -> "goal"
+                        else -> "${game.yardsToGo}"
+                    }
+
+                    val locationDescription = when {
+                        ((game.ballLocation ?: 0) > 50) && game.possession == TeamSide.HOME -> "${game.awayTeam} ${100 - (game.ballLocation ?: 0)}"
+                        ((game.ballLocation ?: 0) > 50) && game.possession == TeamSide.AWAY -> "${game.homeTeam} ${100 - (game.ballLocation ?: 0)}"
+                        ((game.ballLocation ?: 0) < 50) && game.possession == TeamSide.HOME -> "${game.homeTeam} ${game.ballLocation}"
+                        ((game.ballLocation ?: 0) < 50) && game.possession == TeamSide.AWAY -> "${game.awayTeam} ${game.ballLocation}"
+                        else -> "50"
+                    }
+
+                    "It's $downDescription & $yardsToGoDescription on the $locationDescription"
+                }
             },
             "{dog_deadline}" to game.gameTimer.toString(),
             "{play_options}" to when {
                 game.currentPlayType == PlayType.KICKOFF -> "**normal**, **squib**, or **onside**"
                 game.currentPlayType == PlayType.NORMAL && game.down != 4 -> "**run**, **pass**"
-                game.currentPlayType == PlayType.NORMAL && game.down == 4 -> if (game.ballLocation!! >= 52)
+                game.currentPlayType == PlayType.NORMAL && game.down == 4 -> if ((game.ballLocation ?: 0) >= 52)
                     "**run**, **pass**, **field goal**, or **punt**"
                 else
                     "**run**, **pass**, or **punt**"
@@ -150,18 +227,36 @@ class DiscordMessages {
 
         // Replace placeholders with actual values
         replacements.forEach { (placeholder, replacement) ->
-            if (placeholder in messageContent!!) {
-                messageContent = messageContent!!.replace(placeholder, replacement!!)
+            if (placeholder in (messageContent ?: "")) {
+                messageContent = messageContent?.replace(placeholder, replacement ?: "")
             }
         }
 
-        // Append the users to ping to the message
-        messageContent += if (game.possession == TeamSide.HOME) {
-            "\n\n${homeCoach.mention}"
+        // Get the embed
+        val embedData = if (scorebug != null) {
+            EmbedData(
+                title = Optional((game.homeTeam ?: "") + " vs " + (game.awayTeam ?: "")),
+                description = Optional(messageContent ?: ""),
+                image = Optional(EmbedImageData(url = Optional(url!!)))
+            )
         } else {
-            "\n\n${awayCoach.mention}"
+            null
         }
-        return messageContent!! to defensiveCoach
+
+        var messageToSend = ""
+
+        // Append the users to ping to the message
+        if (scenario != Scenario.DM_NUMBER_REQUEST && scenario != Scenario.NORMAL_NUMBER_REQUEST) {
+            messageToSend += if (game.possession == TeamSide.HOME) {
+                "\n\n${awayCoach.mention}"
+            } else {
+                "\n\n${homeCoach.mention}"
+            }
+        } else if (scenario == Scenario.NORMAL_NUMBER_REQUEST) {
+            messageToSend += "\n\n${offensiveCoach.mention}"
+        }
+
+        return (messageToSend to embedData) to defensiveCoach
     }
 
     suspend fun sendGameThreadMessageFromTextChannel(
@@ -176,7 +271,7 @@ class DiscordMessages {
             Logger.error("There was an issue getting the writeup message")
             return null
         }
-        return sendTextChannelMessage(gameThread, messageContent.first)
+        return sendTextChannelMessage(gameThread, messageContent.first.first, messageContent.first.second)
     }
 
     suspend fun sendGameThreadMessageFromMessage(
@@ -191,7 +286,7 @@ class DiscordMessages {
             Logger.error("There was an issue getting the writeup message")
             return null
         }
-        return sendMessage(message, messageContent.first)
+        return sendMessage(message, messageContent.first.first, messageContent.first.second)
     }
 
     suspend fun sendNumberRequestPrivateMessage(
@@ -204,6 +299,18 @@ class DiscordMessages {
             Logger.error("There was an issue getting the writeup message")
             return null
         }
-        return messageContent.second.getDmChannel().createMessage(messageContent.first)
+        val embed = messageContent.first.second
+        val url = embed?.image?.value?.url?.value.toString()
+        return messageContent.second.getDmChannel().createMessage {
+            if (embed != null) {
+                val file = addFile(Path(url))
+                embeds = mutableListOf(EmbedBuilder().apply {
+                    title = embed.title.value
+                    description = embed.description.value
+                    image = file.url
+                })
+            }
+            content = messageContent.first.first
+        }
     }
 }

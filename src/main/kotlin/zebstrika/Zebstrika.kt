@@ -97,7 +97,7 @@ class Zebstrika() {
                     }
                 }
             } catch (e: Exception) {
-                Logger.error(e.message!!)
+                Logger.error(e.message ?: "Unknown error occurred")
             }
         }
 //        client.on<> {
