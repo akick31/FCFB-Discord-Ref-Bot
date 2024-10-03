@@ -84,11 +84,12 @@ class DiscordMessages {
         }
     }
 
-    suspend fun getGameWriteupMessageAndDefendingCoach(
+    suspend fun getGameMessage(
         client: Kord,
         game: Game,
         scenario: Scenario,
         play: Play?,
+        timeoutCalled: Boolean?
     ): Pair<Pair<String, EmbedData?>, User>? {
         var playWriteup: String? = null
         var messageContent: String?
@@ -137,6 +138,10 @@ class DiscordMessages {
         } else if (game.possession == TeamSide.AWAY && (play?.playCall == PlayCall.KICKOFF_NORMAL
                     || play?.playCall == PlayCall.KICKOFF_SQUIB || play?.playCall == PlayCall.KICKOFF_ONSIDE)) {
             homeCoach to awayCoach
+        } else if (game.currentPlayType == PlayType.KICKOFF && game.possession == TeamSide.HOME) {
+            homeCoach to awayCoach
+        } else if (game.currentPlayType == PlayType.KICKOFF && game.possession == TeamSide.AWAY) {
+            awayCoach to homeCoach
         } else {
             return null
         }
@@ -176,16 +181,54 @@ class DiscordMessages {
             "{difference}" to play?.difference.toString(),
             "{actual_result}" to play?.actualResult?.description,
             "{result}" to play?.result?.name,
+            "{timeout_called}" to when {
+                play?.timeoutUsed == true && play?.offensiveTimeoutCalled == true  && play?.defensiveTimeoutCalled == true
+                        && play.possession == TeamSide.HOME -> "${game.homeTeam} attempted to call a timeout, but it was not used. ${game.awayTeam} called a timeout first.\n\n"
+                play?.timeoutUsed == true && play?.offensiveTimeoutCalled == true  && play?.defensiveTimeoutCalled == true
+                        && play.possession == TeamSide.AWAY -> "${game.awayTeam} attempted to call a timeout, but it was not used. ${game.homeTeam} called a timeout first.\n\n"
+                play?.timeoutUsed == true && play?.offensiveTimeoutCalled == true && play?.defensiveTimeoutCalled == false
+                        && play.possession == TeamSide.HOME -> "${game.homeTeam} called a timeout.\n\n"
+                play?.timeoutUsed == true && play?.offensiveTimeoutCalled == true  && play?.defensiveTimeoutCalled == false
+                        && play.possession == TeamSide.AWAY -> "${game.awayTeam} called a timeout.\n\n"
+                play?.timeoutUsed == true && play?.offensiveTimeoutCalled == false && play?.defensiveTimeoutCalled == true
+                        && play.possession == TeamSide.HOME -> "${game.awayTeam} called a timeout.\n\n"
+                play?.timeoutUsed == true && play?.offensiveTimeoutCalled == false  && play?.defensiveTimeoutCalled == true
+                        && play.possession == TeamSide.AWAY -> "${game.homeTeam} called a timeout."
+                play?.timeoutUsed == false && play?.offensiveTimeoutCalled == true && play?.defensiveTimeoutCalled == true
+                        -> "Both teams attempted to call a timeout, but the clock was stopped.\n\n"
+                play?.timeoutUsed == false && play?.offensiveTimeoutCalled == true && play?.defensiveTimeoutCalled == false
+                        && play.possession == TeamSide.HOME -> "${game.homeTeam} attempted to call a timeout, but it was not used.\n\n"
+                play?.timeoutUsed == false && play?.offensiveTimeoutCalled == false && play?.defensiveTimeoutCalled == true
+                        && play.possession == TeamSide.HOME -> "${game.awayTeam} attempted to call a timeout, but it was not used.\n\n"
+                play?.timeoutUsed == false && play?.offensiveTimeoutCalled == true && play?.defensiveTimeoutCalled == false
+                        && play.possession == TeamSide.AWAY -> "${game.awayTeam} attempted to call a timeout, but it was not used.\n\n"
+                play?.timeoutUsed == false && play?.offensiveTimeoutCalled == false && play?.defensiveTimeoutCalled == true
+                        && play.possession == TeamSide.AWAY -> "${game.homeTeam} attempted to call a timeout, but it was not used.\n\n"
+                timeoutCalled == true && game.possession == TeamSide.HOME -> "${game.awayTeam} called a timeout\n\n"
+                timeoutCalled == true && game.possession == TeamSide.AWAY -> "${game.homeTeam} called a timeout\n\n"
+                else -> ""
+            },
             "{clock_status}" to when {
                 game.clockStopped == true -> "The clock is stopped"
                 else -> "The clock is running"
             },
-            "{ball_location_scenario}" to when {
-                play?.actualResult == ActualResult.TOUCHDOWN && game.possession == TeamSide.HOME -> "${game.homeTeam} just scored."
-                play?.actualResult == ActualResult.TOUCHDOWN && game.possession == TeamSide.AWAY -> "${game.awayTeam} just scored."
-                play?.actualResult == ActualResult.TURNOVER_TOUCHDOWN && game.possession == TeamSide.HOME -> "${game.awayTeam} just scored."
-                play?.actualResult == ActualResult.TURNOVER_TOUCHDOWN && game.possession == TeamSide.AWAY -> "${game.homeTeam} just scored."
-                else -> {
+            "{ball_location_scenario}" to if (play?.actualResult == ActualResult.TOUCHDOWN && game.possession == TeamSide.HOME) {
+                    "${game.homeTeam} just scored."
+                } else if (play?.actualResult == ActualResult.TOUCHDOWN && game.possession == TeamSide.AWAY) {
+                    "${game.awayTeam} just scored."
+                } else if (play?.actualResult == ActualResult.TURNOVER_TOUCHDOWN && game.possession == TeamSide.HOME) {
+                    "${game.awayTeam} just scored."
+                } else if (play?.actualResult == ActualResult.TURNOVER_TOUCHDOWN && game.possession == TeamSide.AWAY) {
+                    "${game.homeTeam} just scored."
+                } else if (game.currentPlayType == PlayType.PAT && game.possession == TeamSide.HOME) {
+                    "${game.homeTeam} is attempting a PAT."
+                } else if (game.currentPlayType == PlayType.PAT && game.possession == TeamSide.AWAY) {
+                    "${game.awayTeam} is attempting a PAT."
+                } else if (game.currentPlayType == PlayType.KICKOFF && game.possession == TeamSide.HOME) {
+                    "${game.homeTeam} is kicking off."
+                } else if (game.currentPlayType == PlayType.KICKOFF && game.possession == TeamSide.AWAY) {
+                    "${game.awayTeam} is kicking off."
+                } else {
                     val downDescription = when (game.down) {
                         1 -> "1st"
                         2 -> "2nd"
@@ -206,9 +249,7 @@ class DiscordMessages {
                         ((game.ballLocation ?: 0) < 50) && game.possession == TeamSide.AWAY -> "${game.awayTeam} ${game.ballLocation}"
                         else -> "50"
                     }
-
                     "It's $downDescription & $yardsToGoDescription on the $locationDescription"
-                }
             },
             "{dog_deadline}" to game.gameTimer.toString(),
             "{play_options}" to when {
@@ -264,14 +305,15 @@ class DiscordMessages {
         game: Game,
         gameThread: TextChannelThread,
         scenario: Scenario,
-        play: Play?
+        play: Play?,
+        timeoutCalled: Boolean?
     ): Message? {
-        val messageContent = getGameWriteupMessageAndDefendingCoach(client, game, scenario, play) ?: run {
-            sendTextChannelErrorMessage(gameThread, "There was an issue getting the writeup message")
+        val gameMessage = getGameMessage(client, game, scenario, play, timeoutCalled) ?: run {
+            sendTextChannelErrorMessage(gameThread, "There was an issue getting the writeup message from a text channel")
             Logger.error("There was an issue getting the writeup message")
             return null
         }
-        return sendTextChannelMessage(gameThread, messageContent.first.first, messageContent.first.second)
+        return sendTextChannelMessage(gameThread, gameMessage.first.first, gameMessage.first.second)
     }
 
     suspend fun sendGameThreadMessageFromMessage(
@@ -281,12 +323,12 @@ class DiscordMessages {
         scenario: Scenario,
         play: Play?
     ): Message? {
-        val messageContent = getGameWriteupMessageAndDefendingCoach(client, game, scenario, play) ?: run {
-            sendErrorMessage(message, "There was an issue getting the writeup message")
+        val gameMessage = getGameMessage(client, game, scenario, play, false) ?: run {
+            sendErrorMessage(message, "There was an issue getting the writeup message from a private message")
             Logger.error("There was an issue getting the writeup message")
             return null
         }
-        return sendMessage(message, messageContent.first.first, messageContent.first.second)
+        return sendMessage(message, gameMessage.first.first, gameMessage.first.second)
     }
 
     suspend fun sendNumberRequestPrivateMessage(
@@ -295,13 +337,13 @@ class DiscordMessages {
         scenario: Scenario,
         play: Play?
     ): Message? {
-        val messageContent = getGameWriteupMessageAndDefendingCoach(client, game, scenario, play) ?: run {
+        val gameMessage = getGameMessage(client, game, scenario, play, false) ?: run {
             Logger.error("There was an issue getting the writeup message")
             return null
         }
-        val embed = messageContent.first.second
+        val embed = gameMessage.first.second
         val url = embed?.image?.value?.url?.value.toString()
-        return messageContent.second.getDmChannel().createMessage {
+        return gameMessage.second.getDmChannel().createMessage {
             if (embed != null) {
                 val file = addFile(Path(url))
                 embeds = mutableListOf(EmbedBuilder().apply {
@@ -310,7 +352,7 @@ class DiscordMessages {
                     image = file.url
                 })
             }
-            content = messageContent.first.first
+            content = gameMessage.first.first
         }
     }
 }

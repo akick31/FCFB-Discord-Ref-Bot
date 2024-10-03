@@ -61,7 +61,7 @@ class StartGameRequest {
                 }
             }
 
-            val message = discordMessages.sendGameThreadMessageFromTextChannel(client, game, gameThread, Scenario.GAME_START, null)
+            val message = discordMessages.sendGameThreadMessageFromTextChannel(client, game, gameThread, Scenario.GAME_START, null, false)
             if (message == null) {
                 Logger.error("Failed to send message to game thread")
                 gameThread.delete()
