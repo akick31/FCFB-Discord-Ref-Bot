@@ -207,7 +207,9 @@ enum class ActualResult(val description: String) {
     FAILED_ONSIDE("FAILED ONSIDE"),
     GOOD("GOOD"),
     NO_GOOD("NO GOOD"),
-    DEFENSE_TWO_POINT("DEFENSE TWO POINT");
+    DEFENSE_TWO_POINT("DEFENSE TWO POINT"),
+    SUCCESS("SUCCESS"),
+    FAILED("FAILED");
 
     companion object {
         @JsonCreator
@@ -243,6 +245,8 @@ enum class Scenario(val description: String) {
     GOOD("GOOD"),
     NO_GOOD("NO GOOD"),
     NO_GAIN("NO GAIN"),
+    SUCCESS("SUCCESS"),
+    FAILED("NO FAILED"),
     INCOMPLETE("INCOMPLETE"),
     LOSS_OF_10_YARDS("-10"),
     LOSS_OF_5_YARDS("-5"),

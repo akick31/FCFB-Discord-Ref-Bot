@@ -121,10 +121,10 @@ class GameUtils {
             PlayCall.KICKOFF_NORMAL
         } else if (!containsRun && !containsPass && !containsSpike && !containsKneel && !containsFieldGoal && !containsPunt && !containsPAT && !containsTwoPoint && !containsNormal && containsSquib && !containsOnside) {
             Logger.info("The message contains 'squib'.")
-            PlayCall.KICKOFF_ONSIDE
+            PlayCall.KICKOFF_SQUIB
         } else if (!containsRun && !containsPass && !containsSpike && !containsKneel && !containsFieldGoal && !containsPunt && !containsPAT && !containsTwoPoint && !containsNormal && !containsSquib && containsOnside) {
             Logger.info("The message contains 'onside'.")
-            PlayCall.KICKOFF_SQUIB
+            PlayCall.KICKOFF_ONSIDE
         } else {
             Logger.info("The message does not contain a valid play call.")
             null
