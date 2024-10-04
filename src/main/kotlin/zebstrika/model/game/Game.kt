@@ -209,7 +209,9 @@ enum class ActualResult(val description: String) {
     NO_GOOD("NO GOOD"),
     DEFENSE_TWO_POINT("DEFENSE TWO POINT"),
     SUCCESS("SUCCESS"),
-    FAILED("FAILED");
+    FAILED("FAILED"),
+    SPIKE("SPIKE"),
+    KNEEL("KNEEL");
 
     companion object {
         @JsonCreator
@@ -313,7 +315,9 @@ enum class Scenario(val description: String) {
     TOUCHBACK("TOUCHBACK"),
     RETURN_TOUCHDOWN("RETURN TOUCHDOWN"),
     RECOVERED("RECOVERED"),
-    DEFENSE_TWO_POINT("DEFENSE TWO POINT");
+    DEFENSE_TWO_POINT("DEFENSE TWO POINT"),
+    SPIKE("SPIKE"),
+    KNEEL("KNEEL");
 
     companion object {
         fun fromString(description: String): Scenario? {
