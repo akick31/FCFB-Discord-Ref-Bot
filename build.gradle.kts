@@ -40,3 +40,4 @@ tasks.withType<KotlinCompile> {
 application {
     mainClass.set("ZebstrikaKt")
 }
+
