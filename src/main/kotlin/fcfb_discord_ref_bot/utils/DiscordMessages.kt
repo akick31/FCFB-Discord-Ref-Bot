@@ -1,4 +1,4 @@
-package zebstrika.utils
+package fcfb_discord_ref_bot.utils
 
 import dev.kord.common.entity.Snowflake
 import dev.kord.common.entity.optional.Optional
@@ -12,15 +12,15 @@ import dev.kord.core.entity.channel.thread.TextChannelThread
 import dev.kord.rest.builder.message.EmbedBuilder
 import dev.kord.rest.builder.message.addFile
 import utils.Logger
-import zebstrika.api.GameWriteupClient
-import zebstrika.api.ScorebugClient
-import zebstrika.model.game.ActualResult
-import zebstrika.model.game.Game
-import zebstrika.model.game.PlayCall
-import zebstrika.model.game.PlayType
-import zebstrika.model.game.TeamSide
-import zebstrika.model.game.Scenario
-import zebstrika.model.play.Play
+import fcfb_discord_ref_bot.api.GameWriteupClient
+import fcfb_discord_ref_bot.api.ScorebugClient
+import fcfb_discord_ref_bot.model.game.ActualResult
+import fcfb_discord_ref_bot.model.game.Game
+import fcfb_discord_ref_bot.model.game.PlayCall
+import fcfb_discord_ref_bot.model.game.PlayType
+import fcfb_discord_ref_bot.model.game.TeamSide
+import fcfb_discord_ref_bot.model.game.Scenario
+import fcfb_discord_ref_bot.model.play.Play
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.StandardOpenOption

@@ -1,16 +1,14 @@
-package zebstrika.requests
+package fcfb_discord_ref_bot.requests
 
 import dev.kord.common.entity.Snowflake
 import dev.kord.core.Kord
-import dev.kord.core.entity.Message
 import dev.kord.core.entity.channel.ForumChannel
 import dev.kord.core.entity.channel.thread.TextChannelThread
 import utils.Logger
-import zebstrika.api.GameWriteupClient
-import zebstrika.model.game.Game
-import zebstrika.model.game.Scenario
-import zebstrika.utils.DiscordMessages
-import zebstrika.utils.Properties
+import fcfb_discord_ref_bot.model.game.Game
+import fcfb_discord_ref_bot.model.game.Scenario
+import fcfb_discord_ref_bot.utils.DiscordMessages
+import fcfb_discord_ref_bot.utils.Properties
 
 class StartGameRequest {
     private val Properties = Properties()

@@ -1,12 +1,12 @@
-package zebstrika.model.play
+package fcfb_discord_ref_bot.model.play
 
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.databind.PropertyNamingStrategies
 import com.fasterxml.jackson.databind.annotation.JsonNaming
-import zebstrika.model.game.PlayCall
-import zebstrika.model.game.Scenario
-import zebstrika.model.game.ActualResult
-import zebstrika.model.game.TeamSide
+import fcfb_discord_ref_bot.model.game.PlayCall
+import fcfb_discord_ref_bot.model.game.Scenario
+import fcfb_discord_ref_bot.model.game.ActualResult
+import fcfb_discord_ref_bot.model.game.TeamSide
 
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy::class)
 data class Play(

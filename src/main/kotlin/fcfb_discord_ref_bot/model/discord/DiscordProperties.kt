@@ -1,4 +1,4 @@
-package zebstrika.model.discord
+package fcfb_discord_ref_bot.model.discord
 
 data class DiscordProperties(
     val token: String,

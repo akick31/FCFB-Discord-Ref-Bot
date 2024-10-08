@@ -1,4 +1,4 @@
-package zebstrika.api
+package fcfb_discord_ref_bot.api
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import io.ktor.client.HttpClient
@@ -9,7 +9,7 @@ import io.ktor.client.statement.bodyAsText
 import io.ktor.http.ContentType
 import io.ktor.http.contentType
 import utils.Logger
-import zebstrika.model.game.Game
+import fcfb_discord_ref_bot.model.game.Game
 import java.util.Properties
 
 class GameClient {

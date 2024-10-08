@@ -1,12 +1,12 @@
-package zebstrika.utils
+package fcfb_discord_ref_bot.utils
 
-import zebstrika.Zebstrika
-import zebstrika.model.discord.DiscordProperties
+import fcfb_discord_ref_bot.FCFBDiscordRefBot
+import fcfb_discord_ref_bot.model.discord.DiscordProperties
 
 class Properties {
     fun getDiscordProperties(): DiscordProperties {
         val properties = java.util.Properties()
-        val configFile = Zebstrika::class.java.classLoader.getResourceAsStream("config.properties")
+        val configFile = FCFBDiscordRefBot::class.java.classLoader.getResourceAsStream("config.properties")
         properties.load(configFile)
         val token = properties.getProperty("discord.bot.token")
         val guildId = properties.getProperty("discord.guild.id")

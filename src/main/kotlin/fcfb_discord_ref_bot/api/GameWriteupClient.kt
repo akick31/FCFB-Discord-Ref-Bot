@@ -1,15 +1,12 @@
-package zebstrika.api
+package fcfb_discord_ref_bot.api
 
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.cio.CIO
 import io.ktor.client.request.get
-import io.ktor.client.statement.HttpResponse
 import io.ktor.client.statement.bodyAsText
-import io.ktor.http.ContentType
-import io.ktor.http.contentType
 import utils.Logger
-import zebstrika.model.game.PlayCall
-import zebstrika.model.game.Scenario
+import fcfb_discord_ref_bot.model.game.PlayCall
+import fcfb_discord_ref_bot.model.game.Scenario
 import java.util.Properties
 
 class GameWriteupClient {

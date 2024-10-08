@@ -1,12 +1,11 @@
-package zebstrika.utils
+package fcfb_discord_ref_bot.utils
 
 import dev.kord.core.entity.Message
 import utils.Logger
-import zebstrika.model.game.Game
-import zebstrika.model.game.PlayCall
-import zebstrika.model.game.PlayType
-import zebstrika.model.game.RunoffType
-import zebstrika.model.game.TeamSide
+import fcfb_discord_ref_bot.model.game.Game
+import fcfb_discord_ref_bot.model.game.PlayCall
+import fcfb_discord_ref_bot.model.game.RunoffType
+import fcfb_discord_ref_bot.model.game.TeamSide
 
 class GameUtils {
 

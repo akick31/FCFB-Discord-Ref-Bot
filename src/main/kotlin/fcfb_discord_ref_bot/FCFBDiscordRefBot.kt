@@ -1,10 +1,9 @@
-package zebstrika
+package fcfb_discord_ref_bot
 
 import com.google.gson.FieldNamingPolicy
 import dev.kord.common.annotation.KordPreview
 import dev.kord.common.entity.ChannelType
 import dev.kord.core.Kord
-import dev.kord.core.entity.Message
 import dev.kord.core.event.message.MessageCreateEvent
 import dev.kord.core.on
 import dev.kord.gateway.Intent
@@ -26,16 +25,16 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import utils.Logger
-import zebstrika.commands.HelpCommand
-import zebstrika.game.DMLogic
-import zebstrika.game.GameLogic
-import zebstrika.model.game.Game
-import zebstrika.requests.StartGameRequest
-import zebstrika.utils.Properties
+import fcfb_discord_ref_bot.commands.HelpCommand
+import fcfb_discord_ref_bot.game.DMLogic
+import fcfb_discord_ref_bot.game.GameLogic
+import fcfb_discord_ref_bot.model.game.Game
+import fcfb_discord_ref_bot.requests.StartGameRequest
+import fcfb_discord_ref_bot.utils.Properties
 import java.text.DateFormat
 
 @KordPreview
-class Zebstrika() {
+class FCFBDiscordRefBot() {
 
     private lateinit var client: Kord
 
@@ -51,7 +50,7 @@ class Zebstrika() {
 
             // Launch Ktor server
             val moduleFunction: Application.() -> Unit = {
-                ZebstrikaServer(client)
+                FCFBDiscordRefBotServer(client)
             }
 
             launch(Dispatchers.IO) {
@@ -121,7 +120,7 @@ class Zebstrika() {
 //        }
     }
 
-    fun Application.ZebstrikaServer(
+    fun Application.FCFBDiscordRefBotServer(
         client: Kord
     ) {
         install(ContentNegotiation) {
@@ -134,7 +133,7 @@ class Zebstrika() {
             }
         }
 
-        val serverUrl = "/zebstrika"
+        val serverUrl = "/fcfb_discord_ref_bot"
         routing {
             post("$serverUrl/start_game") {
                 try {
@@ -151,6 +150,6 @@ class Zebstrika() {
 
 @OptIn(KordPreview::class)
 suspend fun main() {
-    Logger.info("Starting Zebstrika...")
-    Zebstrika().start()
+    Logger.info("Starting Discord Ref Bot...")
+    FCFBDiscordRefBot().start()
 }

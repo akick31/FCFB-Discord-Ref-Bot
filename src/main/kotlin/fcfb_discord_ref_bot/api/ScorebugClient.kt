@@ -1,10 +1,9 @@
-package zebstrika.api
+package fcfb_discord_ref_bot.api
 
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.cio.CIO
 import io.ktor.client.request.get
 import io.ktor.client.statement.bodyAsChannel
-import io.ktor.client.statement.bodyAsText
 import io.ktor.utils.io.core.readBytes
 import utils.Logger
 import java.util.Properties

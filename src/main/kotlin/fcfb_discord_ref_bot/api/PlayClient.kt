@@ -1,4 +1,4 @@
-package zebstrika.api
+package fcfb_discord_ref_bot.api
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import io.ktor.client.HttpClient
@@ -8,9 +8,9 @@ import io.ktor.client.request.put
 import io.ktor.client.statement.HttpResponse
 import io.ktor.client.statement.bodyAsText
 import utils.Logger
-import zebstrika.model.game.PlayCall
-import zebstrika.model.game.RunoffType
-import zebstrika.model.play.Play
+import fcfb_discord_ref_bot.model.game.PlayCall
+import fcfb_discord_ref_bot.model.game.RunoffType
+import fcfb_discord_ref_bot.model.play.Play
 import java.util.Properties
 
 class PlayClient {

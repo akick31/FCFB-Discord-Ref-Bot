@@ -1,9 +1,9 @@
-package zebstrika.utils
+package fcfb_discord_ref_bot.utils
 
 import dev.kord.common.entity.Snowflake
 import dev.kord.core.entity.channel.ForumChannel
 import utils.Logger
-import zebstrika.model.game.Game
+import fcfb_discord_ref_bot.model.game.Game
 
 class ManageForumChannel {
     /**

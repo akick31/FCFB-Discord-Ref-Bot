@@ -1,18 +1,17 @@
-package zebstrika.game
+package fcfb_discord_ref_bot.game
 
 import dev.kord.common.entity.Snowflake
 import dev.kord.core.Kord
 import dev.kord.core.entity.Message
 import dev.kord.core.entity.channel.thread.TextChannelThread
 import utils.Logger
-import zebstrika.api.GameClient
-import zebstrika.api.PlayClient
-import zebstrika.model.game.Platform
-import zebstrika.model.game.PlayType
-import zebstrika.model.game.Scenario
-import zebstrika.model.game.TeamSide
-import zebstrika.utils.DiscordMessages
-import zebstrika.utils.GameUtils
+import fcfb_discord_ref_bot.api.GameClient
+import fcfb_discord_ref_bot.api.PlayClient
+import fcfb_discord_ref_bot.model.game.Platform
+import fcfb_discord_ref_bot.model.game.Scenario
+import fcfb_discord_ref_bot.model.game.TeamSide
+import fcfb_discord_ref_bot.utils.DiscordMessages
+import fcfb_discord_ref_bot.utils.GameUtils
 
 class DMLogic {
     private val discordMessages = DiscordMessages()

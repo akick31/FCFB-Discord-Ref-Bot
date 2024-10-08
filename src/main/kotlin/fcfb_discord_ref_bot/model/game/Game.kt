@@ -1,4 +1,4 @@
-package zebstrika.model.game
+package fcfb_discord_ref_bot.model.game
 
 import com.fasterxml.jackson.annotation.JsonCreator
 import com.fasterxml.jackson.annotation.JsonProperty

@@ -1,4 +1,4 @@
-package zebstrika.commands
+package fcfb_discord_ref_bot.commands
 
 import dev.kord.core.entity.Message
 import utils.Logger
