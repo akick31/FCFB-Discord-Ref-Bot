@@ -41,5 +41,7 @@ data class Play(
     @JsonProperty("defensive_timeout_called") val defensiveTimeoutCalled: Boolean?,
     @JsonProperty("home_timeouts") val homeTimeouts: Int?,
     @JsonProperty("away_timeouts") val awayTimeouts: Int?,
-    @JsonProperty("play_finished") val playFinished: Boolean?
+    @JsonProperty("play_finished") val playFinished: Boolean?,
+    @JsonProperty("offensive_response_speed") val offensiveResponseSpeed: Int?,
+    @JsonProperty("defensive_response_speed") val defensiveResponseSpeed: Int?
 )
