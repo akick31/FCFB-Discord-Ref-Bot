@@ -33,6 +33,7 @@ data class Play(
     @JsonProperty("play_time") val playTime: Int?,
     @JsonProperty("runoff_time") val runoffTime: Int?,
     @JsonProperty("win_probability") val winProbability: Double?,
+    @JsonProperty("win_probability_added") val winProbabilityAdded: Double?,
     @JsonProperty("home_team") val homeTeam: String?,
     @JsonProperty("away_team") val awayTeam: String?,
     @JsonProperty("timeout_used") val timeoutUsed: Boolean?,
