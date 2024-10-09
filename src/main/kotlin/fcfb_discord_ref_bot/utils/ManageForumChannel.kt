@@ -25,8 +25,11 @@ class ManageForumChannel {
                     tagsToApply.add(tag.id)
                 }
             }
-            if (game.scrimmage == true) {
-                tagsToApply.add(availableTags.first { it.name == "Scrimmage" }.id)
+
+            val tags = availableTags.filter { it.name == game.gameType?.description }.map { it.id }
+
+            for (tag in tags) {
+                tagsToApply.add(tag)
             }
 
             // Get the thread name

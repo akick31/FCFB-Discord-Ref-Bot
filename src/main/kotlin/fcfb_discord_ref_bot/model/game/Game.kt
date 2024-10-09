@@ -54,7 +54,7 @@ data class Game(
     @JsonProperty("game_timer") val gameTimer: String?,
     @JsonProperty("current_play_type") val currentPlayType: PlayType?,
     @JsonProperty("current_play_id") val currentPlayId: Int?,
-    @JsonProperty("scrimmage") val scrimmage: Boolean?,
+    @JsonProperty("game_type") val gameType: GameType?,
     @JsonProperty("clock_stopped") val clockStopped: Boolean?,
     @JsonProperty("game_status") val gameStatus: GameStatus?,
 )
@@ -207,11 +207,16 @@ enum class ActualResult(val description: String) {
     FAILED_ONSIDE("FAILED ONSIDE"),
     GOOD("GOOD"),
     NO_GOOD("NO GOOD"),
+    BLOCKED("BLOCKED"),
+    BLOCKED_TOUCHDOWN("BLOCKED TOUCHDOWN"),
     DEFENSE_TWO_POINT("DEFENSE TWO POINT"),
     SUCCESS("SUCCESS"),
-    FAILED("FAILED"),
+    FAILED("NO FAILED"),
     SPIKE("SPIKE"),
-    KNEEL("KNEEL");
+    KNEEL("KNEEL"),
+    PUNT_RETURN_TOUCHDOWN("PUNT RETURN TOUCHDOWN"),
+    PUNT_TEAM_TOUCHDOWN("PUNT TEAM TOUCHDOWN"),
+    MUFFED_PUNT("MUFFED PUNT");
 
     companion object {
         @JsonCreator
@@ -246,9 +251,9 @@ enum class Scenario(val description: String) {
     DM_NUMBER_REQUEST("DM NUMBER REQUEST"),
     GOOD("GOOD"),
     NO_GOOD("NO GOOD"),
-    NO_GAIN("NO GAIN"),
     SUCCESS("SUCCESS"),
-    FAILED("NO FAILED"),
+    FAILED("FAILED"),
+    NO_GAIN("NO GAIN"),
     INCOMPLETE("INCOMPLETE"),
     LOSS_OF_10_YARDS("-10"),
     LOSS_OF_5_YARDS("-5"),
@@ -293,13 +298,13 @@ enum class Scenario(val description: String) {
     TURNOVER_PLUS_15_YARDS("TO + 15 YARDS"),
     TURNOVER_PLUS_10_YARDS("TO + 10 YARDS"),
     TURNOVER_PLUS_5_YARDS("TO + 5 YARDS"),
-    TURNOVER("TURNOVER"),
+    TURNOVER("TO"),
     TURNOVER_MINUS_5_YARDS("TO - 5 YARDS"),
     TURNOVER_MINUS_10_YARDS("TO - 10 YARDS"),
     TURNOVER_MINUS_15_YARDS("TO - 15 YARDS"),
     TURNOVER_MINUS_20_YARDS("TO - 20 YARDS"),
     TURNOVER_ON_DOWNS("TURNOVER ON DOWNS"),
-    TURNOVER_TOUCHDOWN("PICK/FUMBLE SIX"),
+    TURNOVER_TOUCHDOWN("TURNOVER TOUCHDOWN"),
     TOUCHDOWN("TOUCHDOWN"),
     SAFETY("SAFETY"),
     FUMBLE("FUMBLE"),
@@ -317,7 +322,21 @@ enum class Scenario(val description: String) {
     RECOVERED("RECOVERED"),
     DEFENSE_TWO_POINT("DEFENSE TWO POINT"),
     SPIKE("SPIKE"),
-    KNEEL("KNEEL");
+    KNEEL("KNEEL"),
+    FIVE_YARD_PUNT("5 YARD PUNT"),
+    TEN_YARD_PUNT("10 YARD PUNT"),
+    FIFTEEN_YARD_PUNT("15 YARD PUNT"),
+    TWENTY_YARD_PUNT("20 YARD PUNT"),
+    TWENTY_FIVE_YARD_PUNT("25 YARD PUNT"),
+    THIRTY_YARD_PUNT("30 YARD PUNT"),
+    THIRTY_FIVE_YARD_PUNT("35 YARD PUNT"),
+    FOURTY_YARD_PUNT("40 YARD PUNT"),
+    FOURTY_FIVE_YARD_PUNT("45 YARD PUNT"),
+    FIFTY_YARD_PUNT("50 YARD PUNT"),
+    FIFTY_FIVE_YARD_PUNT("55 YARD PUNT"),
+    SIXTY_YARD_PUNT("60 YARD PUNT"),
+    SIXTY_FIVE_YARD_PUNT("65 YARD PUNT"),
+    SEVENTY_YARD_PUNT("70 YARD PUNT");
 
     companion object {
         fun fromString(description: String): Scenario? {
@@ -340,4 +359,20 @@ enum class TeamSide(val description: String) {
 enum class CoinTossChoice(val description: String) {
     RECEIVE("RECEIVE"),
     DEFER("DEFER")
+}
+
+enum class GameType(val description: String) {
+    OUT_OF_CONFERENCE("Out of Conference"),
+    CONFERENCE_GAME("Conference Game"),
+    CONFERENCE_CHAMPIONSHIP("Conference Championship"),
+    PLAYOFFS("Playoffs"),
+    NATIONAL_CHAMPIONSHIP("National Championship"),
+    BOWL("Bowl"),
+    SCRIMMAGE("Scrimmage");
+
+    companion object {
+        fun fromString(description: String): GameType? {
+            return GameType.values().find { it.description == description }
+        }
+    }
 }
