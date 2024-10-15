@@ -1,4 +1,4 @@
-package fcfb_discord_ref_bot.model.game
+package fcfb_discord_ref_bot.model.fcfb.game
 
 import com.fasterxml.jackson.annotation.JsonCreator
 import com.fasterxml.jackson.annotation.JsonProperty
@@ -10,10 +10,14 @@ data class Game(
     @JsonProperty("game_id") val gameId: Int,
     @JsonProperty("home_team") val homeTeam: String?,
     @JsonProperty("away_team") val awayTeam: String?,
-    @JsonProperty("home_coach") val homeCoach: String?,
-    @JsonProperty("away_coach") val awayCoach: String?,
-    @JsonProperty("home_coach_discord_id") val homeCoachDiscordId: String?,
-    @JsonProperty("away_coach_discord_id") val awayCoachDiscordId: String?,
+    @JsonProperty("home_coach1") val homeCoach1: String?,
+    @JsonProperty("home_coach2") val homeCoach2: String?,
+    @JsonProperty("away_coach1") val awayCoach1: String?,
+    @JsonProperty("away_coach2") val awayCoach2: String?,
+    @JsonProperty("home_coach_discord_id1") val homeCoachDiscordId1: String?,
+    @JsonProperty("home_coach_discord_id2") val homeCoachDiscordId2: String?,
+    @JsonProperty("away_coach_discord_id1") val awayCoachDiscordId1: String?,
+    @JsonProperty("away_coach_discord_id2") val awayCoachDiscordId2: String?,
     @JsonProperty("home_offensive_playbook") val homeOffensivePlaybook: OffensivePlaybook?,
     @JsonProperty("away_offensive_playbook") val awayOffensivePlaybook: OffensivePlaybook?,
     @JsonProperty("home_defensive_playbook") val homeDefensivePlaybook: DefensivePlaybook?,
@@ -54,9 +58,9 @@ data class Game(
     @JsonProperty("game_timer") val gameTimer: String?,
     @JsonProperty("current_play_type") val currentPlayType: PlayType?,
     @JsonProperty("current_play_id") val currentPlayId: Int?,
-    @JsonProperty("game_type") val gameType: GameType?,
     @JsonProperty("clock_stopped") val clockStopped: Boolean?,
     @JsonProperty("game_status") val gameStatus: GameStatus?,
+    @JsonProperty("game_type") val gameType: GameType?,
 )
 
 enum class GameStatus(val description: String) {
@@ -208,12 +212,13 @@ enum class ActualResult(val description: String) {
     GOOD("GOOD"),
     NO_GOOD("NO GOOD"),
     BLOCKED("BLOCKED"),
-    BLOCKED_TOUCHDOWN("BLOCKED TOUCHDOWN"),
+    KICK_SIX("KICK SIX"),
     DEFENSE_TWO_POINT("DEFENSE TWO POINT"),
     SUCCESS("SUCCESS"),
     FAILED("NO FAILED"),
     SPIKE("SPIKE"),
     KNEEL("KNEEL"),
+    PUNT("PUNT"),
     PUNT_RETURN_TOUCHDOWN("PUNT RETURN TOUCHDOWN"),
     PUNT_TEAM_TOUCHDOWN("PUNT TEAM TOUCHDOWN"),
     MUFFED_PUNT("MUFFED PUNT");
@@ -313,8 +318,8 @@ enum class Scenario(val description: String) {
     TWENTY_YARD_RETURN("20 YARD RETURN"),
     THIRTY_YARD_RETURN("30 YARD RETURN"),
     THIRTY_FIVE_YARD_RETURN("35 YARD RETURN"),
-    FOURTY_YARD_RETURN("40 YARD RETURN"),
-    FOURTY_FIVE_YARD_RETURN("45 YARD RETURN"),
+    FORTY_YARD_RETURN("40 YARD RETURN"),
+    FORTY_FIVE_YARD_RETURN("45 YARD RETURN"),
     FIFTY_YARD_RETURN("50 YARD RETURN"),
     SIXTY_FIVE_YARD_RETURN("65 YARD RETURN"),
     TOUCHBACK("TOUCHBACK"),
@@ -323,6 +328,10 @@ enum class Scenario(val description: String) {
     DEFENSE_TWO_POINT("DEFENSE TWO POINT"),
     SPIKE("SPIKE"),
     KNEEL("KNEEL"),
+    BLOCKED_PUNT("BLOCKED PUNT"),
+    PUNT_RETURN_TOUCHDOWN("PUNT RETURN TOUCHDOWN"),
+    BLOCKED_FIELD_GOAL("BLOCKED FIELD GOAL"),
+    KICK_SIX("KICK SIX"),
     FIVE_YARD_PUNT("5 YARD PUNT"),
     TEN_YARD_PUNT("10 YARD PUNT"),
     FIFTEEN_YARD_PUNT("15 YARD PUNT"),
@@ -330,8 +339,8 @@ enum class Scenario(val description: String) {
     TWENTY_FIVE_YARD_PUNT("25 YARD PUNT"),
     THIRTY_YARD_PUNT("30 YARD PUNT"),
     THIRTY_FIVE_YARD_PUNT("35 YARD PUNT"),
-    FOURTY_YARD_PUNT("40 YARD PUNT"),
-    FOURTY_FIVE_YARD_PUNT("45 YARD PUNT"),
+    FORTY_YARD_PUNT("40 YARD PUNT"),
+    FORTY_FIVE_YARD_PUNT("45 YARD PUNT"),
     FIFTY_YARD_PUNT("50 YARD PUNT"),
     FIFTY_FIVE_YARD_PUNT("55 YARD PUNT"),
     SIXTY_YARD_PUNT("60 YARD PUNT"),

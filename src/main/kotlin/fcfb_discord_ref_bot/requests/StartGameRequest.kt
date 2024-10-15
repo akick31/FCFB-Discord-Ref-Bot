@@ -5,9 +5,9 @@ import dev.kord.core.Kord
 import dev.kord.core.entity.channel.ForumChannel
 import dev.kord.core.entity.channel.thread.TextChannelThread
 import utils.Logger
-import fcfb_discord_ref_bot.model.game.Game
-import fcfb_discord_ref_bot.model.game.GameType
-import fcfb_discord_ref_bot.model.game.Scenario
+import fcfb_discord_ref_bot.model.fcfb.game.Game
+import fcfb_discord_ref_bot.model.fcfb.game.GameType
+import fcfb_discord_ref_bot.model.fcfb.game.Scenario
 import fcfb_discord_ref_bot.utils.DiscordMessages
 import fcfb_discord_ref_bot.utils.Properties
 

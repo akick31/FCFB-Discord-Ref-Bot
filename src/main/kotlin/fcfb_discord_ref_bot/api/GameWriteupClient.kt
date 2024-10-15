@@ -5,8 +5,8 @@ import io.ktor.client.engine.cio.CIO
 import io.ktor.client.request.get
 import io.ktor.client.statement.bodyAsText
 import utils.Logger
-import fcfb_discord_ref_bot.model.game.PlayCall
-import fcfb_discord_ref_bot.model.game.Scenario
+import fcfb_discord_ref_bot.model.fcfb.game.PlayCall
+import fcfb_discord_ref_bot.model.fcfb.game.Scenario
 import java.util.Properties
 
 class GameWriteupClient {

@@ -7,9 +7,9 @@ import dev.kord.core.entity.channel.thread.TextChannelThread
 import utils.Logger
 import fcfb_discord_ref_bot.api.GameClient
 import fcfb_discord_ref_bot.api.PlayClient
-import fcfb_discord_ref_bot.model.game.Platform
-import fcfb_discord_ref_bot.model.game.Scenario
-import fcfb_discord_ref_bot.model.game.TeamSide
+import fcfb_discord_ref_bot.model.fcfb.game.Platform
+import fcfb_discord_ref_bot.model.fcfb.game.Scenario
+import fcfb_discord_ref_bot.model.fcfb.game.TeamSide
 import fcfb_discord_ref_bot.utils.DiscordMessages
 import fcfb_discord_ref_bot.utils.GameUtils
 
@@ -30,7 +30,8 @@ class DMLogic {
             val number = gameUtils.parseValidNumberFromMessage(message)
                 ?: return Logger.info("No valid number found in the message.")
             val timeoutCalled = gameUtils.parseTimeoutFromMessage(message)
-            playClient.submitDefensiveNumber(game.gameId, number, timeoutCalled) ?: return discordMessages.sendErrorMessage(message, "There was an issue submitting the defensive number.")
+            val defensiveSubmitter = message.author?.username ?: return discordMessages.sendErrorMessage(message, "Could not find the user submitting the number.")
+            playClient.submitDefensiveNumber(game.gameId, defensiveSubmitter, number, timeoutCalled) ?: return discordMessages.sendErrorMessage(message, "There was an issue submitting the defensive number.")
             if (timeoutCalled) {
                 val messageToSend = if (game.possession == TeamSide.HOME && game.homeTimeouts == 0) {
                     "I've got $number as your number. You have no timeouts remaining so not calling timeout."

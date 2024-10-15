@@ -1,6 +1,7 @@
 package fcfb_discord_ref_bot.api
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import fcfb_discord_ref_bot.model.fcfb.game.Play
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.ClientRequestException
 import io.ktor.client.request.post
@@ -8,9 +9,8 @@ import io.ktor.client.request.put
 import io.ktor.client.statement.HttpResponse
 import io.ktor.client.statement.bodyAsText
 import utils.Logger
-import fcfb_discord_ref_bot.model.game.PlayCall
-import fcfb_discord_ref_bot.model.game.RunoffType
-import fcfb_discord_ref_bot.model.play.Play
+import fcfb_discord_ref_bot.model.fcfb.game.PlayCall
+import fcfb_discord_ref_bot.model.fcfb.game.RunoffType
 import java.util.Properties
 
 class PlayClient {
@@ -26,15 +26,17 @@ class PlayClient {
     /**
      * Submit a defensive number in Arceus
      * @param gameId
+     * @param defensiveSubmitter
      * @param defensiveNumber
      * @param timeoutCalled
      */
     internal suspend fun submitDefensiveNumber(
         gameId: Int,
+        defensiveSubmitter: String,
         defensiveNumber: Int,
         timeoutCalled: Boolean
     ): Play? {
-        val endpointUrl = "$baseUrl/play/submit_defense?gameId=$gameId&defensiveNumber=$defensiveNumber&timeoutCalled=$timeoutCalled"
+        val endpointUrl = "$baseUrl/play/submit_defense?gameId=$gameId&defensiveSubmitter=$defensiveSubmitter&defensiveNumber=$defensiveNumber&timeoutCalled=$timeoutCalled"
 
         return try {
             val response: HttpResponse = httpClient.post(endpointUrl)
@@ -60,19 +62,23 @@ class PlayClient {
     }
 
     /**
-     * Submit a defensive number in Arceus
+     * Submit an offensive number in Arceus
      * @param gameId
-     * @param defensiveNumber
-     * @param timeoutCalled
+     * @param offensiveSubmitter
+     * @param offensiveNumber
+     * @param playCall
+     * @param runoffType
+     * @param offensiveTimeoutCalled
      */
     internal suspend fun submitOffensiveNumber(
         gameId: Int,
+        offensiveSubmitter: String,
         offensiveNumber: Int,
         playCall: PlayCall,
         runoffType: RunoffType,
         offensiveTimeoutCalled: Boolean,
     ): Play? {
-        val endpointUrl = "$baseUrl/play/submit_offense?gameId=$gameId&offensiveNumber=$offensiveNumber&playCall=$playCall&runoffType=$runoffType&timeoutCalled=$offensiveTimeoutCalled"
+        val endpointUrl = "$baseUrl/play/submit_offense?gameId=$gameId&offensiveSubmitter=$offensiveSubmitter&offensiveNumber=$offensiveNumber&playCall=$playCall&runoffType=$runoffType&timeoutCalled=$offensiveTimeoutCalled"
 
         return try {
             val response: HttpResponse = httpClient.put(endpointUrl)

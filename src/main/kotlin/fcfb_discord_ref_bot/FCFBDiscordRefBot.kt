@@ -3,11 +3,18 @@ package fcfb_discord_ref_bot
 import com.google.gson.FieldNamingPolicy
 import dev.kord.common.annotation.KordPreview
 import dev.kord.common.entity.ChannelType
+import dev.kord.common.entity.Choice
 import dev.kord.core.Kord
+import dev.kord.core.event.interaction.ChatInputCommandInteractionCreateEvent
 import dev.kord.core.event.message.MessageCreateEvent
 import dev.kord.core.on
 import dev.kord.gateway.Intent
 import dev.kord.gateway.PrivilegedIntent
+import dev.kord.rest.builder.interaction.BaseChoiceBuilder
+import dev.kord.rest.builder.interaction.string
+import dev.kord.rest.builder.interaction.user
+import fcfb_discord_ref_bot.api.TeamClient
+import fcfb_discord_ref_bot.api.UserClient
 import io.ktor.http.HttpStatusCode
 import io.ktor.serialization.gson.gson
 import io.ktor.server.application.Application
@@ -25,10 +32,15 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import utils.Logger
-import fcfb_discord_ref_bot.commands.HelpCommand
+import fcfb_discord_ref_bot.commands.GeneralCommands
+import fcfb_discord_ref_bot.commands.AuthCommands
+import fcfb_discord_ref_bot.commands.TeamCommands
 import fcfb_discord_ref_bot.game.DMLogic
 import fcfb_discord_ref_bot.game.GameLogic
-import fcfb_discord_ref_bot.model.game.Game
+import fcfb_discord_ref_bot.model.fcfb.game.DefensivePlaybook
+import fcfb_discord_ref_bot.model.fcfb.game.Game
+import fcfb_discord_ref_bot.model.fcfb.game.OffensivePlaybook
+import fcfb_discord_ref_bot.model.fcfb.Role
 import fcfb_discord_ref_bot.requests.StartGameRequest
 import fcfb_discord_ref_bot.utils.Properties
 import java.text.DateFormat
@@ -42,10 +54,11 @@ class FCFBDiscordRefBot() {
     private val StartGameRequest = StartGameRequest()
     val discordProperties = Properties.getDiscordProperties()
 
-    suspend fun start() = runBlocking {
+    fun start() = runBlocking {
         try {
             client = Kord(discordProperties.token)
-            registerCommands()
+            registerSlashCommands()
+            registerMessageCommands()
             Logger.info("Zebstrika is running!")
 
             // Launch Ktor server
@@ -69,7 +82,98 @@ class FCFBDiscordRefBot() {
         }
     }
 
-    private fun registerCommands() {
+    private suspend fun registerSlashCommands() {
+        client.createGlobalChatInputCommand(
+            "register",
+            "Register a user to FCFB"
+        ) {
+            string("username", "Username") {
+                required = true
+            }
+            string("coach_name", "Coach Name") {
+                required = true
+            }
+            string("email", "Email") {
+                required = true
+            }
+            string("password", "Password") {
+                required = true
+            }
+            string("position", "Position") {
+                required = true
+                mutableListOf(
+                    choice("Head Coach", "Head Coach"),
+                    choice("Offensive Coordinator", "Offensive Coordinator"),
+                    choice("Defensive Coordinator", "Defensive Coordinator"))
+            }
+            string("offensive_playbook", "Offensive Playbook") {
+                required = true
+                mutableListOf(
+                    choice("Air Raid", OffensivePlaybook.AIR_RAID.toString()),
+                    choice("Spread", OffensivePlaybook.SPREAD.toString()),
+                    choice("Pro", OffensivePlaybook.PRO.toString()),
+                    choice("Flexbone", OffensivePlaybook.FLEXBONE.toString()),
+                    choice("West Coast", OffensivePlaybook.WEST_COAST.toString()),
+                )
+            }
+            string("defensive_playbook", "Defensive Playbook") {
+                required = true
+                mutableListOf(
+                    choice("4-3", DefensivePlaybook.FOUR_THREE.toString()),
+                    choice("3-4", DefensivePlaybook.THREE_FOUR.toString()),
+                    choice("5-2", DefensivePlaybook.FIVE_TWO.toString()),
+                    choice("4-4", DefensivePlaybook.FOUR_FOUR.toString()),
+                    choice("3-3-5", DefensivePlaybook.THREE_THREE_FIVE.toString()),
+                )
+            }
+            string("reddit_username", "Reddit Username") {
+                required = false
+            }
+        }
+
+        client.createGlobalChatInputCommand(
+            "hire_coach",
+            "Hire a coach for a team"
+        ) {
+            user("coach", "Coach") {
+                required = true
+            }
+            string("team", "Team") {
+                required = true
+            }
+            string("position", "Position Hiring For") {
+                required = true
+                mutableListOf(
+                    choice("Head Coach", "Head Coach"),
+                    choice("Offensive Coordinator", "Offensive Coordinator"),
+                    choice("Defensive Coordinator", "Defensive Coordinator")
+                )
+            }
+        }
+
+        client.createGlobalChatInputCommand(
+            "help",
+            "Shows help info and commands"
+        )
+
+        client.on<ChatInputCommandInteractionCreateEvent> {
+            val userRole = UserClient().getUserByDiscordId(interaction.user.id.toString())?.role ?: Role.USER
+            val command = interaction.command
+            when (command.data.name.value) {
+                "register" -> {
+                    AuthCommands().registerUser(interaction, command)
+                }
+                "hire_coach" -> {
+                    TeamCommands().hireCoach(userRole, interaction, command)
+                }
+                "help" -> {
+                    GeneralCommands().help(interaction, userRole)
+                }
+            }
+        }
+    }
+
+    private fun registerMessageCommands() {
         client.on<MessageCreateEvent> {
             try {
                 if (message.author?.isBot == true) {
@@ -88,36 +192,10 @@ class FCFBDiscordRefBot() {
                     // Handle DM logic here
                     DMLogic().handleDMLogic(client, message)
                 }
-                if (message.content.startsWith(discordProperties.commandPrefix)) {
-                    val command = message.content.substringAfter(discordProperties.commandPrefix).trim()
-                    when (command) {
-                        "help" -> HelpCommand().execute(message)
-                        // Add more commands here
-                    }
-                }
             } catch (e: Exception) {
                 Logger.error(e.message ?: "Unknown error occurred")
             }
         }
-//        client.on<> {
-//            try {
-//                if (message.author?.isBot == true) {
-//                    return@on
-//                }
-//                if (message.content.startsWith(discordProperties.commandPrefix)) {
-//                    val command = message.content.substringAfter(discordProperties.commandPrefix).trim()
-//                    when (command) {
-//                        "help" -> HelpCommand().execute(message)
-//                        // Add more commands here
-//                    }
-//                }
-//            } catch (e: Exception) {
-//                Logger.error(e.message!!)
-//            }
-//            if (message.author?.isBot == true) {
-//                return@on
-//            }
-//        }
     }
 
     fun Application.FCFBDiscordRefBotServer(

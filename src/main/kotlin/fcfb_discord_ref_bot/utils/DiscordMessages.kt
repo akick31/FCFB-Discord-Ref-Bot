@@ -14,13 +14,13 @@ import dev.kord.rest.builder.message.addFile
 import utils.Logger
 import fcfb_discord_ref_bot.api.GameWriteupClient
 import fcfb_discord_ref_bot.api.ScorebugClient
-import fcfb_discord_ref_bot.model.game.ActualResult
-import fcfb_discord_ref_bot.model.game.Game
-import fcfb_discord_ref_bot.model.game.PlayCall
-import fcfb_discord_ref_bot.model.game.PlayType
-import fcfb_discord_ref_bot.model.game.TeamSide
-import fcfb_discord_ref_bot.model.game.Scenario
-import fcfb_discord_ref_bot.model.play.Play
+import fcfb_discord_ref_bot.model.fcfb.game.ActualResult
+import fcfb_discord_ref_bot.model.fcfb.game.Game
+import fcfb_discord_ref_bot.model.fcfb.game.Play
+import fcfb_discord_ref_bot.model.fcfb.game.PlayCall
+import fcfb_discord_ref_bot.model.fcfb.game.PlayType
+import fcfb_discord_ref_bot.model.fcfb.game.TeamSide
+import fcfb_discord_ref_bot.model.fcfb.game.Scenario
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.StandardOpenOption
@@ -90,7 +90,7 @@ class DiscordMessages {
         scenario: Scenario,
         play: Play?,
         timeoutCalled: Boolean?
-    ): Pair<Pair<String, EmbedData?>, User>? {
+    ): Pair<Pair<String, EmbedData?>, List<User?>>? {
         var playWriteup: String? = null
         var messageContent: String?
 
@@ -125,23 +125,40 @@ class DiscordMessages {
         }
 
         // Get coaches' Discord IDs and users
-        val homeCoach = game.homeCoachDiscordId?.let { client.getUser(Snowflake(it)) } ?: return null
-        val awayCoach = game.awayCoachDiscordId?.let { client.getUser(Snowflake(it)) } ?: return null
+        val homeCoaches =
+            if (game.homeCoachDiscordId2 == null) {
+                listOf(game.homeCoachDiscordId1?.let { client.getUser(Snowflake(it)) })
+            } else {
+                listOf(
+                    game.homeCoachDiscordId1?.let { client.getUser(Snowflake(it)) },
+                    game.homeCoachDiscordId2.let { client.getUser(Snowflake(it)) }
+                )
+            }
 
-        val (offensiveCoach, defensiveCoach) = if (game.possession == TeamSide.HOME && game.currentPlayType != PlayType.KICKOFF) {
-            homeCoach to awayCoach
+        val awayCoaches =
+            if (game.awayCoachDiscordId2 == null) {
+                listOf(game.awayCoachDiscordId1?.let { client.getUser(Snowflake(it)) })
+            } else {
+                listOf(
+                    game.awayCoachDiscordId1?.let { client.getUser(Snowflake(it)) },
+                    game.awayCoachDiscordId2.let { client.getUser(Snowflake(it)) }
+                )
+            }
+
+        val (offensiveCoaches, defensiveCoaches) = if (game.possession == TeamSide.HOME && game.currentPlayType != PlayType.KICKOFF) {
+            homeCoaches to awayCoaches
         } else if (game.possession == TeamSide.AWAY && game.currentPlayType != PlayType.KICKOFF) {
-            awayCoach to homeCoach
+            awayCoaches to homeCoaches
         } else if (game.possession == TeamSide.HOME && (play?.playCall == PlayCall.KICKOFF_NORMAL
                     || play?.playCall == PlayCall.KICKOFF_SQUIB || play?.playCall == PlayCall.KICKOFF_ONSIDE)) {
-            awayCoach to homeCoach
+            awayCoaches to homeCoaches
         } else if (game.possession == TeamSide.AWAY && (play?.playCall == PlayCall.KICKOFF_NORMAL
                     || play?.playCall == PlayCall.KICKOFF_SQUIB || play?.playCall == PlayCall.KICKOFF_ONSIDE)) {
-            homeCoach to awayCoach
+            homeCoaches to awayCoaches
         } else if (game.currentPlayType == PlayType.KICKOFF && game.possession == TeamSide.HOME) {
-            homeCoach to awayCoach
+            homeCoaches to awayCoaches
         } else if (game.currentPlayType == PlayType.KICKOFF && game.possession == TeamSide.AWAY) {
-            awayCoach to homeCoach
+            awayCoaches to homeCoaches
         } else {
             return null
         }
@@ -161,10 +178,26 @@ class DiscordMessages {
         // Mapping placeholders to their corresponding replacements
         val replacements = mapOf(
             "{kicking_team}" to offensiveTeam,
-            "{home_coach}" to homeCoach.mention,
-            "{away_coach}" to awayCoach.mention,
-            "{offensive_coach}" to offensiveCoach.mention,
-            "{defensive_coach}" to defensiveCoach.mention,
+            "{home_coach}" to if (homeCoaches.size == 1) {
+                homeCoaches[0]?.mention
+            } else {
+                homeCoaches[0]?.mention + " " + homeCoaches[1]?.mention
+            },
+            "{away_coach}" to if (awayCoaches.size == 1) {
+                awayCoaches[0]?.mention
+            } else {
+                awayCoaches[0]?.mention + " " + awayCoaches[1]?.mention
+            },
+            "{offensive_coach}" to if (offensiveCoaches.size == 1) {
+                offensiveCoaches[0]?.mention
+            } else {
+                offensiveCoaches[0]?.mention + " " + offensiveCoaches[1]?.mention
+            },
+            "{defensive_coach}" to if (defensiveCoaches.size == 1) {
+                defensiveCoaches[0]?.mention
+            } else {
+                defensiveCoaches[0]?.mention + " " + defensiveCoaches[1]?.mention
+            },
             "{offensive_team}" to offensiveTeam,
             "{defensive_team}" to defensiveTeam,
             "{play_writeup}" to playWriteup,
@@ -287,17 +320,40 @@ class DiscordMessages {
         var messageToSend = ""
 
         // Append the users to ping to the message
-        if (scenario != Scenario.DM_NUMBER_REQUEST && scenario != Scenario.NORMAL_NUMBER_REQUEST) {
-            messageToSend += if (game.possession == TeamSide.HOME) {
-                "\n\n${awayCoach.mention}"
+        if (scenario == Scenario.GAME_START || scenario == Scenario.COIN_TOSS_CHOICE) {
+            if (homeCoaches.size == 1) {
+                messageToSend += "\n\n${homeCoaches[0]?.mention}"
             } else {
-                "\n\n${homeCoach.mention}"
+                messageToSend += "\n\n${homeCoaches[0]?.mention} ${homeCoaches[1]?.mention}"
+            }
+            if (awayCoaches.size == 1) {
+                messageToSend += " ${awayCoaches[0]?.mention}"
+            } else {
+                messageToSend += " ${awayCoaches[0]?.mention} ${awayCoaches[1]?.mention}"
+            }
+        } else if (scenario != Scenario.DM_NUMBER_REQUEST && scenario != Scenario.NORMAL_NUMBER_REQUEST) {
+            messageToSend += if (game.possession == TeamSide.HOME) {
+                if (awayCoaches.size == 1) {
+                    "\n\n${awayCoaches[0]?.mention}"
+                } else {
+                    "\n\n${awayCoaches[0]?.mention} ${awayCoaches[1]?.mention}"
+                }
+            } else {
+                if (homeCoaches.size == 1) {
+                    "\n\n${homeCoaches[0]?.mention}"
+                } else {
+                    "\n\n${homeCoaches[0]?.mention} ${homeCoaches[1]?.mention}"
+                }
             }
         } else if (scenario == Scenario.NORMAL_NUMBER_REQUEST) {
-            messageToSend += "\n\n${offensiveCoach.mention}"
+            if (offensiveCoaches.size == 1) {
+                messageToSend += "\n\n${offensiveCoaches[0]?.mention}"
+            } else {
+                messageToSend += "\n\n${offensiveCoaches[0]?.mention} ${offensiveCoaches[1]?.mention}"
+            }
         }
 
-        return (messageToSend to embedData) to defensiveCoach
+        return (messageToSend to embedData) to defensiveCoaches
     }
 
     suspend fun sendGameThreadMessageFromTextChannel(
@@ -343,16 +399,43 @@ class DiscordMessages {
         }
         val embed = gameMessage.first.second
         val url = embed?.image?.value?.url?.value.toString()
-        return gameMessage.second.getDmChannel().createMessage {
-            if (embed != null) {
-                val file = addFile(Path(url))
-                embeds = mutableListOf(EmbedBuilder().apply {
-                    title = embed.title.value
-                    description = embed.description.value
-                    image = file.url
-                })
+        val defensiveCoaches = gameMessage.second
+        if (defensiveCoaches.size == 1) {
+            return defensiveCoaches[0]?.getDmChannel()?.createMessage {
+                if (embed != null) {
+                    val file = addFile(Path(url))
+                    embeds = mutableListOf(EmbedBuilder().apply {
+                        title = embed.title.value
+                        description = embed.description.value
+                        image = file.url
+                    })
+                }
+                content = gameMessage.first.first
             }
-            content = gameMessage.first.first
+        }
+        else {
+            defensiveCoaches[0]?.getDmChannel()?.createMessage {
+                if (embed != null) {
+                    val file = addFile(Path(url))
+                    embeds = mutableListOf(EmbedBuilder().apply {
+                        title = embed.title.value
+                        description = embed.description.value
+                        image = file.url
+                    })
+                }
+                content = gameMessage.first.first
+            }
+            return defensiveCoaches[1]?.getDmChannel()?.createMessage {
+                if (embed != null) {
+                    val file = addFile(Path(url))
+                    embeds = mutableListOf(EmbedBuilder().apply {
+                        title = embed.title.value
+                        description = embed.description.value
+                        image = file.url
+                    })
+                }
+                content = gameMessage.first.first
+            }
         }
     }
 }

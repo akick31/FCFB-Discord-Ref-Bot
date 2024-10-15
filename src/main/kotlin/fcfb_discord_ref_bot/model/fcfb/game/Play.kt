@@ -1,12 +1,13 @@
-package fcfb_discord_ref_bot.model.play
+package fcfb_discord_ref_bot.model.fcfb.game
 
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.databind.PropertyNamingStrategies
 import com.fasterxml.jackson.databind.annotation.JsonNaming
-import fcfb_discord_ref_bot.model.game.PlayCall
-import fcfb_discord_ref_bot.model.game.Scenario
-import fcfb_discord_ref_bot.model.game.ActualResult
-import fcfb_discord_ref_bot.model.game.TeamSide
+import fcfb_discord_ref_bot.model.fcfb.game.PlayCall
+import fcfb_discord_ref_bot.model.fcfb.game.Scenario
+import fcfb_discord_ref_bot.model.fcfb.game.ActualResult
+import fcfb_discord_ref_bot.model.fcfb.game.TeamSide
+import java.math.BigInteger
 
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy::class)
 data class Play(
@@ -15,7 +16,7 @@ data class Play(
     @JsonProperty("play_number") val playNumber: Int?,
     @JsonProperty("home_score") val homeScore: Int?,
     @JsonProperty("away_score") val awayScore: Int?,
-    @JsonProperty("game_quarter") val gameQuarter: Int?,
+    @JsonProperty("quarter") val quarter: Int?,
     @JsonProperty("clock") val clock: Int?,
     @JsonProperty("ball_location") val ballLocation: Int?,
     @JsonProperty("possession") val possession: TeamSide?,
@@ -42,6 +43,6 @@ data class Play(
     @JsonProperty("home_timeouts") val homeTimeouts: Int?,
     @JsonProperty("away_timeouts") val awayTimeouts: Int?,
     @JsonProperty("play_finished") val playFinished: Boolean?,
-    @JsonProperty("offensive_response_speed") val offensiveResponseSpeed: Int?,
-    @JsonProperty("defensive_response_speed") val defensiveResponseSpeed: Int?
+    @JsonProperty("offensive_response_speed") val offensiveResponseSpeed: BigInteger?,
+    @JsonProperty("defensive_response_speed") val defensiveResponseSpeed: BigInteger?
 )

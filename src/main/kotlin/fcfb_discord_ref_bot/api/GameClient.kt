@@ -9,7 +9,7 @@ import io.ktor.client.statement.bodyAsText
 import io.ktor.http.ContentType
 import io.ktor.http.contentType
 import utils.Logger
-import fcfb_discord_ref_bot.model.game.Game
+import fcfb_discord_ref_bot.model.fcfb.game.Game
 import java.util.Properties
 
 class GameClient {
@@ -28,7 +28,7 @@ class GameClient {
      * @return OngoingGame
      */
     internal suspend fun fetchGameByThreadId(channelId: String): Game? {
-        val endpointUrl = "$baseUrl/game/discord_channel?channelId=$channelId"
+        val endpointUrl = "$baseUrl/game/discord?channelId=$channelId"
 
         return try {
             val response: HttpResponse = httpClient.get(endpointUrl) {
@@ -49,7 +49,7 @@ class GameClient {
      * @return OngoingGame
      */
     internal suspend fun fetchGameByUserId(userId: String): Game? {
-        val endpointUrl = "$baseUrl/game/discord_user?userId=$userId"
+        val endpointUrl = "$baseUrl/game/discord?userId=$userId"
 
         return try {
             val response: HttpResponse = httpClient.get(endpointUrl) {

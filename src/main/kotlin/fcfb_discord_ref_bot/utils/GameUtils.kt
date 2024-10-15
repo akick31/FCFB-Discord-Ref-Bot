@@ -2,10 +2,10 @@ package fcfb_discord_ref_bot.utils
 
 import dev.kord.core.entity.Message
 import utils.Logger
-import fcfb_discord_ref_bot.model.game.Game
-import fcfb_discord_ref_bot.model.game.PlayCall
-import fcfb_discord_ref_bot.model.game.RunoffType
-import fcfb_discord_ref_bot.model.game.TeamSide
+import fcfb_discord_ref_bot.model.fcfb.game.Game
+import fcfb_discord_ref_bot.model.fcfb.game.PlayCall
+import fcfb_discord_ref_bot.model.fcfb.game.RunoffType
+import fcfb_discord_ref_bot.model.fcfb.game.TeamSide
 
 class GameUtils {
 
