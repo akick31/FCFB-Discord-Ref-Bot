@@ -62,7 +62,7 @@ class GameUtils {
     }
 
     fun parseTimeoutFromMessage(message: Message): Boolean {
-        // Check if "timeout" (case insensitive) is present in the message content
+        // Check if "timeout" (case-insensitive) is present in the message content
         val containsTimeout = message.content.contains("timeout", ignoreCase = true)
 
         return if (containsTimeout) {
@@ -75,7 +75,7 @@ class GameUtils {
     }
 
     fun parsePlayCallFromMessage(message: Message): PlayCall? {
-        // Check if "run" (case insensitive) is present in the message content
+        // Check if "run" (case-insensitive) is present in the message content
         val containsRun = message.content.contains("run", ignoreCase = true)
         val containsPass = message.content.contains("pass", ignoreCase = true)
         val containsSpike = message.content.contains("spike", ignoreCase = true)
@@ -260,7 +260,7 @@ class GameUtils {
     }
 
     fun parseRunoffTypeFromMessage(message: Message): RunoffType {
-        // Check if "runoff" (case insensitive) is present in the message content
+        // Check if "runoff" (case-insensitive) is present in the message content
         val containsHurry = message.content.contains("hurry", ignoreCase = true)
         val containsChew = message.content.contains("chew", ignoreCase = true)
 

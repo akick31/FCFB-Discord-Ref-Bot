@@ -67,7 +67,7 @@ tasks.withType<KotlinJvmCompile>().configureEach {
 }
 tasks.jar {
     manifest {
-        attributes["Main-Class"] = "com.fcfb.discord_ref_bot.FCFBDiscordRefBotKt"
+        attributes["Main-Class"] = "com.fcfb.discord.refbot.FCFBDiscordRefBotKt"
     }
 }
 
