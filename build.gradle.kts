@@ -30,24 +30,26 @@ configurations.all {
     resolutionStrategy {
         force("org.slf4j:slf4j-api:1.7.36")
         force("ch.qos.logback:logback-classic:1.2.13")
+        force("io.ktor:ktor-client-core:2.3.12")
+        force("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.1")
     }
 }
 
 dependencies {
     testImplementation(kotlin("test"))
     implementation("ch.qos.logback:logback-classic:1.2.13")
-    implementation("io.ktor:ktor-server-core:2.3.12")
-    implementation("io.ktor:ktor-server-netty:2.3.12")
-    implementation("io.ktor:ktor-server-content-negotiation:2.3.12")
-    implementation("io.ktor:ktor-serialization-gson:2.3.12")
-    implementation("io.ktor:ktor-client-gson:2.3.12")
-    implementation("io.ktor:ktor-client-core:2.3.12")
-    implementation("io.ktor:ktor-client-cio:2.3.12")
-    implementation("io.ktor:ktor-client-content-negotiation:2.3.12")
-    implementation("io.ktor:ktor-serialization-kotlinx-json:2.3.12")
-    implementation("io.ktor:ktor-serialization-jackson:2.3.12")
+    implementation("io.ktor:ktor-server-core:2.3.11")
+    implementation("io.ktor:ktor-server-netty:2.3.11")
+    implementation("io.ktor:ktor-server-content-negotiation:2.3.11")
+    implementation("io.ktor:ktor-serialization-gson:2.3.11")
+    implementation("io.ktor:ktor-client-gson:2.3.11")
+    implementation("io.ktor:ktor-client-core:2.3.11")
+    implementation("io.ktor:ktor-client-cio:2.3.11")
+    implementation("io.ktor:ktor-client-content-negotiation:2.3.11")
+    implementation("io.ktor:ktor-serialization-kotlinx-json:2.3.11")
+    implementation("io.ktor:ktor-serialization-jackson:2.3.11")
     implementation("dev.kord:kord-core:0.14.0")
-    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.18.0")
+    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.16.1")
     implementation("org.jetbrains.kotlin:kotlin-stdlib:2.0.21")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3")
 }
