@@ -20,12 +20,25 @@ pipeline {
                 checkout scm
             }
         }
-        stage('Determine Version') {
+        stage('Get Version') {
             steps {
                 script {
-                    // Set version based on the build number
-                    env.VERSION = "1.0.${BUILD_NUMBER}"
-                    echo "Building version: ${env.VERSION}"
+                    // Get the latest Git tag
+                    def latestTag = sh(script: "git describe --tags --abbrev=0", returnStdout: true).trim()
+
+                    // If there are no tags, default to 1.0.0
+                    if (!latestTag) {
+                        latestTag = '1.0.0'
+                    }
+
+                    // Print the version
+                    echo "Current Version: ${latestTag}"
+
+                    // Set the version to an environment variable for use in later stages
+                    env.VERSION = latestTag
+
+                    // Set the build description
+                    currentBuild.description = "Version: ${env.VERSION}"
                 }
             }
         }
