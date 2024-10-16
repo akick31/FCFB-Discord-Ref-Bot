@@ -63,12 +63,14 @@ tasks.withType<KotlinJvmCompile>().configureEach {
         freeCompilerArgs.add("-opt-in=kotlin.RequiresOptIn")
     }
 }
+
 tasks.jar {
     manifest.attributes["Main-Class"] = "com.fcfb.discord.refbot.FCFBDiscordRefBotKt"
-    val dependencies = configurations
-        .runtimeClasspath
-        .get()
-        .map(::zipTree) 
+    val dependencies =
+        configurations
+            .runtimeClasspath
+            .get()
+            .map(::zipTree)
     from(dependencies)
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }
