@@ -15,14 +15,17 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
 
       # Step 3: Get the latest tag
       - name: Get latest tag
         id: get_latest_tag
         run: |
+          git fetch --tags  # Ensure all tags are fetched
           TAG=$(git describe --tags $(git rev-list --tags --max-count=1) 2>/dev/null || echo "1.0.0")
           echo "Latest tag: ${TAG}"
-          echo "::set-output name=latest_tag::${TAG}"
+          echo "latest_tag=${TAG}" >> $GITHUB_ENV
 
       # Step 4: Calculate next version
       - name: Calculate next version
