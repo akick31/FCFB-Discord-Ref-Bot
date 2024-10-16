@@ -60,7 +60,7 @@ class FCFBDiscordRefBot {
 
                 // Launch Ktor server
                 val moduleFunction: Application.() -> Unit = {
-                    FCFBDiscordRefBotServer(client)
+                    fcfbDiscordRefBotServer(client)
                 }
 
                 launch(Dispatchers.IO) {
@@ -155,7 +155,7 @@ class FCFBDiscordRefBot {
         )
 
         client.on<ChatInputCommandInteractionCreateEvent> {
-            val userRole = com.fcfb.discord.refbot.api.UserClient().getUserByDiscordId(interaction.user.id.toString())?.role ?: Role.USER
+            val userRole = UserClient().getUserByDiscordId(interaction.user.id.toString())?.role ?: Role.USER
             val command = interaction.command
             when (command.data.name.value) {
                 "register" -> {
@@ -195,7 +195,7 @@ class FCFBDiscordRefBot {
         }
     }
 
-    private fun Application.FCFBDiscordRefBotServer(client: Kord) {
+    private fun Application.fcfbDiscordRefBotServer(client: Kord) {
         install(ContentNegotiation) {
             gson {
                 setDateFormat(DateFormat.LONG)
