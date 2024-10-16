@@ -6,8 +6,8 @@ pipeline {
         CONTAINER_NAME = 'FCFB-Discord-Ref-Bot'
         DOCKERFILE = 'Dockerfile'
         CONFIG_PROPERTIES = './src/main/resources/config.properties'
-        API_URL = credentials('API_URL')
-        DISCORD_TOKEN = credentials('DISCORD_TOKEN')
+        API_URL = credentials('ARCEUS_API_URL')
+        DISCORD_TOKEN = credentials('REFBOT_DISCORD_TOKEN')
         DISCORD_GUILD_ID = credentials('DISCORD_GUILD_ID')
         DISCORD_FORUM_CHANNEL_ID = credentials('DISCORD_FORUM_CHANNEL_ID')
     }

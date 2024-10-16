@@ -14,9 +14,9 @@ class GeneralCommands {
         val response = interaction.deferEphemeralResponse()
         var message =
             "Welcome to the FCFB Discord Ref Bot! Here are the available commands:\n" +
-                "`/help` - Display this help message"
-        "`/register` - Register as a new user\n" +
-            "`/start_scrimmage` - Start a new game as a scrimmage\n"
+                "`/help` - Display this help message\n" +
+                "`/register` - Register as a new user\n" +
+                "`/start_scrimmage` - Start a new game as a scrimmage\n"
         if (userRole != Role.USER) {
             message += "\n" +
                 "`/start_game` - Start a new game\n" +
