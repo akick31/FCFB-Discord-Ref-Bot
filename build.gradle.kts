@@ -7,7 +7,7 @@ plugins {
     application
 }
 
-group = "org.example"
+group = "com.fcfb"
 version = "1.0.0"
 description = "FCFB-Discord-Ref-Bot"
 java.sourceCompatibility = JavaVersion.VERSION_17
@@ -19,6 +19,7 @@ repositories {
 dependencies {
     testImplementation(kotlin("test"))
     implementation("org.slf4j:slf4j-api:2.0.16")
+    implementation("org.slf4j:slf4j:2.0.16")
     implementation("ch.qos.logback:logback-classic:1.5.10")
     implementation("io.ktor:ktor-server-core:2.3.12")
     implementation("io.ktor:ktor-server-netty:2.3.12")
