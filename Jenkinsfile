@@ -10,9 +10,25 @@ pipeline {
         DISCORD_TOKEN = credentials('DISCORD_TOKEN')
         DISCORD_GUILD_ID = credentials('DISCORD_GUILD_ID')
         DISCORD_FORUM_CHANNEL_ID = credentials('DISCORD_FORUM_CHANNEL_ID')
+        VERSION = ""
     }
 
     stages {
+        stage('Checkout') {
+            steps {
+                echo 'Checking out the Ref Bot project...'
+                checkout scm
+            }
+        }
+        stage('Determine Version') {
+            steps {
+                script {
+                    // Set version based on the build number
+                    env.VERSION = "1.0.${BUILD_NUMBER}"
+                    echo "Building version: ${env.VERSION}"
+                }
+            }
+        }
         stage('Stop and Remove Existing Bot') {
             steps {
                 script {
