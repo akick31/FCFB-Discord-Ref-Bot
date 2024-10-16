@@ -43,6 +43,12 @@ tasks.withType<KotlinCompile> {
     kotlinOptions.jvmTarget = "17"
 }
 
+tasks.jar {
+    manifest {
+        attributes["Main-Class"] = "com.fcfb.discord_ref_bot.FCFBDiscordRefBotKt"
+    }
+}
+
 application {
-    mainClass.set("com.fcfb.discord_ref_bot.FCFBDiscordRefBot")
+    mainClass.set("com.fcfb.discord_ref_bot.FCFBDiscordRefBotKt")
 }
