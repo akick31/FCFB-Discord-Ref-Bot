@@ -1,5 +1,4 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-import org.jetbrains.kotlin.ir.backend.js.compile
 
 plugins {
     id("org.jlleitschuh.gradle.ktlint") version "10.1.0"
