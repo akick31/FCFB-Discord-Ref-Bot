@@ -1,2 +1,2 @@
 
-rootProject.name = "FCFB-Zebstrika"
+rootProject.name = "FCFB-Discord-Ref-Bot"
