@@ -26,6 +26,14 @@ repositories {
     }
 }
 
+configurations.all {
+    resolutionStrategy {
+        force("org.slf4j:slf4j-api:1.7.36")
+        force("ch.qos.logback:logback-classic:1.2.13")
+        force("ch.qos.logback:logback-core:1.2.13")
+    }
+}
+
 dependencies {
     testImplementation(kotlin("test"))
     implementation("org.slf4j:slf4j-api:1.7.36")
@@ -64,5 +72,5 @@ tasks.jar {
 }
 
 application {
-    mainClass.set("com.fcfb.discord_ref_bot.FCFBDiscordRefBotKt")
+    mainClass.set("com.fcfb.discord.refbot.FCFBDiscordRefBotKt")
 }
