@@ -25,7 +25,7 @@ jobs:
           git fetch --tags  # Ensure all tags are fetched
           TAG=$(git describe --tags $(git rev-list --tags --max-count=1) 2>/dev/null || echo "1.0.0")
           echo "Latest tag: ${TAG}"
-          echo "latest_tag=${TAG}" >> $GITHUB_ENV
+          echo "::set-output name=latest_tag::${TAG}"
 
       # Step 4: Calculate next version
       - name: Calculate next version
