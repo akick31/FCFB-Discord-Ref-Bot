@@ -1,8 +1,10 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile
 
 plugins {
     id("org.jlleitschuh.gradle.ktlint") version "10.1.0"
-    kotlin("jvm") version "1.9.22"
+    kotlin("jvm") version "2.0.21"
     application
 }
 
@@ -30,19 +32,21 @@ dependencies {
     implementation("io.ktor:ktor-serialization-kotlinx-json:2.3.12")
     implementation("io.ktor:ktor-serialization-jackson:2.3.12")
     implementation("dev.kord:kord-core:0.14.0")
-    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.12.5")
-    implementation("org.jetbrains.kotlin:kotlin-stdlib:1.6.2")
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.2")
+    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.18.0")
+    implementation("org.jetbrains.kotlin:kotlin-stdlib:2.0.21")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3")
 }
 
 tasks.test {
     useJUnitPlatform()
 }
 
-tasks.withType<KotlinCompile> {
-    kotlinOptions.jvmTarget = "17"
+tasks.withType<KotlinJvmCompile>().configureEach {
+    compilerOptions {
+        jvmTarget.set(JvmTarget.JVM_17)
+        freeCompilerArgs.add("-opt-in=kotlin.RequiresOptIn")
+    }
 }
-
 tasks.jar {
     manifest {
         attributes["Main-Class"] = "com.fcfb.discord_ref_bot.FCFBDiscordRefBotKt"
