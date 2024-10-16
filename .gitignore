@@ -1,5 +1,5 @@
 ### Resources ###
-*.properties
+config.properties
 
 .idea
 .gradle
