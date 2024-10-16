@@ -44,5 +44,5 @@ tasks.withType<KotlinCompile> {
 }
 
 application {
-    mainClass.set("FCFBDiscordRefBotKt")
+    mainClass.set("com.fcfb.discord_ref_bot.FCFBDiscordRefBotKt")
 }
