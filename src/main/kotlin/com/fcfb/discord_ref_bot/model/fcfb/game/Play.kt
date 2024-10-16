@@ -25,7 +25,7 @@ data class Play(
     @JsonProperty("play_call") val playCall: PlayCall?,
     @JsonProperty("result") val result: Scenario?,
     @JsonProperty("difference") val difference: Int?,
-    @JsonProperty("actual_result") val actualResult: com.fcfb.discord_ref_bot.model.fcfb.game.ActualResult?,
+    @JsonProperty("actual_result") val actualResult: ActualResult?,
     @JsonProperty("yards") val yards: Int?,
     @JsonProperty("play_time") val playTime: Int?,
     @JsonProperty("runoff_time") val runoffTime: Int?,

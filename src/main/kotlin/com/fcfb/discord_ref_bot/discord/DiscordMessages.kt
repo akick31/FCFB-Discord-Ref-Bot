@@ -4,6 +4,7 @@ import com.fcfb.discord_ref_bot.api.GameWriteupClient
 import com.fcfb.discord_ref_bot.api.ScorebugClient
 import com.fcfb.discord_ref_bot.model.fcfb.game.ActualResult
 import com.fcfb.discord_ref_bot.model.fcfb.game.Game
+import com.fcfb.discord_ref_bot.model.fcfb.game.Play
 import com.fcfb.discord_ref_bot.model.fcfb.game.PlayCall
 import com.fcfb.discord_ref_bot.model.fcfb.game.PlayType
 import com.fcfb.discord_ref_bot.model.fcfb.game.Scenario
@@ -91,7 +92,7 @@ class DiscordMessages {
         client: Kord,
         game: Game,
         scenario: Scenario,
-        play: com.fcfb.discord_ref_bot.model.fcfb.game.Play?,
+        play: Play?,
         timeoutCalled: Boolean?
     ): Pair<Pair<String, EmbedData?>, List<User?>>? {
         var playWriteup: String? = null
@@ -371,7 +372,7 @@ class DiscordMessages {
         game: Game,
         gameThread: TextChannelThread,
         scenario: Scenario,
-        play: com.fcfb.discord_ref_bot.model.fcfb.game.Play?,
+        play: Play?,
         timeoutCalled: Boolean?
     ): Message? {
         val gameMessage = getGameMessage(client, game, scenario, play, timeoutCalled) ?: run {
@@ -387,7 +388,7 @@ class DiscordMessages {
         game: Game,
         message: Message,
         scenario: Scenario,
-        play: com.fcfb.discord_ref_bot.model.fcfb.game.Play?
+        play: Play?
     ): Message? {
         val gameMessage = getGameMessage(client, game, scenario, play, false) ?: run {
             sendErrorMessage(message, "There was an issue getting the writeup message from a private message")
@@ -401,7 +402,7 @@ class DiscordMessages {
         client: Kord,
         game: Game,
         scenario: Scenario,
-        play: com.fcfb.discord_ref_bot.model.fcfb.game.Play?
+        play: Play?
     ): Message? {
         val gameMessage = getGameMessage(client, game, scenario, play, false) ?: run {
             Logger.error("There was an issue getting the writeup message")

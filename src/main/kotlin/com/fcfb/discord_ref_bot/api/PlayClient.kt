@@ -1,6 +1,7 @@
 package com.fcfb.discord_ref_bot.api
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.fcfb.discord_ref_bot.model.fcfb.game.Play
 import com.fcfb.discord_ref_bot.model.fcfb.game.PlayCall
 import com.fcfb.discord_ref_bot.model.fcfb.game.RunoffType
 import com.fcfb.discord_ref_bot.utils.Logger
@@ -34,7 +35,7 @@ class PlayClient {
         defensiveSubmitter: String,
         defensiveNumber: Int,
         timeoutCalled: Boolean
-    ): com.fcfb.discord_ref_bot.model.fcfb.game.Play? {
+    ): Play? {
         val endpointUrl = "$baseUrl/play/submit_defense?gameId=$gameId&defensiveSubmitter=$defensiveSubmitter&defensiveNumber=$defensiveNumber&timeoutCalled=$timeoutCalled"
 
         return try {
@@ -45,7 +46,7 @@ class PlayClient {
             }
 
             val objectMapper = ObjectMapper()
-            objectMapper.readValue(jsonResponse, com.fcfb.discord_ref_bot.model.fcfb.game.Play::class.java)
+            objectMapper.readValue(jsonResponse, Play::class.java)
         } catch (e: ClientRequestException) {
             // Handle HTTP error responses (4xx)
             val errorMessage = e.response.headers["Error-Message"]?.firstOrNull() ?: "Unknown error"
@@ -76,7 +77,7 @@ class PlayClient {
         playCall: PlayCall,
         runoffType: RunoffType,
         offensiveTimeoutCalled: Boolean,
-    ): com.fcfb.discord_ref_bot.model.fcfb.game.Play? {
+    ): Play? {
         val endpointUrl = "$baseUrl/play/submit_offense?gameId=$gameId&offensiveSubmitter=$offensiveSubmitter&offensiveNumber=$offensiveNumber&playCall=$playCall&runoffType=$runoffType&timeoutCalled=$offensiveTimeoutCalled"
 
         return try {
@@ -87,7 +88,7 @@ class PlayClient {
             }
 
             val objectMapper = ObjectMapper()
-            objectMapper.readValue(jsonResponse, com.fcfb.discord_ref_bot.model.fcfb.game.Play::class.java)
+            objectMapper.readValue(jsonResponse, Play::class.java)
         } catch (e: ClientRequestException) {
             // Handle HTTP error responses (4xx)
             val errorMessage = e.response.headers["Error-Message"]?.firstOrNull() ?: "Unknown error"
