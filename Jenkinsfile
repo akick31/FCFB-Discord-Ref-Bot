@@ -10,7 +10,6 @@ pipeline {
         DISCORD_TOKEN = credentials('DISCORD_TOKEN')
         DISCORD_GUILD_ID = credentials('DISCORD_GUILD_ID')
         DISCORD_FORUM_CHANNEL_ID = credentials('DISCORD_FORUM_CHANNEL_ID')
-        VERSION = ""
     }
 
     stages {
