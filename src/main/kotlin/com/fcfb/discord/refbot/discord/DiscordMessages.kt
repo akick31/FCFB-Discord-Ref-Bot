@@ -34,6 +34,15 @@ class DiscordMessages {
     private val gameUtils = GameUtils()
     private val scorebugClient = ScorebugClient()
 
+    /**
+     * Get the message to send to a game for a given scenario
+     * @param client The Discord client
+     * @param game The game object
+     * @param scenario The scenario
+     * @param play The play object
+     * @param timeoutCalled Whether a timeout was called
+     * @return The message content and embed data
+     */
     private suspend fun getGameMessage(
         client: Kord,
         game: Game,
@@ -154,6 +163,16 @@ class DiscordMessages {
         return (messageToSend to embedData) to defensiveCoaches
     }
 
+    /**
+     * Send a game message to a game thread
+     * @param client The Discord client
+     * @param game The game object
+     * @param scenario The scenario
+     * @param play The play object
+     * @param message The message object
+     * @param gameThread The game thread object
+     * @param timeoutCalled Whether a timeout was called
+     */
     suspend fun sendGameMessage(
         client: Kord,
         game: Game,
@@ -183,6 +202,13 @@ class DiscordMessages {
         }
     }
 
+    /**
+     * Send a request for a defensive number to the defensive coaches
+     * @param client The Discord client
+     * @param game The game object
+     * @param scenario The scenario
+     * @param play The play object
+     */
     suspend fun sendRequestForDefensiveNumber(
         client: Kord,
         game: Game,
@@ -205,6 +231,11 @@ class DiscordMessages {
         }
     }
 
+    /**
+     * Send an error message to a user and log the error
+     * @param message The message object
+     * @param error The error object
+     */
     suspend fun sendErrorMessage(
         message: Message?,
         error: Error
@@ -213,6 +244,12 @@ class DiscordMessages {
         error.logError()
     }
 
+    /**
+     * Send a private message to a user via a user object
+     * @param user The user object
+     * @param embedData The embed data
+     * @param messageContent The message content
+     */
     private suspend fun sendPrivateMessage(
         user: User?,
         embedData: EmbedData?,
@@ -237,6 +274,12 @@ class DiscordMessages {
         }
     }
 
+    /**
+     * Send a message to a game thread via a message object
+     * @param message The message object
+     * @param messageContent The message content
+     * @param embedData The embed data
+     */
     suspend fun sendMessageFromMessageObject(
         message: Message?,
         messageContent: String,
@@ -261,7 +304,13 @@ class DiscordMessages {
         }
     }
 
-    suspend fun sendMessageFromTextChannelObject(
+    /**
+     * Send a message to a game thread via a text channel object
+     * @param textChannel The text channel object
+     * @param messageContent The message content
+     * @param embedData The embed data
+     */
+    private suspend fun sendMessageFromTextChannelObject(
         textChannel: TextChannelThread?,
         messageContent: String,
         embedData: EmbedData?,

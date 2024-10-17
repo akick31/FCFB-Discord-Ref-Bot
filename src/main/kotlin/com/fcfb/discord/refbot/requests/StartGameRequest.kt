@@ -17,6 +17,8 @@ class StartGameRequest {
 
     /**
      * Start a new Discord game thread
+     * @param client The Discord client
+     * @param game The game object
      */
     suspend fun startGameThread(
         client: Kord,

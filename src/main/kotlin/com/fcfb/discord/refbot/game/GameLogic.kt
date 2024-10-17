@@ -26,7 +26,7 @@ class GameLogic {
     private val discordUtils = DiscordUtils()
 
     /**
-     * Handles the game logic for a message
+     * Handles the user side game logic for a message
      * @param client The Discord client
      * @param message The message object
      */
@@ -123,7 +123,7 @@ class GameLogic {
         message: Message,
     ) {
         val authorId = message.author?.id?.value.toString()
-        if (!discordUtils.isValidCoinTossAuthor(authorId, game) || !gameUtils.isValidCoinTossResponse(message.content)) {
+        if (!gameUtils.isValidCoinTossAuthor(authorId, game) || !gameUtils.isValidCoinTossResponse(message.content)) {
             return discordMessages.sendErrorMessage(
                 message,
                 Error.WAITING_FOR_COIN_TOSS

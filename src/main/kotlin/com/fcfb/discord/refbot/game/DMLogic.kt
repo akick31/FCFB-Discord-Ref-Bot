@@ -21,6 +21,11 @@ class DMLogic {
     private val playClient = PlayClient()
     private val gameUtils = GameUtils()
 
+    /**
+     * Handle the DM logic for a game
+     * @param client The Discord client
+     * @param message The message object
+     */
     suspend fun handleDMLogic(
         client: Kord,
         message: Message,
