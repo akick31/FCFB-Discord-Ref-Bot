@@ -1,33 +1,18 @@
 package com.fcfb.discord.refbot.utils
 
 import com.fcfb.discord.refbot.discord.DiscordMessages
+import com.fcfb.discord.refbot.model.fcfb.game.ActualResult
 import com.fcfb.discord.refbot.model.fcfb.game.Game
+import com.fcfb.discord.refbot.model.fcfb.game.Play
 import com.fcfb.discord.refbot.model.fcfb.game.PlayCall
+import com.fcfb.discord.refbot.model.fcfb.game.PlayType
 import com.fcfb.discord.refbot.model.fcfb.game.RunoffType
 import com.fcfb.discord.refbot.model.fcfb.game.TeamSide
+import com.fcfb.discord.refbot.model.discord.MessageConstants.Error
+import com.fcfb.discord.refbot.model.discord.MessageConstants.Info
 import dev.kord.core.entity.Message
 
 class GameUtils {
-    fun convertBallLocationToText(game: Game): String {
-        val ballLocation = game.ballLocation!!
-
-        return when {
-            ballLocation > 50 && game.possession == TeamSide.HOME -> {
-                "${game.awayTeam} ${100 - ballLocation}"
-            }
-            ballLocation > 50 && game.possession == TeamSide.AWAY -> {
-                "${game.homeTeam} ${100 - ballLocation}"
-            }
-            ballLocation < 50 && game.possession == TeamSide.HOME -> {
-                "${game.homeTeam} $ballLocation"
-            }
-            ballLocation < 50 && game.possession == TeamSide.AWAY -> {
-                "${game.awayTeam} $ballLocation"
-            }
-            else -> "50"
-        }
-    }
-
     suspend fun parseValidNumberFromMessage(message: Message): Int? {
         // Regular expression to find numbers in the string
         val regex = Regex("\\d+")
@@ -40,8 +25,10 @@ class GameUtils {
 
         // Log and return null if multiple numbers are found
         if (allNumbers.size > 1) {
-            Logger.info("Multiple numbers found in the message: $allNumbers")
-            DiscordMessages().sendErrorMessage(message, "Please only include one number in your message, multiple were found.")
+            DiscordMessages().sendErrorMessage(
+                message,
+                Error.MULTIPLE_NUMBERS_FOUND
+            )
             return null
         }
 
@@ -52,8 +39,10 @@ class GameUtils {
 
         // Log and return null if no valid numbers are found
         if (validNumbers.isEmpty()) {
-            Logger.info("No valid number found in the message.")
-            DiscordMessages().sendErrorMessage(message, "Please include a valid number between 1 and 1500 in your message.")
+            DiscordMessages().sendErrorMessage(
+                message,
+                Error.INVALID_NUMBER
+            )
             return null
         }
 
@@ -66,10 +55,10 @@ class GameUtils {
         val containsTimeout = message.content.contains("timeout", ignoreCase = true)
 
         return if (containsTimeout) {
-            Logger.info("The message contains 'timeout'.")
+            Info.MESSAGE_CONTAINS_TIMEOUT.logInfo()
             true
         } else {
-            Logger.info("The message does not contain 'timeout'.")
+            Info.MESSAGE_DOES_NOT_CONTAIN_TIMEOUT.logInfo()
             false
         }
     }
@@ -101,7 +90,7 @@ class GameUtils {
             !containsSquib &&
             !containsOnside
         ) {
-            Logger.info("The message contains 'run'.")
+            Info.MESSAGE_CONTAINS_RUN.logInfo()
             PlayCall.RUN
         } else if (
             !containsRun &&
@@ -116,7 +105,7 @@ class GameUtils {
             !containsSquib &&
             !containsOnside
         ) {
-            Logger.info("The message contains 'pass'.")
+            Info.MESSAGE_CONTAINS_PASS.logInfo()
             PlayCall.PASS
         } else if (
             !containsRun &&
@@ -131,7 +120,7 @@ class GameUtils {
             !containsSquib &&
             !containsOnside
         ) {
-            Logger.info("The message contains 'spike'.")
+            Info.MESSAGE_CONTAINS_SPIKE.logInfo()
             PlayCall.SPIKE
         } else if (
             !containsRun &&
@@ -146,7 +135,7 @@ class GameUtils {
             !containsSquib &&
             !containsOnside
         ) {
-            Logger.info("The message contains 'kneel'.")
+            Info.MESSAGE_CONTAINS_KNEEL.logInfo()
             PlayCall.KNEEL
         } else if (
             !containsRun &&
@@ -161,7 +150,7 @@ class GameUtils {
             !containsSquib &&
             !containsOnside
         ) {
-            Logger.info("The message contains 'field goal'.")
+            Info.MESSAGE_CONTAINS_FIELD_GOAL.logInfo()
             PlayCall.FIELD_GOAL
         } else if (
             !containsRun &&
@@ -176,7 +165,7 @@ class GameUtils {
             !containsSquib &&
             !containsOnside
         ) {
-            Logger.info("The message contains 'punt'.")
+            Info.MESSAGE_CONTAINS_PUNT.logInfo()
             PlayCall.PUNT
         } else if (
             !containsRun &&
@@ -191,7 +180,7 @@ class GameUtils {
             !containsSquib &&
             !containsOnside
         ) {
-            Logger.info("The message contains 'pat'.")
+            Info.MESSAGE_CONTAINS_PAT.logInfo()
             PlayCall.PAT
         } else if (
             !containsRun &&
@@ -206,7 +195,7 @@ class GameUtils {
             !containsSquib &&
             !containsOnside
         ) {
-            Logger.info("The message contains 'two point'.")
+            Info.MESSAGE_CONTAINS_TWO_POINT.logInfo()
             PlayCall.TWO_POINT
         } else if (
             !containsRun &&
@@ -221,7 +210,7 @@ class GameUtils {
             !containsSquib &&
             !containsOnside
         ) {
-            Logger.info("The message contains 'normal'.")
+            Info.MESSAGE_CONTAINS_NORMAL.logInfo()
             PlayCall.KICKOFF_NORMAL
         } else if (
             !containsRun &&
@@ -236,7 +225,7 @@ class GameUtils {
             containsSquib &&
             !containsOnside
         ) {
-            Logger.info("The message contains 'squib'.")
+            Info.MESSAGE_CONTAINS_SQUIB.logInfo()
             PlayCall.KICKOFF_SQUIB
         } else if (
             !containsRun &&
@@ -251,10 +240,9 @@ class GameUtils {
             !containsSquib &&
             containsOnside
         ) {
-            Logger.info("The message contains 'onside'.")
+            Info.MESSAGE_CONTAINS_ONSIDE.logInfo()
             PlayCall.KICKOFF_ONSIDE
         } else {
-            Logger.info("The message does not contain a valid play call.")
             null
         }
     }
@@ -265,13 +253,117 @@ class GameUtils {
         val containsChew = message.content.contains("chew", ignoreCase = true)
 
         return if (containsHurry && !containsChew) {
-            Logger.info("The message contains 'hurry'.")
+            Info.MESSAGE_CONTAINS_HURRY.logInfo()
             RunoffType.HURRY
         } else if (!containsHurry && containsChew) {
-            Logger.info("The message contains 'chew'.")
+            Info.MESSAGE_CONTAINS_CHEW.logInfo()
             RunoffType.CHEW
         } else {
             RunoffType.NORMAL
+        }
+    }
+
+    fun toOrdinal(number: Int?) = when (number) {
+        1 -> "1st"
+        2 -> "2nd"
+        3 -> "3rd"
+        4 -> "4th"
+        else -> number.toString()
+    }
+
+    fun isKickoff(playCall: PlayCall?) = playCall == PlayCall.KICKOFF_NORMAL || playCall == PlayCall.KICKOFF_SQUIB || playCall == PlayCall.KICKOFF_ONSIDE
+
+    private fun ActualResult?.isOffensiveTouchdown() = this == ActualResult.TOUCHDOWN || this == ActualResult.KICKING_TEAM_TOUCHDOWN || this == ActualResult.PUNT_TEAM_TOUCHDOWN
+
+    private fun ActualResult?.isDefensiveTouchdown() = this == ActualResult.TURNOVER_TOUCHDOWN || this == ActualResult.RETURN_TOUCHDOWN || this == ActualResult.PUNT_RETURN_TOUCHDOWN || this == ActualResult.KICK_SIX
+
+    private fun Game.offensiveTeam() = if (this.possession == TeamSide.HOME) this.homeTeam else this.awayTeam
+
+    private fun Game.defensiveTeam() = if (this.possession == TeamSide.HOME) this.awayTeam else this.homeTeam
+
+    fun getBallLocationScenarioMessage(game: Game, play: Play?): String {
+        return when {
+            play?.actualResult.isOffensiveTouchdown() -> "${game.offensiveTeam()} just scored."
+            play?.actualResult.isDefensiveTouchdown() -> "${game.defensiveTeam()} just scored."
+            game.currentPlayType == PlayType.PAT -> "${game.offensiveTeam()} is attempting a PAT."
+            game.currentPlayType == PlayType.KICKOFF -> "${game.offensiveTeam()} is kicking off."
+            else -> game.getDownAndDistanceDescription()
+        }
+    }
+
+    private fun Game.getLocationDescription(): String {
+        val location = this.ballLocation ?: 0
+        return when {
+            location > 50 && this.possession == TeamSide.HOME -> "${this.awayTeam} ${100 - location}"
+            location > 50 && this.possession == TeamSide.AWAY -> "${this.homeTeam} ${100 - location}"
+            location < 50 && this.possession == TeamSide.HOME -> "${this.homeTeam} $location"
+            location < 50 && this.possession == TeamSide.AWAY -> "${this.awayTeam} $location"
+            else -> "50"
+        }
+    }
+
+    private fun Game.getDownAndDistanceDescription(): String {
+        val downDescription = toOrdinal(this.down)
+        val yardsToGoDescription = if ((this.yardsToGo?.plus(this.ballLocation ?: 0) ?: 0) >= 100) "goal" else "${this.yardsToGo}"
+        val locationDescription = getLocationDescription()
+
+        return "It's $downDescription & $yardsToGoDescription on the $locationDescription"
+    }
+
+    fun isValidCoinTossResponse(content: String): Boolean {
+        return content.lowercase() == "heads" || content.lowercase() == "tails"
+    }
+
+    fun isValidCoinTossChoice(content: String): Boolean {
+        return content.lowercase() == "receive" || content.lowercase() == "defer"
+    }
+
+
+    fun getTimeoutMessage(game: Game, play: Play?, timeoutCalled: Boolean): String {
+        return when {
+            play?.timeoutUsed == true &&
+                play.offensiveTimeoutCalled == true &&
+                play.defensiveTimeoutCalled == true ->
+                    "${game.offensiveTeam()} attempted to call a timeout, but it was not used. " +
+                        "${game.defensiveTeam()} called a timeout first.\n\n"
+            play?.timeoutUsed == true &&
+                play.offensiveTimeoutCalled == true &&
+                play.defensiveTimeoutCalled == false ->
+                    "${game.offensiveTeam()} called a timeout.\n\n"
+            play?.timeoutUsed == true &&
+                play.offensiveTimeoutCalled == false &&
+                play.defensiveTimeoutCalled == true ->
+                    "${game.defensiveTeam()} called a timeout.\n\n"
+            play?.timeoutUsed == false &&
+                play.offensiveTimeoutCalled == true &&
+                play.defensiveTimeoutCalled == false ->
+                    "${game.offensiveTeam()} attempted to call a timeout, but it was not used.\n\n"
+            play?.timeoutUsed == false &&
+                play.offensiveTimeoutCalled == false &&
+                play.defensiveTimeoutCalled == true ->
+                    "${game.defensiveTeam()} attempted to call a timeout, but it was not used.\n\n"
+            play?.timeoutUsed == false &&
+                play.offensiveTimeoutCalled == true &&
+                play.defensiveTimeoutCalled == true ->
+                "Both teams attempted to call a timeout, but the clock was stopped.\n\n"
+            timeoutCalled -> "${game.offensiveTeam()} called a timeout.\n\n"
+            else -> ""
+        }
+    }
+
+    fun getPlayOptions(game: Game): String {
+        return when {
+            game.currentPlayType == PlayType.KICKOFF -> "**normal**, **squib**, or **onside**"
+            game.currentPlayType == PlayType.NORMAL && game.down != 4 -> "**run**, **pass**"
+            game.currentPlayType == PlayType.NORMAL && game.down == 4 ->
+                if ((game.ballLocation ?: 0) >= 52) {
+                    "**run**, **pass**, **field goal**, or **punt**"
+                } else {
+                    "**run**, **pass**, or **punt**"
+                }
+
+            game.currentPlayType == PlayType.PAT -> "**pat** or **two point**"
+            else -> "**COULD NOT DETERMINE PLAY OPTIONS, PLEASE USE YOUR BEST JUDGEMENT**"
         }
     }
 }

@@ -64,7 +64,7 @@ class FCFBDiscordRefBot {
                 }
 
                 launch(Dispatchers.IO) {
-                    embeddedServer(Netty, port = 1212, module = moduleFunction).start(wait = true)
+                    embeddedServer(Netty, port = 1211, module = moduleFunction).start(wait = true)
                 }
 
                 // Launch Kord bot
@@ -206,7 +206,7 @@ class FCFBDiscordRefBot {
             }
         }
 
-        val serverUrl = "/fcfb_discord.refbot"
+        val serverUrl = "/fcfb_discord_refbot"
         routing {
             post("$serverUrl/start_game") {
                 try {

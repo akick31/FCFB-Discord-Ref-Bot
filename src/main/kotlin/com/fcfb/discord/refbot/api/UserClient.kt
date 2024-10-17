@@ -1,7 +1,7 @@
 package com.fcfb.discord.refbot.api
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.fcfb.discord.refbot.model.fcfb.User
+import com.fcfb.discord.refbot.model.fcfb.FCFBUser
 import com.fcfb.discord.refbot.utils.Logger
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
@@ -34,7 +34,7 @@ class UserClient {
      * @param userId
      * @return User
      */
-    internal suspend fun getUserByDiscordId(discordId: String): User? {
+    internal suspend fun getUserByDiscordId(discordId: String): FCFBUser? {
         val endpointUrl = "$baseUrl/user/discord?id=$discordId"
 
         return try {
@@ -44,7 +44,7 @@ class UserClient {
                 }
             val jsonResponse: String = response.bodyAsText()
             val objectMapper = ObjectMapper()
-            objectMapper.readValue(jsonResponse, User::class.java)
+            objectMapper.readValue(jsonResponse, FCFBUser::class.java)
         } catch (e: Exception) {
             Logger.error(e.message!!)
             null
