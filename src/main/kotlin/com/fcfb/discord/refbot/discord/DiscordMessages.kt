@@ -191,21 +191,21 @@ class DiscordMessages {
         if (message != null && gameThread == null) {
             val gameMessage =
                 getGameMessage(client, game, scenario, play, timeoutCalled) ?: run {
-                    sendMessageFromMessageObject(message, "There was an issue getting the writeup message", null)
-                    Logger.error("There was an issue getting the writeup message")
+                    sendMessageFromMessageObject(message, Error.NO_WRITEUP_FOUND.message, null)
+                    Logger.error(Error.NO_WRITEUP_FOUND.message)
                     return
                 }
             sendMessageFromMessageObject(message, gameMessage.first.first, gameMessage.first.second)
         } else if (message == null && gameThread != null) {
             val gameMessage =
                 getGameMessage(client, game, scenario, play, timeoutCalled) ?: run {
-                    sendMessageFromTextChannelObject(gameThread, "There was an issue getting the writeup message", null)
-                    Logger.error("There was an issue getting the writeup message")
+                    sendMessageFromTextChannelObject(gameThread, Error.NO_WRITEUP_FOUND.message, null)
+                    Logger.error(Error.NO_WRITEUP_FOUND.message)
                     return
                 }
             sendMessageFromTextChannelObject(gameThread, gameMessage.first.first, gameMessage.first.second)
         } else {
-            Logger.error("Could not send message to game thread via message object or text channel object")
+            Logger.error(Error.GAME_THREAD_MESSAGE_EXCEPTION.message)
             return
         }
     }
@@ -225,7 +225,7 @@ class DiscordMessages {
     ) {
         val gameMessage =
             getGameMessage(client, game, scenario, play, false) ?: run {
-                Logger.error("There was an issue getting the writeup message")
+                Logger.error(Error.NO_WRITEUP_FOUND.message)
                 return
             }
         val (messageContent, embedData) = gameMessage.first
@@ -279,7 +279,7 @@ class DiscordMessages {
                 content = messageContent
             }
         } ?: run {
-            Logger.error("Could not send private message to user")
+            Logger.error(Error.PRIVATE_MESSAGE_EXCEPTION.message)
         }
     }
 
@@ -310,7 +310,7 @@ class DiscordMessages {
                 content = messageContent
             }
         } ?: run {
-            Logger.error("Could not send message to game thread via message object")
+            Logger.error(Error.GAME_THREAD_MESSAGE_EXCEPTION.message)
         }
     }
 
@@ -341,7 +341,7 @@ class DiscordMessages {
                 content = messageContent
             }
         } ?: run {
-            Logger.error("Could not send message to game thread via text channel object")
+            Logger.error(Error.GAME_THREAD_MESSAGE_EXCEPTION.message)
         }
     }
 }

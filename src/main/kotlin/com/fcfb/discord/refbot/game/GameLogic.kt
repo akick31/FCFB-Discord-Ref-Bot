@@ -3,26 +3,23 @@ package com.fcfb.discord.refbot.game
 import com.fcfb.discord.refbot.api.GameClient
 import com.fcfb.discord.refbot.api.PlayClient
 import com.fcfb.discord.refbot.discord.DiscordMessages
-import com.fcfb.discord.refbot.model.discord.MessageConstants.Error
 import com.fcfb.discord.refbot.model.discord.MessageConstants.Info
 import com.fcfb.discord.refbot.model.fcfb.game.ActualResult
 import com.fcfb.discord.refbot.model.fcfb.game.Game
-import com.fcfb.discord.refbot.model.fcfb.game.GameStatus
 import com.fcfb.discord.refbot.model.fcfb.game.Scenario
-import com.fcfb.discord.refbot.model.fcfb.game.TeamSide
 import com.fcfb.discord.refbot.utils.DiscordUtils
+import com.fcfb.discord.refbot.utils.ErrorUtils
 import com.fcfb.discord.refbot.utils.GameUtils
 import com.fcfb.discord.refbot.utils.Logger
-import dev.kord.common.entity.Snowflake
 import dev.kord.core.Kord
 import dev.kord.core.entity.Message
-import dev.kord.core.entity.User
 
 class GameLogic {
     private val discordMessages = DiscordMessages()
     private val gameClient = GameClient()
     private val playClient = PlayClient()
     private val gameUtils = GameUtils()
+    private val errorUtils = ErrorUtils()
     private val discordUtils = DiscordUtils()
 
     /**
@@ -35,38 +32,17 @@ class GameLogic {
         message: Message,
     ) {
         val channelId = message.channelId.value.toString()
-        val game =
-            gameClient.fetchGameByThreadId(channelId)
-                ?: return discordMessages.sendMessageFromMessageObject(
-                    message,
-                    Error.NO_GAME_FOUND.message,
-                    null,
-                )
+        val game = gameClient.fetchGameByThreadId(channelId) ?: return errorUtils.noGameFoundError(message)
 
         // TODO: add command to ping user/resend message
 
-        if (game.gameStatus == GameStatus.PREGAME && game.coinTossWinner == null) {
-            handleCoinToss(client, game, message)
-            Info.COIN_TOSS.logInfo()
-        } else if (game.gameStatus == GameStatus.PREGAME && game.coinTossWinner != null) {
-            handleCoinTossChoice(client, game, message)
-            Info.COIN_TOSS_CHOICE.logInfo()
-        } else if (game.gameStatus != GameStatus.PREGAME && game.gameStatus != GameStatus.FINAL &&
-            isGameIsWaitingOnUser(game, message) && game.waitingOn == game.possession
-        ) {
-            handleOffensiveNumberSubmission(client, game.gameId, message)
-        } else if (isGameIsWaitingOnUser(game, message) && game.waitingOn != game.possession) {
-            discordMessages.sendErrorMessage(
-                message,
-                Error.WAITING_FOR_NUMBER_IN_DMS,
-            )
-        } else if (!isGameIsWaitingOnUser(game, message)) {
-            discordMessages.sendErrorMessage(
-                message,
-                Error.NOT_WAITING_FOR_YOU,
-            )
-        } else {
-            Logger.info("Game status is not PREGAME")
+        when {
+            gameUtils.isPreGameBeforeCoinToss(game) -> handleCoinToss(client, game, message)
+            gameUtils.isPreGameAfterCoinToss(game) -> handleCoinTossChoice(client, game, message)
+            gameUtils.isWaitingOnOffensiveNumber(game, message) -> handleOffensiveNumberSubmission(client, game.gameId, message)
+            gameUtils.isWaitingOnDefensiveNumber(game, message) -> return errorUtils.waitingOnUserError(message)
+            !gameUtils.isGameWaitingOnUser(game, message) -> return errorUtils.notWaitingForUserError(message)
+            else -> Logger.info("Could not determine what to do with the game state")
         }
     }
 
@@ -81,35 +57,30 @@ class GameLogic {
         gameId: Int,
         message: Message,
     ) {
-        val number = gameUtils.parseValidNumberFromMessage(message) ?: return
-        val playCall =
-            gameUtils.parsePlayCallFromMessage(message)
-                ?: return discordMessages.sendErrorMessage(
-                    message,
-                    Error.INVALID_PLAY,
-                )
+        val number =
+            when (val messageNumber = gameUtils.parseValidNumberFromMessage(message)) {
+                -1 -> return errorUtils.multipleNumbersFoundError(message)
+                -2 -> return errorUtils.invalidNumberError(message)
+                else -> messageNumber
+            }
+
+        val playCall = gameUtils.parsePlayCallFromMessage(message) ?: return errorUtils.invalidPlayCall(message)
         val runoffType = gameUtils.parseRunoffTypeFromMessage(message)
         val timeoutCalled = gameUtils.parseTimeoutFromMessage(message)
-        val offensiveSubmitter =
-            message.author?.username
-                ?: return discordMessages.sendErrorMessage(
-                    message,
-                    Error.INVALID_OFFENSIVE_SUBMITTER,
-                )
+        val offensiveSubmitter = message.author?.username ?: return errorUtils.invalidOffensiveSubmitter(message)
 
         // Submit the offensive number and get the play outcome
         val playOutcome =
-            playClient.submitOffensiveNumber(gameId, offensiveSubmitter, number, playCall, runoffType, timeoutCalled)
-                ?: return discordMessages.sendErrorMessage(
-                    message,
-                    Error.INVALID_OFFENSIVE_SUBMISSION,
-                )
-        val game =
-            gameClient.fetchGameByThreadId(message.channelId.value.toString())
-                ?: return discordMessages.sendErrorMessage(
-                    message,
-                    Error.NO_GAME_FOUND,
-                )
+            playClient.submitOffensiveNumber(
+                gameId,
+                offensiveSubmitter,
+                number,
+                playCall,
+                runoffType,
+                timeoutCalled,
+            ) ?: return errorUtils.invalidOffensiveNumberSubmission(message)
+
+        val game = gameClient.fetchGameByThreadId(message.channelId.value.toString()) ?: return errorUtils.noGameFoundError(message)
         val scenario = if (playOutcome.actualResult == ActualResult.TOUCHDOWN) Scenario.TOUCHDOWN else playOutcome.result!!
         discordMessages.sendGameMessage(client, game, scenario, playOutcome, message, null, timeoutCalled)
         discordMessages.sendRequestForDefensiveNumber(client, game, Scenario.DM_NUMBER_REQUEST, playOutcome)
@@ -128,25 +99,16 @@ class GameLogic {
     ) {
         val authorId = message.author?.id?.value.toString()
         if (!gameUtils.isValidCoinTossAuthor(authorId, game) || !gameUtils.isValidCoinTossResponse(message.content)) {
-            return discordMessages.sendErrorMessage(
-                message,
-                Error.WAITING_FOR_COIN_TOSS,
-            )
+            return errorUtils.waitingForCoinTossError(message)
         }
 
         val updatedGame =
             gameClient.callCoinToss(game.gameId, message.content.uppercase())
-                ?: return discordMessages.sendErrorMessage(
-                    message,
-                    Error.INVALID_COIN_TOSS,
-                )
+                ?: return errorUtils.invalidCoinToss(message)
 
         val coinTossWinningCoachList =
-            getCoinTossWinners(client, updatedGame)
-                ?: return discordMessages.sendErrorMessage(
-                    message,
-                    Error.INVALID_COIN_TOSS_WINNER,
-                )
+            gameUtils.getCoinTossWinners(client, updatedGame)
+                ?: return errorUtils.invalidCoinTossWinner(message)
 
         discordMessages.sendMessageFromMessageObject(
             message,
@@ -166,62 +128,15 @@ class GameLogic {
         game: Game,
         message: Message,
     ) {
-        val coinTossWinningCoachList =
-            getCoinTossWinners(client, game)
-                ?: return discordMessages.sendErrorMessage(
-                    message,
-                    Error.INVALID_COIN_TOSS_WINNER,
-                )
+        val coinTossWinningCoachList = gameUtils.getCoinTossWinners(client, game) ?: return errorUtils.invalidCoinTossWinner(message)
 
         if (message.author !in coinTossWinningCoachList && !gameUtils.isValidCoinTossChoice(message.content)) {
-            return discordMessages.sendErrorMessage(
-                message,
-                Error.WAITING_FOR_COIN_TOSS_CHOICE,
-            )
+            return errorUtils.waitingOnCoinTossChoiceError(message)
         }
 
-        gameClient.makeCoinTossChoice(game.gameId, message.content.uppercase())
-            ?: return discordMessages.sendErrorMessage(
-                message,
-                Error.INVALID_COIN_TOSS_CHOICE,
-            )
+        gameClient.makeCoinTossChoice(game.gameId, message.content.uppercase()) ?: return errorUtils.invalidCoinTossChoice(message)
 
         discordMessages.sendGameMessage(client, game, Scenario.COIN_TOSS_CHOICE, null, message, null)
         discordMessages.sendRequestForDefensiveNumber(client, game, Scenario.KICKOFF_NUMBER_REQUEST, null)
-    }
-
-    /**
-     * Get the coin toss winner's Discord ID
-     * @param game The game object
-     * @return The coin toss winner's Discord ID
-     */
-    private suspend fun getCoinTossWinners(
-        client: Kord,
-        game: Game,
-    ): List<User?>? {
-        return when (game.coinTossWinner) {
-            TeamSide.HOME -> listOfNotNull(game.homeCoachDiscordId1, game.homeCoachDiscordId2).map { client.getUser(Snowflake(it)) }
-            TeamSide.AWAY -> listOfNotNull(game.homeCoachDiscordId1, game.homeCoachDiscordId2).map { client.getUser(Snowflake(it)) }
-            else -> null
-        }
-    }
-
-    /**
-     * Check if the game is waiting on the user
-     * @param game The game object
-     * @param message The message object
-     * @return True if the game is waiting on the user, false otherwise
-     */
-    private fun isGameIsWaitingOnUser(
-        game: Game,
-        message: Message,
-    ): Boolean {
-        val authorId = message.author?.id?.value.toString()
-
-        return when (game.waitingOn) {
-            TeamSide.AWAY -> authorId == game.awayCoachDiscordId1 || authorId == game.awayCoachDiscordId2
-            TeamSide.HOME -> authorId == game.homeCoachDiscordId1 || authorId == game.homeCoachDiscordId2
-            else -> false
-        }
     }
 }

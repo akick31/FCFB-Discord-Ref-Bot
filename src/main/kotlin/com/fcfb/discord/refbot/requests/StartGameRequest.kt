@@ -54,7 +54,7 @@ class StartGameRequest {
             val threadName = game.homeTeam + " vs " + game.awayTeam
 
             // Get the thread content
-            val threadContent = "[INSERT FCFB WEBSITE LINK HERE]"
+            val threadContent = "Please submit bugs here: https://github.com/akick31/FCFB-Discord-Ref-Bot/issues"
 
             gameThread =
                 gameChannel.startPublicThread(threadName) {

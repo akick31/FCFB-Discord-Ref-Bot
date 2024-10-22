@@ -3,11 +3,11 @@ package com.fcfb.discord.refbot.game
 import com.fcfb.discord.refbot.api.GameClient
 import com.fcfb.discord.refbot.api.PlayClient
 import com.fcfb.discord.refbot.discord.DiscordMessages
-import com.fcfb.discord.refbot.model.discord.MessageConstants.Error
 import com.fcfb.discord.refbot.model.discord.MessageConstants.Info
 import com.fcfb.discord.refbot.model.fcfb.game.Platform
 import com.fcfb.discord.refbot.model.fcfb.game.Scenario
 import com.fcfb.discord.refbot.model.fcfb.game.TeamSide
+import com.fcfb.discord.refbot.utils.ErrorUtils
 import com.fcfb.discord.refbot.utils.GameUtils
 import com.fcfb.discord.refbot.utils.Logger
 import dev.kord.common.entity.Snowflake
@@ -20,6 +20,7 @@ class DMLogic {
     private val gameClient = GameClient()
     private val playClient = PlayClient()
     private val gameUtils = GameUtils()
+    private val errorUtils = ErrorUtils()
 
     /**
      * Handle the DM logic for a game
@@ -31,27 +32,16 @@ class DMLogic {
         message: Message,
     ) {
         val game =
-            gameClient.fetchGameByUserId(message.author?.id?.value.toString())
-                ?: return discordMessages.sendErrorMessage(
-                    message,
-                    Error.NO_GAME_FOUND,
-                )
+            gameClient.fetchGameByUserId(message.author?.id?.value.toString()) ?: return errorUtils.noGameFoundError(message)
         Logger.info("Game fetched: $game")
 
         if (game.waitingOn != game.possession) {
             val number = gameUtils.parseValidNumberFromMessage(message) ?: return
             val timeoutCalled = gameUtils.parseTimeoutFromMessage(message)
-            val defensiveSubmitter =
-                message.author?.username
-                    ?: return discordMessages.sendErrorMessage(
-                        message,
-                        Error.INVALID_DEFENSIVE_SUBMITTER,
-                    )
+            val defensiveSubmitter = message.author?.username ?: return errorUtils.invalidDefensiveSubmitter(message)
+
             playClient.submitDefensiveNumber(game.gameId, defensiveSubmitter, number, timeoutCalled)
-                ?: return discordMessages.sendErrorMessage(
-                    message,
-                    Error.INVALID_DEFENSIVE_SUBMISSION,
-                )
+                ?: return errorUtils.invalidDefensiveNumberSubmission(message)
 
             val baseMessage = Info.SUCCESSFUL_NUMBER_SUBMISSION.message.format(number)
             val messageContent =
@@ -74,10 +64,7 @@ class DMLogic {
                 } else if (game.awayPlatform == Platform.DISCORD) {
                     client.getChannel(Snowflake(game.awayPlatformId.toString())) as TextChannelThread
                 } else {
-                    return discordMessages.sendErrorMessage(
-                        message,
-                        Error.INVALID_GAME_THREAD,
-                    )
+                    return errorUtils.invalidGameThread(message)
                 }
 
             discordMessages.sendGameMessage(
@@ -90,10 +77,7 @@ class DMLogic {
                 timeoutCalled,
             )
         } else {
-            return discordMessages.sendErrorMessage(
-                message,
-                Error.NOT_WAITING_FOR_YOU,
-            )
+            return errorUtils.notWaitingForUserError(message)
         }
     }
 }

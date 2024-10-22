@@ -1,16 +1,18 @@
 package com.fcfb.discord.refbot.utils
 
-import com.fcfb.discord.refbot.discord.DiscordMessages
-import com.fcfb.discord.refbot.model.discord.MessageConstants.Error
 import com.fcfb.discord.refbot.model.discord.MessageConstants.Info
 import com.fcfb.discord.refbot.model.fcfb.game.ActualResult
 import com.fcfb.discord.refbot.model.fcfb.game.Game
+import com.fcfb.discord.refbot.model.fcfb.game.GameStatus
 import com.fcfb.discord.refbot.model.fcfb.game.Play
 import com.fcfb.discord.refbot.model.fcfb.game.PlayCall
 import com.fcfb.discord.refbot.model.fcfb.game.PlayType
 import com.fcfb.discord.refbot.model.fcfb.game.RunoffType
 import com.fcfb.discord.refbot.model.fcfb.game.TeamSide
+import dev.kord.common.entity.Snowflake
+import dev.kord.core.Kord
 import dev.kord.core.entity.Message
+import dev.kord.core.entity.User
 
 class GameUtils {
     /**
@@ -18,7 +20,7 @@ class GameUtils {
      * @param message The message object
      * @return The valid number
      */
-    suspend fun parseValidNumberFromMessage(message: Message): Int? {
+    fun parseValidNumberFromMessage(message: Message): Int {
         // Regular expression to find numbers in the string
         val regex = Regex("\\d+")
 
@@ -30,11 +32,7 @@ class GameUtils {
 
         // Log and return null if multiple numbers are found
         if (allNumbers.size > 1) {
-            DiscordMessages().sendErrorMessage(
-                message,
-                Error.MULTIPLE_NUMBERS_FOUND,
-            )
-            return null
+            return -1
         }
 
         // Filter valid numbers (between 1 and 1500)
@@ -44,11 +42,7 @@ class GameUtils {
 
         // Log and return null if no valid numbers are found
         if (validNumbers.isEmpty()) {
-            DiscordMessages().sendErrorMessage(
-                message,
-                Error.INVALID_NUMBER,
-            )
-            return null
+            return -2
         }
 
         // Return the valid number
@@ -280,6 +274,96 @@ class GameUtils {
         } else {
             RunoffType.NORMAL
         }
+    }
+
+    /**
+     * Get the coin toss winner's Discord ID
+     * @param game The game object
+     * @return The coin toss winner's Discord ID
+     */
+    internal suspend fun getCoinTossWinners(
+        client: Kord,
+        game: Game,
+    ): List<User?>? {
+        return when (game.coinTossWinner) {
+            TeamSide.HOME ->
+                listOfNotNull(game.homeCoachDiscordId1, game.homeCoachDiscordId2).map {
+                    client.getUser(
+                        Snowflake(it),
+                    )
+                }
+            TeamSide.AWAY ->
+                listOfNotNull(game.homeCoachDiscordId1, game.homeCoachDiscordId2).map {
+                    client.getUser(
+                        Snowflake(it),
+                    )
+                }
+            else -> null
+        }
+    }
+
+    /**
+     * Check if the game is waiting on the user
+     * @param game The game object
+     * @param message The message object
+     * @return True if the game is waiting on the user, false otherwise
+     */
+    fun isGameWaitingOnUser(
+        game: Game,
+        message: Message,
+    ): Boolean {
+        val authorId = message.author?.id?.value.toString()
+
+        return when (game.waitingOn) {
+            TeamSide.AWAY -> authorId == game.awayCoachDiscordId1 || authorId == game.awayCoachDiscordId2
+            TeamSide.HOME -> authorId == game.homeCoachDiscordId1 || authorId == game.homeCoachDiscordId2
+            else -> false
+        }
+    }
+
+    /**
+     * Check if the game is in the pregame state before the coin toss
+     * @param game The game object
+     * @return True if the game is in the pregame state without a coin toss, false otherwise
+     */
+    internal fun isPreGameBeforeCoinToss(game: Game): Boolean {
+        return game.gameStatus == GameStatus.PREGAME && game.coinTossWinner == null
+    }
+
+    /**
+     * Check if the game is in the pregame state after the coin toss
+     * @param game The game object
+     * @return True if the game is in the pregame state after the coin toss, false otherwise
+     */
+    internal fun isPreGameAfterCoinToss(game: Game): Boolean {
+        return game.gameStatus == GameStatus.PREGAME && game.coinTossWinner != null
+    }
+
+    /**
+     * Check if the game is waiting for an offensive number
+     * @param game The game object
+     */
+    internal fun isWaitingOnOffensiveNumber(
+        game: Game,
+        message: Message,
+    ): Boolean {
+        return game.gameStatus != GameStatus.PREGAME &&
+            game.gameStatus != GameStatus.FINAL &&
+            isGameWaitingOnUser(game, message) &&
+            game.waitingOn == game.possession
+    }
+
+    /**
+     * Check if the game is waiting for a defensive number
+     * @param game The game object
+     * @param message The message object
+     * @return True if the game is waiting for a defensive number, false otherwise
+     */
+    internal fun isWaitingOnDefensiveNumber(
+        game: Game,
+        message: Message,
+    ): Boolean {
+        return isGameWaitingOnUser(game, message) && game.waitingOn != game.possession
     }
 
     /**
