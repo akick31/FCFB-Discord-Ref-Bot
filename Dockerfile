@@ -9,9 +9,6 @@ COPY ./gradlew .
 COPY ./gradle ./gradle
 COPY ./src ./src
 
-# Run the Gradle build
-RUN ./gradlew build --no-daemon
-
 # Use a lightweight JDK 17 image for the final image
 FROM openjdk:17-jdk-slim
 
