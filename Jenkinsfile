@@ -91,6 +91,9 @@ pipeline {
                         chmod 644 ${env.WORKSPACE}/src/main/resources/application.properties
                     """
                     sh """
+                    ls -l ${env.WORKSPACE}/src/main/resources/application.properties
+                    """
+                    sh """
                         docker run --network="host" -d --restart=always --name ${CONTAINER_NAME} \\
                             -v ${env.WORKSPACE}/src/main/resources/application.properties:/app/application.properties \\
                             ${IMAGE_NAME}:${DOCKERFILE}
