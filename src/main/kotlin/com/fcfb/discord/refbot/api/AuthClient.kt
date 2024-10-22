@@ -26,7 +26,7 @@ class AuthClient {
 
     init {
         val stream =
-            this::class.java.classLoader.getResourceAsStream("./application.properties")
+            this::class.java.classLoader.getResourceAsStream("./config/application.properties")
                 ?: throw RuntimeException("application.properties file not found")
         val properties = Properties()
         properties.load(stream)
