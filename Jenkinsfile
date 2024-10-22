@@ -86,10 +86,22 @@ pipeline {
         stage('Run New Ref Bot Container') {
             steps {
                 script {
+                    if (!fileExists("${env.APP_PROPERTIES}")) {
+                        error("application.properties was not created!")
+                    }
+
                     sh """
                         docker run --network="host" -d --restart=always --name ${CONTAINER_NAME} \\
-                            -v ${env.WORKSPACE}/src/main/resources/:/app/config/ \\
                             ${IMAGE_NAME}:${DOCKERFILE}
+                    """
+
+                    sh """
+                        docker exec -i ${CONTAINER_NAME} sh -c 'cat > /app/application.properties' <<EOF
+                        discord.bot.token=${env.DISCORD_TOKEN}
+                        discord.game.forum.id=${env.DISCORD_FORUM_CHANNEL_ID}
+                        discord.guild.id=${env.DISCORD_GUILD_ID}
+                        api.url=http://51.81.32.234:1212/arceus
+                        EOF
                     """
                 }
             }
