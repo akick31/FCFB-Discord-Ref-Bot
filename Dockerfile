@@ -7,5 +7,7 @@ WORKDIR /app
 # Copy the built JAR file from the Gradle build directory into the container
 COPY ./build/libs/*.jar app.jar
 
+EXPOSE 1211
+
 # Run the Kotlin Spring Boot application
 ENTRYPOINT ["java", "-jar", "app.jar"]

@@ -18,8 +18,32 @@ jobs:
         with:
           fetch-depth: 0
 
+      # Set up JDK
+      - name: Set up JDK 17
+        uses: actions/setup-java@v2
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      # Cache Gradle dependencies
+      - name: Cache Gradle packages
+        uses: actions/cache@v2
+        with:
+          path: ~/.gradle/caches
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
+      # Run Gradle build
+      - name: Build with Gradle
+        run: ./gradlew build
+
+      # Run tests (optional)
+      - name: Run tests
+        run: ./gradlew test
+
       # Consolidated step to get the latest tag, calculate the next version, and create a new tag
-      - name: Tagging logic
+      - name: Tag and push new version
         id: tag_logic
         run: |
           # Fetch all tags
@@ -63,27 +87,3 @@ jobs:
           # Create and push the new tag
           git tag $NEW_TAG
           git push origin $NEW_TAG
-
-      # Set up JDK
-      - name: Set up JDK 17
-        uses: actions/setup-java@v2
-        with:
-          java-version: '17'
-          distribution: 'temurin'
-
-      # Cache Gradle dependencies
-      - name: Cache Gradle packages
-        uses: actions/cache@v2
-        with:
-          path: ~/.gradle/caches
-          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-          restore-keys: |
-            ${{ runner.os }}-gradle-
-
-      # Run Gradle build
-      - name: Build with Gradle
-        run: ./gradlew build
-
-      # Run tests (optional)
-      - name: Run tests
-        run: ./gradlew test
