@@ -7,8 +7,6 @@ WORKDIR /app
 # Copy the Gradle build files and build the project
 COPY ./gradlew .
 COPY ./gradle ./gradle
-COPY ./build.gradle .
-COPY ./settings.gradle .
 COPY ./src ./src
 
 # Run the Gradle build
