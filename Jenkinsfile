@@ -61,7 +61,7 @@ pipeline {
                         discord.bot.token=${env.DISCORD_TOKEN}
                         discord.game.forum.id=${env.DISCORD_FORUM_CHANNEL_ID}
                         discord.guild.id=${env.DISCORD_GUILD_ID}
-                        api.url="http://51.81.32.234:1212/arceus"
+                        api.url=http://51.81.32.234:1212/arceus
                     """.stripIndent()
 
                     writeFile file: "${env.CONFIG_PROPERTIES}", text: propertiesContent
