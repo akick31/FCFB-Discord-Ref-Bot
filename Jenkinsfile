@@ -86,16 +86,9 @@ pipeline {
         stage('Run New Ref Bot Container') {
             steps {
                 script {
-                    echo 'Starting the new Ref Bot container...'
-                    sh """
-                        chmod 755 ${env.WORKSPACE}/src/main/resources/application.properties
-                    """
-                    sh """
-                    ls -l ${env.WORKSPACE}/src/main/resources/application.properties
-                    """
                     sh """
                         docker run --network="host" -d --restart=always --name ${CONTAINER_NAME} \\
-                            -v ${env.WORKSPACE}/src/main/resources/application.properties:/app/application.properties \\
+                            --env-file ${APP_PROPERTIES} \\
                             ${IMAGE_NAME}:${DOCKERFILE}
                     """
                 }
