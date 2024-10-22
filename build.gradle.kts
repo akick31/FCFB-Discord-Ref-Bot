@@ -69,6 +69,10 @@ tasks.withType<KotlinJvmCompile>().configureEach {
     }
 }
 
+tasks.withType<Copy> {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+
 tasks.jar {
     manifest.attributes["Main-Class"] = "com.fcfb.discord.refbot.FCFBDiscordRefBotKt"
     val dependencies =
