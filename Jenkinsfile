@@ -6,7 +6,6 @@ pipeline {
         CONTAINER_NAME = 'FCFB-Discord-Ref-Bot'
         DOCKERFILE = 'Dockerfile'
         CONFIG_PROPERTIES = './src/main/resources/config.properties'
-        API_URL = credentials('ARCEUS_API_URL')
         DISCORD_TOKEN = credentials('REFBOT_DISCORD_TOKEN')
         DISCORD_GUILD_ID = credentials('DISCORD_GUILD_ID')
         DISCORD_FORUM_CHANNEL_ID = credentials('DISCORD_FORUM_CHANNEL_ID')
@@ -62,7 +61,7 @@ pipeline {
                         discord.bot.token=${env.DISCORD_TOKEN}
                         discord.game.forum.id=${env.DISCORD_FORUM_CHANNEL_ID}
                         discord.guild.id=${env.DISCORD_GUILD_ID}
-                        api.url=${env.API_URL}
+                        api.url="http://FCFB-Arceus:1212/arceus"
                     """.stripIndent()
 
                     writeFile file: "${env.CONFIG_PROPERTIES}", text: propertiesContent
