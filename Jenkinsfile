@@ -95,6 +95,10 @@ pipeline {
                             -v ${env.APP_PROPERTIES}:/app/application.properties \\
                             ${IMAGE_NAME}:${DOCKERFILE}
                     """
+
+                    sh """
+                        docker exec ${CONTAINER_NAME} ls -la /app
+                    """
                 }
             }
         }
