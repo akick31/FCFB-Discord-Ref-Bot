@@ -19,7 +19,8 @@ class MessageConstants {
         INVALID_COIN_TOSS("There was an issue handling the coin toss"),
         INVALID_COIN_TOSS_CHOICE("There was an issue handling the coin toss choice"),
         INVALID_COIN_TOSS_WINNER("Could not find user info for the winner of the coin toss"),
-        INVALID_GAME_THREAD("Could not find the game thread. Please make sure the game thread exists and is accessible.");
+        INVALID_GAME_THREAD("Could not find the game thread. Please make sure the game thread exists and is accessible."),
+        ;
 
         fun logError() {
             Logger.error(message)
@@ -45,7 +46,8 @@ class MessageConstants {
         MESSAGE_CONTAINS_SQUIB("The message contains 'squib'"),
         MESSAGE_CONTAINS_ONSIDE("The message contains 'onside'"),
         MESSAGE_CONTAINS_HURRY("The message contains 'hurry'"),
-        MESSAGE_CONTAINS_CHEW("The message contains 'chew'");
+        MESSAGE_CONTAINS_CHEW("The message contains 'chew'"),
+        ;
 
         fun logInfo() {
             Logger.info(message)

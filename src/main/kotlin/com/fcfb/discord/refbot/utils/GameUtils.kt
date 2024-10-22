@@ -1,6 +1,8 @@
 package com.fcfb.discord.refbot.utils
 
 import com.fcfb.discord.refbot.discord.DiscordMessages
+import com.fcfb.discord.refbot.model.discord.MessageConstants.Error
+import com.fcfb.discord.refbot.model.discord.MessageConstants.Info
 import com.fcfb.discord.refbot.model.fcfb.game.ActualResult
 import com.fcfb.discord.refbot.model.fcfb.game.Game
 import com.fcfb.discord.refbot.model.fcfb.game.Play
@@ -8,8 +10,6 @@ import com.fcfb.discord.refbot.model.fcfb.game.PlayCall
 import com.fcfb.discord.refbot.model.fcfb.game.PlayType
 import com.fcfb.discord.refbot.model.fcfb.game.RunoffType
 import com.fcfb.discord.refbot.model.fcfb.game.TeamSide
-import com.fcfb.discord.refbot.model.discord.MessageConstants.Error
-import com.fcfb.discord.refbot.model.discord.MessageConstants.Info
 import dev.kord.core.entity.Message
 
 class GameUtils {
@@ -32,7 +32,7 @@ class GameUtils {
         if (allNumbers.size > 1) {
             DiscordMessages().sendErrorMessage(
                 message,
-                Error.MULTIPLE_NUMBERS_FOUND
+                Error.MULTIPLE_NUMBERS_FOUND,
             )
             return null
         }
@@ -46,7 +46,7 @@ class GameUtils {
         if (validNumbers.isEmpty()) {
             DiscordMessages().sendErrorMessage(
                 message,
-                Error.INVALID_NUMBER
+                Error.INVALID_NUMBER,
             )
             return null
         }
@@ -78,9 +78,7 @@ class GameUtils {
      * @param message The message object
      * @return The play call
      */
-    fun parsePlayCallFromMessage(
-        message: Message
-    ): PlayCall? {
+    fun parsePlayCallFromMessage(message: Message): PlayCall? {
         // Check if "run" (case-insensitive) is present in the message content
         val containsRun = message.content.contains("run", ignoreCase = true)
         val containsPass = message.content.contains("pass", ignoreCase = true)
@@ -268,9 +266,7 @@ class GameUtils {
      * Parse the runoff type from a message
      * @param message The message object
      */
-    fun parseRunoffTypeFromMessage(
-        message: Message
-    ): RunoffType {
+    fun parseRunoffTypeFromMessage(message: Message): RunoffType {
         // Check if "runoff" (case-insensitive) is present in the message content
         val containsHurry = message.content.contains("hurry", ignoreCase = true)
         val containsChew = message.content.contains("chew", ignoreCase = true)
@@ -291,38 +287,39 @@ class GameUtils {
      * @param number The number
      * @return The ordinal string
      */
-    fun toOrdinal(
-        number: Int?
-    ) = when (number) {
-        1 -> "1st"
-        2 -> "2nd"
-        3 -> "3rd"
-        4 -> "4th"
-        else -> number.toString()
-    }
+    fun toOrdinal(number: Int?) =
+        when (number) {
+            1 -> "1st"
+            2 -> "2nd"
+            3 -> "3rd"
+            4 -> "4th"
+            else -> number.toString()
+        }
 
     /**
      * Check if the play call is a kickoff
      * @param playCall The play call
      * @return True if the play call is a kickoff
      */
-    fun isKickoff(
-        playCall: PlayCall?
-    ) = playCall == PlayCall.KICKOFF_NORMAL || playCall == PlayCall.KICKOFF_SQUIB || playCall == PlayCall.KICKOFF_ONSIDE
+    fun isKickoff(playCall: PlayCall?) =
+        playCall == PlayCall.KICKOFF_NORMAL || playCall == PlayCall.KICKOFF_SQUIB || playCall == PlayCall.KICKOFF_ONSIDE
 
     /**
      * Check if the actual result is an offensive touchdown
      * @return True if the actual result is an offensive touchdown
      * @see ActualResult
      */
-    private fun ActualResult?.isOffensiveTouchdown() = this == ActualResult.TOUCHDOWN || this == ActualResult.KICKING_TEAM_TOUCHDOWN || this == ActualResult.PUNT_TEAM_TOUCHDOWN
+    private fun ActualResult?.isOffensiveTouchdown() =
+        this == ActualResult.TOUCHDOWN || this == ActualResult.KICKING_TEAM_TOUCHDOWN || this == ActualResult.PUNT_TEAM_TOUCHDOWN
 
     /**
      * Check if the actual result is a defensive touchdown
      * @return True if the actual result is a defensive touchdown
      * @see ActualResult
      */
-    private fun ActualResult?.isDefensiveTouchdown() = this == ActualResult.TURNOVER_TOUCHDOWN || this == ActualResult.RETURN_TOUCHDOWN || this == ActualResult.PUNT_RETURN_TOUCHDOWN || this == ActualResult.KICK_SIX
+    private fun ActualResult?.isDefensiveTouchdown() =
+        this == ActualResult.TURNOVER_TOUCHDOWN || this == ActualResult.RETURN_TOUCHDOWN || this == ActualResult.PUNT_RETURN_TOUCHDOWN ||
+            this == ActualResult.KICK_SIX
 
     /**
      * Get the offensive team from a game
@@ -345,7 +342,7 @@ class GameUtils {
      */
     fun getBallLocationScenarioMessage(
         game: Game,
-        play: Play?
+        play: Play?,
     ): String {
         return when {
             play?.actualResult.isOffensiveTouchdown() -> "${game.offensiveTeam()} just scored."
@@ -397,9 +394,7 @@ class GameUtils {
      * Check if the message content is a valid coin toss choice
      * @param content The message content
      */
-    fun isValidCoinTossChoice(
-        content: String
-    ): Boolean {
+    fun isValidCoinTossChoice(content: String): Boolean {
         return content.lowercase() == "receive" || content.lowercase() == "defer"
     }
 
@@ -409,7 +404,10 @@ class GameUtils {
      * @param game The game object
      * @return True if the author is a valid coin toss author
      */
-    fun isValidCoinTossAuthor(authorId: String, game: Game): Boolean {
+    fun isValidCoinTossAuthor(
+        authorId: String,
+        game: Game,
+    ): Boolean {
         return authorId == game.awayCoachDiscordId1 || authorId == game.awayCoachDiscordId2
     }
 
@@ -422,30 +420,30 @@ class GameUtils {
     fun getTimeoutMessage(
         game: Game,
         play: Play?,
-        timeoutCalled: Boolean
+        timeoutCalled: Boolean,
     ): String {
         return when {
             play?.timeoutUsed == true &&
                 play.offensiveTimeoutCalled == true &&
                 play.defensiveTimeoutCalled == true ->
-                    "${game.offensiveTeam()} attempted to call a timeout, but it was not used. " +
-                        "${game.defensiveTeam()} called a timeout first.\n\n"
+                "${game.offensiveTeam()} attempted to call a timeout, but it was not used. " +
+                    "${game.defensiveTeam()} called a timeout first.\n\n"
             play?.timeoutUsed == true &&
                 play.offensiveTimeoutCalled == true &&
                 play.defensiveTimeoutCalled == false ->
-                    "${game.offensiveTeam()} called a timeout.\n\n"
+                "${game.offensiveTeam()} called a timeout.\n\n"
             play?.timeoutUsed == true &&
                 play.offensiveTimeoutCalled == false &&
                 play.defensiveTimeoutCalled == true ->
-                    "${game.defensiveTeam()} called a timeout.\n\n"
+                "${game.defensiveTeam()} called a timeout.\n\n"
             play?.timeoutUsed == false &&
                 play.offensiveTimeoutCalled == true &&
                 play.defensiveTimeoutCalled == false ->
-                    "${game.offensiveTeam()} attempted to call a timeout, but it was not used.\n\n"
+                "${game.offensiveTeam()} attempted to call a timeout, but it was not used.\n\n"
             play?.timeoutUsed == false &&
                 play.offensiveTimeoutCalled == false &&
                 play.defensiveTimeoutCalled == true ->
-                    "${game.defensiveTeam()} attempted to call a timeout, but it was not used.\n\n"
+                "${game.defensiveTeam()} attempted to call a timeout, but it was not used.\n\n"
             play?.timeoutUsed == false &&
                 play.offensiveTimeoutCalled == true &&
                 play.defensiveTimeoutCalled == true ->
@@ -461,9 +459,7 @@ class GameUtils {
      * @return The play options
      * @see PlayType
      */
-    fun getPlayOptions(
-        game: Game
-    ): String {
+    fun getPlayOptions(game: Game): String {
         return when {
             game.currentPlayType == PlayType.KICKOFF -> "**normal**, **squib**, or **onside**"
             game.currentPlayType == PlayType.NORMAL && game.down != 4 -> "**run**, **pass**"

@@ -11,7 +11,6 @@ import dev.kord.core.entity.interaction.ChatInputCommandInteraction
 import dev.kord.core.entity.interaction.InteractionCommand
 
 class AuthCommands {
-
     /**
      * Register a new user
      * @param interaction The interaction object

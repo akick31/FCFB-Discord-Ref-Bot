@@ -9,7 +9,6 @@ import dev.kord.core.entity.interaction.ChatInputCommandInteraction
 import dev.kord.core.entity.interaction.InteractionCommand
 
 class TeamCommands {
-
     /**
      * Hire a new coach for a team
      * @param userRole The role of the user

@@ -40,7 +40,7 @@ class GameLogic {
                 ?: return discordMessages.sendMessageFromMessageObject(
                     message,
                     Error.NO_GAME_FOUND.message,
-                    null
+                    null,
                 )
 
         // TODO: add command to ping user/resend message
@@ -58,12 +58,12 @@ class GameLogic {
         } else if (isGameIsWaitingOnUser(game, message) && game.waitingOn != game.possession) {
             discordMessages.sendErrorMessage(
                 message,
-                Error.WAITING_FOR_NUMBER_IN_DMS
+                Error.WAITING_FOR_NUMBER_IN_DMS,
             )
         } else if (!isGameIsWaitingOnUser(game, message)) {
             discordMessages.sendErrorMessage(
                 message,
-                Error.NOT_WAITING_FOR_YOU
+                Error.NOT_WAITING_FOR_YOU,
             )
         } else {
             Logger.info("Game status is not PREGAME")
@@ -82,30 +82,34 @@ class GameLogic {
         message: Message,
     ) {
         val number = gameUtils.parseValidNumberFromMessage(message) ?: return
-        val playCall = gameUtils.parsePlayCallFromMessage(message)
-            ?: return discordMessages.sendErrorMessage(
-                message,
-                Error.INVALID_PLAY
-            )
+        val playCall =
+            gameUtils.parsePlayCallFromMessage(message)
+                ?: return discordMessages.sendErrorMessage(
+                    message,
+                    Error.INVALID_PLAY,
+                )
         val runoffType = gameUtils.parseRunoffTypeFromMessage(message)
         val timeoutCalled = gameUtils.parseTimeoutFromMessage(message)
-        val offensiveSubmitter = message.author?.username
-            ?: return discordMessages.sendErrorMessage(
-                message,
-                Error.INVALID_OFFENSIVE_SUBMITTER
-            )
+        val offensiveSubmitter =
+            message.author?.username
+                ?: return discordMessages.sendErrorMessage(
+                    message,
+                    Error.INVALID_OFFENSIVE_SUBMITTER,
+                )
 
         // Submit the offensive number and get the play outcome
-        val playOutcome = playClient.submitOffensiveNumber(gameId, offensiveSubmitter, number, playCall, runoffType, timeoutCalled)
-            ?: return discordMessages.sendErrorMessage(
-                message,
-                Error.INVALID_OFFENSIVE_SUBMISSION
-            )
-        val game = gameClient.fetchGameByThreadId(message.channelId.value.toString())
-            ?: return discordMessages.sendErrorMessage(
-                message,
-                Error.NO_GAME_FOUND
-            )
+        val playOutcome =
+            playClient.submitOffensiveNumber(gameId, offensiveSubmitter, number, playCall, runoffType, timeoutCalled)
+                ?: return discordMessages.sendErrorMessage(
+                    message,
+                    Error.INVALID_OFFENSIVE_SUBMISSION,
+                )
+        val game =
+            gameClient.fetchGameByThreadId(message.channelId.value.toString())
+                ?: return discordMessages.sendErrorMessage(
+                    message,
+                    Error.NO_GAME_FOUND,
+                )
         val scenario = if (playOutcome.actualResult == ActualResult.TOUCHDOWN) Scenario.TOUCHDOWN else playOutcome.result!!
         discordMessages.sendGameMessage(client, game, scenario, playOutcome, message, null, timeoutCalled)
         discordMessages.sendRequestForDefensiveNumber(client, game, Scenario.DM_NUMBER_REQUEST, playOutcome)
@@ -126,26 +130,28 @@ class GameLogic {
         if (!gameUtils.isValidCoinTossAuthor(authorId, game) || !gameUtils.isValidCoinTossResponse(message.content)) {
             return discordMessages.sendErrorMessage(
                 message,
-                Error.WAITING_FOR_COIN_TOSS
+                Error.WAITING_FOR_COIN_TOSS,
             )
         }
 
-        val updatedGame = gameClient.callCoinToss(game.gameId, message.content.uppercase())
-            ?: return discordMessages.sendErrorMessage(
-                message,
-                Error.INVALID_COIN_TOSS
-            )
+        val updatedGame =
+            gameClient.callCoinToss(game.gameId, message.content.uppercase())
+                ?: return discordMessages.sendErrorMessage(
+                    message,
+                    Error.INVALID_COIN_TOSS,
+                )
 
-        val coinTossWinningCoachList = getCoinTossWinners(client, updatedGame)
-            ?: return discordMessages.sendErrorMessage(
-                message,
-                Error.INVALID_COIN_TOSS_WINNER
-            )
+        val coinTossWinningCoachList =
+            getCoinTossWinners(client, updatedGame)
+                ?: return discordMessages.sendErrorMessage(
+                    message,
+                    Error.INVALID_COIN_TOSS_WINNER,
+                )
 
         discordMessages.sendMessageFromMessageObject(
             message,
             Info.COIN_TOSS_OUTCOME.message.format(discordUtils.joinMentions(coinTossWinningCoachList)),
-            null
+            null,
         )
     }
 
@@ -160,23 +166,24 @@ class GameLogic {
         game: Game,
         message: Message,
     ) {
-        val coinTossWinningCoachList = getCoinTossWinners(client, game)
+        val coinTossWinningCoachList =
+            getCoinTossWinners(client, game)
                 ?: return discordMessages.sendErrorMessage(
                     message,
-                    Error.INVALID_COIN_TOSS_WINNER
+                    Error.INVALID_COIN_TOSS_WINNER,
                 )
 
         if (message.author !in coinTossWinningCoachList && !gameUtils.isValidCoinTossChoice(message.content)) {
             return discordMessages.sendErrorMessage(
                 message,
-                Error.WAITING_FOR_COIN_TOSS_CHOICE
+                Error.WAITING_FOR_COIN_TOSS_CHOICE,
             )
         }
 
         gameClient.makeCoinTossChoice(game.gameId, message.content.uppercase())
             ?: return discordMessages.sendErrorMessage(
                 message,
-                Error.INVALID_COIN_TOSS_CHOICE
+                Error.INVALID_COIN_TOSS_CHOICE,
             )
 
         discordMessages.sendGameMessage(client, game, Scenario.COIN_TOSS_CHOICE, null, message, null)
@@ -188,7 +195,10 @@ class GameLogic {
      * @param game The game object
      * @return The coin toss winner's Discord ID
      */
-    private suspend fun getCoinTossWinners(client: Kord, game: Game): List<User?>? {
+    private suspend fun getCoinTossWinners(
+        client: Kord,
+        game: Game,
+    ): List<User?>? {
         return when (game.coinTossWinner) {
             TeamSide.HOME -> listOfNotNull(game.homeCoachDiscordId1, game.homeCoachDiscordId2).map { client.getUser(Snowflake(it)) }
             TeamSide.AWAY -> listOfNotNull(game.homeCoachDiscordId1, game.homeCoachDiscordId2).map { client.getUser(Snowflake(it)) }

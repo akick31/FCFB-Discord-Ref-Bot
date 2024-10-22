@@ -4,7 +4,6 @@ import java.io.File
 import java.util.Properties
 
 object Config {
-
     /**
      * Load the configuration file
      * @return The configuration properties

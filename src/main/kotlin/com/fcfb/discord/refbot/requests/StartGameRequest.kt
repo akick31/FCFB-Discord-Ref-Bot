@@ -65,14 +65,15 @@ class StartGameRequest {
                     }
                 }
 
-            val message = discordMessages.sendGameMessage(
-                client,
-                game,
-                Scenario.GAME_START,
-                null,
-                null,
-                gameThread,
-            )
+            val message =
+                discordMessages.sendGameMessage(
+                    client,
+                    game,
+                    Scenario.GAME_START,
+                    null,
+                    null,
+                    gameThread,
+                )
 
             Logger.info("Game thread created: $gameThread")
             gameThread.id

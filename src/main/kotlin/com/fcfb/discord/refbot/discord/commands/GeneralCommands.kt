@@ -6,7 +6,6 @@ import dev.kord.core.behavior.interaction.response.respond
 import dev.kord.core.entity.interaction.ChatInputCommandInteraction
 
 class GeneralCommands {
-
     /**
      * Display the help message
      * @param interaction The interaction object
