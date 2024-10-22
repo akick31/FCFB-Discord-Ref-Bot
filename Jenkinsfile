@@ -88,7 +88,7 @@ pipeline {
                 script {
                     echo 'Starting the new Ref Bot container...'
                     sh """
-                        chmod 644 ${env.WORKSPACE}/src/main/resources/application.properties
+                        chmod 755 ${env.WORKSPACE}/src/main/resources/application.properties
                     """
                     sh """
                     ls -l ${env.WORKSPACE}/src/main/resources/application.properties
