@@ -96,7 +96,7 @@ pipeline {
                     """
 
                     sh """
-                        docker exec -i ${CONTAINER_NAME} sh -c 'cat > ./application.properties' <<EOF
+                        docker exec -i ${CONTAINER_NAME} sh -c 'cat > /app/application.properties' <<EOF
                         discord.bot.token=${env.DISCORD_TOKEN}
                         discord.game.forum.id=${env.DISCORD_FORUM_CHANNEL_ID}
                         discord.guild.id=${env.DISCORD_GUILD_ID}
