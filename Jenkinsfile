@@ -88,7 +88,7 @@ pipeline {
                 script {
                     sh """
                         docker run --network="host" -d --restart=always --name ${CONTAINER_NAME} \\
-                            -v ${env.WORKSPACE}/src/main/resources/:/app/ \\
+                            -v ${env.WORKSPACE}/src/main/resources/:/app/config/ \\
                             ${IMAGE_NAME}:${DOCKERFILE}
                     """
                 }
