@@ -61,7 +61,7 @@ pipeline {
                         discord.bot.token=${env.DISCORD_TOKEN}
                         discord.game.forum.id=${env.DISCORD_FORUM_CHANNEL_ID}
                         discord.guild.id=${env.DISCORD_GUILD_ID}
-                        api.url="http://FCFB-Arceus:1212/arceus"
+                        api.url="http://51.81.32.234:1212/arceus"
                     """.stripIndent()
 
                     writeFile file: "${env.CONFIG_PROPERTIES}", text: propertiesContent
@@ -88,7 +88,7 @@ pipeline {
                 script {
                     echo 'Starting the new Ref Bot container...'
                     sh """
-                        docker run -d -p 1211:1211 --restart=always --name ${CONTAINER_NAME} \\
+                        docker run --network="host" -d -p 1211:1211 --restart=always --name ${CONTAINER_NAME} \\
                             --env-file ${CONFIG_PROPERTIES} \\
                             ${IMAGE_NAME}:${DOCKERFILE}
                     """

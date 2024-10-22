@@ -221,7 +221,7 @@ class FCFBDiscordRefBot {
             }
         }
 
-        val serverUrl = "/fcfb_discord_refbot"
+        val serverUrl = "/fcfb_discord"
         routing {
             post("$serverUrl/start_game") {
                 try {
