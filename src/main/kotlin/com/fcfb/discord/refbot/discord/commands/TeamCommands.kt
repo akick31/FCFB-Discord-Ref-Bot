@@ -9,6 +9,13 @@ import dev.kord.core.entity.interaction.ChatInputCommandInteraction
 import dev.kord.core.entity.interaction.InteractionCommand
 
 class TeamCommands {
+
+    /**
+     * Hire a new coach for a team
+     * @param userRole The role of the user
+     * @param interaction The interaction object
+     * @param command The command object
+     */
     suspend fun hireCoach(
         userRole: Role,
         interaction: ChatInputCommandInteraction,

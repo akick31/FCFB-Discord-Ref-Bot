@@ -8,7 +8,7 @@ import com.fcfb.discord.refbot.model.fcfb.game.DefensivePlaybook
 import com.fcfb.discord.refbot.model.fcfb.game.OffensivePlaybook
 
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy::class)
-data class User(
+data class FCFBUser(
     @JsonProperty("id") var id: Long? = 0,
     @JsonProperty("username") var username: String,
     @JsonProperty("coach_name") var coachName: String,

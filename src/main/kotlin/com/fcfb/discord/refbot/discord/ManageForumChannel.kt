@@ -6,8 +6,12 @@ import dev.kord.common.entity.Snowflake
 import dev.kord.core.entity.channel.ForumChannel
 
 class ManageForumChannel {
+
     /**
      * Create a new Discord thread
+     * @param gameChannel The game channel
+     * @param game The game object
+     * @return The thread ID
      */
     suspend fun createGameThread(
         gameChannel: ForumChannel,

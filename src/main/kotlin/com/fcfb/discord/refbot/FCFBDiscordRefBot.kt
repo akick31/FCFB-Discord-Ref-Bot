@@ -64,7 +64,7 @@ class FCFBDiscordRefBot {
                 }
 
                 launch(Dispatchers.IO) {
-                    embeddedServer(Netty, port = 1212, module = moduleFunction).start(wait = true)
+                    embeddedServer(Netty, port = 1211, module = moduleFunction).start(wait = true)
                 }
 
                 // Launch Kord bot
@@ -79,6 +79,11 @@ class FCFBDiscordRefBot {
             }
         }
 
+    /**
+     * Register slash commands for a Kotlin Discord bot
+     * @return Unit
+     * @throws Exception
+     */
     private suspend fun registerSlashCommands() {
         client.createGlobalChatInputCommand(
             "register",
@@ -171,6 +176,11 @@ class FCFBDiscordRefBot {
         }
     }
 
+    /**
+     * Register standard message commands (called with a '!' or game plays) for a Kotlin Discord bot
+     * @return Unit
+     * @throws Exception
+     */
     private fun registerMessageCommands() {
         client.on<MessageCreateEvent> {
             try {
@@ -195,6 +205,11 @@ class FCFBDiscordRefBot {
         }
     }
 
+    /**
+     * Start the Ktor server for the FCFB Discord Ref Bot for handling requests to start the game
+     * @param client The Discord client
+     * @return Unit
+     */
     private fun Application.fcfbDiscordRefBotServer(client: Kord) {
         install(ContentNegotiation) {
             gson {
@@ -206,7 +221,7 @@ class FCFBDiscordRefBot {
             }
         }
 
-        val serverUrl = "/fcfb_discord.refbot"
+        val serverUrl = "/fcfb_discord_refbot"
         routing {
             post("$serverUrl/start_game") {
                 try {
