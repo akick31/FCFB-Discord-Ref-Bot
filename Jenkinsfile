@@ -5,7 +5,7 @@ pipeline {
         IMAGE_NAME = 'fcfb-discord-ref-bot'
         CONTAINER_NAME = 'FCFB-Discord-Ref-Bot'
         DOCKERFILE = 'Dockerfile'
-        CONFIG_PROPERTIES = '${env.WORKSPACE}/src/main/resources/config.properties'
+        CONFIG_PROPERTIES = "${env.WORKSPACE}/src/main/resources/config.properties"
         DISCORD_TOKEN = credentials('REFBOT_DISCORD_TOKEN')
         DISCORD_GUILD_ID = credentials('DISCORD_GUILD_ID')
         DISCORD_FORUM_CHANNEL_ID = credentials('DISCORD_FORUM_CHANNEL_ID')
