@@ -18,25 +18,44 @@ jobs:
         with:
           fetch-depth: 0
 
-      # Step 3: Get the latest tag
-      - name: Get latest tag
-        id: get_latest_tag
+      # Set up JDK
+      - name: Set up JDK 17
+        uses: actions/setup-java@v2
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      # Cache Gradle dependencies
+      - name: Cache Gradle packages
+        uses: actions/cache@v2
+        with:
+          path: ~/.gradle/caches
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
+      # Run Gradle build
+      - name: Build with Gradle
+        run: ./gradlew build
+
+      # Run tests (optional)
+      - name: Run tests
+        run: ./gradlew test
+
+      # Consolidated step to get the latest tag, calculate the next version, and create a new tag
+      - name: Tag and push new version
+        id: tag_logic
         run: |
-          git fetch --tags  # Ensure all tags are fetched
+          # Fetch all tags
+          git fetch --tags
+
+          # Get the latest tag
           TAG=$(git describe --tags $(git rev-list --tags --max-count=1) 2>/dev/null || echo "1.0.0")
           echo "Latest tag: ${TAG}"
-          echo "::set-output name=latest_tag::${TAG}"
 
-      # Step 4: Calculate next version
-      - name: Calculate next version
-        id: calculate_version
-        run: |
-          LATEST_TAG=${{ steps.get_latest_tag.outputs.latest_tag }}
-          echo "Latest tag: ${LATEST_TAG}"
-          
           # Split the tag into major, minor, and patch
           VERSION_REGEX="^([0-9]+)\.([0-9]+)\.([0-9]+)$"
-          if [[ $LATEST_TAG =~ $VERSION_REGEX ]]; then
+          if [[ $TAG =~ $VERSION_REGEX ]]; then
             MAJOR="${BASH_REMATCH[1]}"
             MINOR="${BASH_REMATCH[2]}"
             PATCH="${BASH_REMATCH[3]}"
@@ -57,20 +76,14 @@ jobs:
             NEW_MINOR=$((MINOR + 1))
             NEW_PATCH=0
           else
-            # Increment the patch version by default
             NEW_MAJOR=$MAJOR
             NEW_MINOR=$MINOR
             NEW_PATCH=$((PATCH + 1))
           fi
-          
+
           NEW_TAG="${NEW_MAJOR}.${NEW_MINOR}.${NEW_PATCH}"
           echo "New tag will be: ${NEW_TAG}"
-          
-          echo "::set-output name=new_tag::${NEW_TAG}"
 
-      # Step 5: Create a new tag
-      - name: Create tag
-        run: |
-          NEW_TAG=${{ steps.calculate_version.outputs.new_tag }}
+          # Create and push the new tag
           git tag $NEW_TAG
           git push origin $NEW_TAG

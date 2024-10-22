@@ -2,7 +2,7 @@ package com.fcfb.discord.refbot.discord.commands
 
 import com.fcfb.discord.refbot.api.AuthClient
 import com.fcfb.discord.refbot.model.fcfb.CoachPosition
-import com.fcfb.discord.refbot.model.fcfb.User
+import com.fcfb.discord.refbot.model.fcfb.FCFBUser
 import com.fcfb.discord.refbot.model.fcfb.game.DefensivePlaybook
 import com.fcfb.discord.refbot.model.fcfb.game.OffensivePlaybook
 import com.fcfb.discord.refbot.utils.Logger
@@ -11,6 +11,12 @@ import dev.kord.core.entity.interaction.ChatInputCommandInteraction
 import dev.kord.core.entity.interaction.InteractionCommand
 
 class AuthCommands {
+
+    /**
+     * Register a new user
+     * @param interaction The interaction object
+     * @param command The command object
+     */
     suspend fun registerUser(
         interaction: ChatInputCommandInteraction,
         command: InteractionCommand,
@@ -71,7 +77,7 @@ class AuthCommands {
                 }
             }
         val user =
-            User(
+            FCFBUser(
                 username = username,
                 coachName = coachName,
                 discordTag = discordUsername,

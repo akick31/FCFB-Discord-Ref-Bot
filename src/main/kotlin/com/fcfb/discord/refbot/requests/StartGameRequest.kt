@@ -17,6 +17,8 @@ class StartGameRequest {
 
     /**
      * Start a new Discord game thread
+     * @param client The Discord client
+     * @param game The game object
      */
     suspend fun startGameThread(
         client: Kord,
@@ -63,12 +65,14 @@ class StartGameRequest {
                     }
                 }
 
-            val message = discordMessages.sendGameThreadMessageFromTextChannel(client, game, gameThread, Scenario.GAME_START, null, false)
-            if (message == null) {
-                Logger.error("Failed to send message to game thread")
-                gameThread.delete()
-                return null
-            }
+            val message = discordMessages.sendGameMessage(
+                client,
+                game,
+                Scenario.GAME_START,
+                null,
+                null,
+                gameThread,
+            )
 
             Logger.info("Game thread created: $gameThread")
             gameThread.id

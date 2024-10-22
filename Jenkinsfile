@@ -88,7 +88,7 @@ pipeline {
                 script {
                     echo 'Starting the new Ref Bot container...'
                     sh """
-                        docker run -d --restart=always --name ${CONTAINER_NAME} \\
+                        docker run -d -p 1211:1211 --restart=always --name ${CONTAINER_NAME} \\
                             --env-file ${CONFIG_PROPERTIES} \\
                             ${IMAGE_NAME}:${DOCKERFILE}
                     """
