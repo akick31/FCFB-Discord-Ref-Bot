@@ -88,11 +88,20 @@ pipeline {
             steps {
                 script {
                     echo 'Starting the new Ref Bot container...'
+                    sh "ls -la ${env.WORKSPACE}/src/main/resources/"
+                    sh "cat ${env.WORKSPACE}/src/main/resources/config.properties"
                     sh """
                         docker run --network="host" -d --restart=always --name ${CONTAINER_NAME} \\
                             --env-file ${CONFIG_PROPERTIES} \\
+                            -v ${CONFIG_PROPERTIES}:/app/config.properties \\
                             ${IMAGE_NAME}:${DOCKERFILE}
                     """
+                    echo """
+                         docker run --network="host" -d --restart=always --name ${CONTAINER_NAME} \\
+                             --env-file ${CONFIG_PROPERTIES} \\
+                             -v ${CONFIG_PROPERTIES}:/app/config.properties \\
+                             ${IMAGE_NAME}:${DOCKERFILE}
+                     """
                 }
             }
         }
