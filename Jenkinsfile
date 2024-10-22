@@ -5,7 +5,7 @@ pipeline {
         IMAGE_NAME = 'fcfb-discord-ref-bot'
         CONTAINER_NAME = 'FCFB-Discord-Ref-Bot'
         DOCKERFILE = 'Dockerfile'
-        CONFIG_PROPERTIES = "${env.WORKSPACE}/src/main/resources/config.properties"
+        CONFIG_PROPERTIES = "./src/main/resources/config.properties"
         DISCORD_TOKEN = credentials('REFBOT_DISCORD_TOKEN')
         DISCORD_GUILD_ID = credentials('DISCORD_GUILD_ID')
         DISCORD_FORUM_CHANNEL_ID = credentials('DISCORD_FORUM_CHANNEL_ID')
@@ -89,7 +89,7 @@ pipeline {
                     echo 'Starting the new Ref Bot container...'
                     sh """
                         docker run --network="host" -d --restart=always --name ${CONTAINER_NAME} \\
-                            -v ${CONFIG_PROPERTIES}:/app/config.properties \\
+                            --env-file ${CONFIG_PROPERTIES} \\
                             ${IMAGE_NAME}:${DOCKERFILE}
                     """
                 }
