@@ -7,6 +7,7 @@ import io.ktor.client.HttpClient
 import io.ktor.client.engine.cio.CIO
 import io.ktor.client.request.get
 import io.ktor.client.statement.bodyAsText
+import java.io.File
 import java.util.Properties
 
 class GameWriteupClient {
@@ -19,6 +20,8 @@ class GameWriteupClient {
         }
 
     init {
+        val currentDir = File(".").absolutePath
+        println("Current directory: $currentDir")
         val classpath = System.getProperty("java.class.path")
         println("Classpath: $classpath")
         val stream =
