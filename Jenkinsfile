@@ -88,6 +88,9 @@ pipeline {
                 script {
                     echo 'Starting the new Ref Bot container...'
                     sh """
+                        chmod 644 ${env.WORKSPACE}/src/main/resources/application.properties
+                    """
+                    sh """
                         docker run --network="host" -d --restart=always --name ${CONTAINER_NAME} \\
                             -v ${env.WORKSPACE}/src/main/resources/application.properties:/app/application.properties \\
                             ${IMAGE_NAME}:${DOCKERFILE}
