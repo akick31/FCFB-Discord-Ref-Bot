@@ -8,7 +8,7 @@ class Properties {
     @OptIn(KordPreview::class)
     fun getDiscordProperties(): DiscordProperties {
         val properties = java.util.Properties()
-        val configFile = FCFBDiscordRefBot::class.java.classLoader.getResourceAsStream("config.properties")
+        val configFile = FCFBDiscordRefBot::class.java.classLoader.getResourceAsStream("application.properties")
         properties.load(configFile)
         val token = properties.getProperty("discord.bot.token")
         val guildId = properties.getProperty("discord.guild.id")

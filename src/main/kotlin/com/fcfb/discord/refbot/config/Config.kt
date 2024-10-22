@@ -9,7 +9,7 @@ object Config {
      * @return The configuration properties
      */
     fun loadConfig(): Properties {
-        val configFile = File("resources/config.properties")
+        val configFile = File("resources/application.properties")
         return Properties().apply { load(configFile.inputStream()) }
     }
 }

@@ -5,7 +5,7 @@ pipeline {
         IMAGE_NAME = 'fcfb-discord-ref-bot'
         CONTAINER_NAME = 'FCFB-Discord-Ref-Bot'
         DOCKERFILE = 'Dockerfile'
-        CONFIG_PROPERTIES = "./src/main/resources/config.properties"
+        APP_PROPERTIES = "./src/main/resources/application.properties"
         DISCORD_TOKEN = credentials('REFBOT_DISCORD_TOKEN')
         DISCORD_GUILD_ID = credentials('DISCORD_GUILD_ID')
         DISCORD_FORUM_CHANNEL_ID = credentials('DISCORD_FORUM_CHANNEL_ID')
@@ -64,7 +64,7 @@ pipeline {
                         api.url=http://51.81.32.234:1212/arceus
                     """.stripIndent()
 
-                    writeFile file: "${env.CONFIG_PROPERTIES}", text: propertiesContent
+                    writeFile file: "${env.APP_PROPERTIES}", text: propertiesContent
                 }
 
                 echo 'Building the Ref Bot project...'
@@ -89,7 +89,7 @@ pipeline {
                     echo 'Starting the new Ref Bot container...'
                     sh """
                         docker run --network="host" -d --restart=always --name ${CONTAINER_NAME} \\
-                            --env-file ${CONFIG_PROPERTIES} \\
+                            --env-file ${APP_PROPERTIES} \\
                             ${IMAGE_NAME}:${DOCKERFILE}
                     """
                 }

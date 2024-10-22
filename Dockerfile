@@ -8,7 +8,7 @@ WORKDIR /app
 COPY ./build/libs/*.jar app.jar
 
 # Copy the configuration file into the container
-COPY ./src/main/resources/config.properties config.properties
+COPY ./src/main/resources/application.properties application.properties
 
 RUN ls -la /app
 

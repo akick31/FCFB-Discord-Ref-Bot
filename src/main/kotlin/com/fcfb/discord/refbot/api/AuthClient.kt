@@ -26,7 +26,7 @@ class AuthClient {
 
     init {
         val properties = Properties()
-        properties.load(this.javaClass.getResourceAsStream("/config.properties"))
+        properties.load(this.javaClass.getResourceAsStream("/application.properties"))
         baseUrl = properties.getProperty("api.url")
     }
 
