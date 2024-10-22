@@ -22,6 +22,8 @@ class GameWriteupClient {
         val stream =
             this::class.java.classLoader.getResourceAsStream("./application.properties")
                 ?: throw RuntimeException("application.properties file not found")
+        val classpath = System.getProperty("java.class.path")
+        println("Classpath: $classpath")
         val properties = Properties()
         properties.load(stream)
         baseUrl = properties.getProperty("api.url")

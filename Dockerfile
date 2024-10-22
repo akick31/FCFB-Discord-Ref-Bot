@@ -10,7 +10,7 @@ COPY ./build/libs/*.jar app.jar
 # Copy the configuration file into the container
 COPY ./src/main/resources/application.properties ./application.properties
 
-RUN chmod 755 app.jar application.properties
+RUN chmod 755 app.jar ./application.properties
 
 EXPOSE 1211
 

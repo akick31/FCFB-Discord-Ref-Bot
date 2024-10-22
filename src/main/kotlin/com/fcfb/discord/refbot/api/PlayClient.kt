@@ -18,8 +18,11 @@ class PlayClient {
     private val httpClient = HttpClient()
 
     init {
+        val stream =
+            this::class.java.classLoader.getResourceAsStream("./application.properties")
+                ?: throw RuntimeException("application.properties file not found")
         val properties = Properties()
-        properties.load(this.javaClass.getResourceAsStream("/application.properties"))
+        properties.load(stream)
         baseUrl = properties.getProperty("api.url")
     }
 
