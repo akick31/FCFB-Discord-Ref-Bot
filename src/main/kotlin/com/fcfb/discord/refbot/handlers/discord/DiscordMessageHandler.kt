@@ -1,7 +1,8 @@
-package com.fcfb.discord.refbot.discord
+package com.fcfb.discord.refbot.handlers.discord
 
 import com.fcfb.discord.refbot.api.GameWriteupClient
 import com.fcfb.discord.refbot.api.ScorebugClient
+import com.fcfb.discord.refbot.handlers.FileHandler
 import com.fcfb.discord.refbot.model.discord.MessageConstants.Error
 import com.fcfb.discord.refbot.model.fcfb.game.Game
 import com.fcfb.discord.refbot.model.fcfb.game.Play
@@ -28,11 +29,12 @@ import java.nio.file.Files
 import java.nio.file.StandardOpenOption
 import kotlin.io.path.Path
 
-class DiscordMessages {
+class DiscordMessageHandler {
     private val gameWriteupClient = GameWriteupClient()
+    private val scorebugClient = ScorebugClient()
     private val discordUtils = DiscordUtils()
     private val gameUtils = GameUtils()
-    private val scorebugClient = ScorebugClient()
+    private val fileHandler = FileHandler()
 
     /**
      * Get the message to send to a game for a given scenario
@@ -52,16 +54,6 @@ class DiscordMessages {
     ): Pair<Pair<String, EmbedData?>, List<User?>>? {
         var playWriteup: String? = null
         var messageContent: String?
-
-        // Generate scorebug file URL
-        val scorebug = scorebugClient.getGameScorebugByGameId(game.gameId)
-        val scorebugUrl =
-            scorebug?.let {
-                val fileName = "${game.homeTeam?.replace(" ", "_")}_${game.awayTeam?.replace(" ", "_")}.png"
-                val filePath = "images/scorebugs/$fileName"
-                Files.write(File(filePath).toPath(), scorebug, StandardOpenOption.CREATE)
-                filePath
-            }
 
         // Get message content but not play result for number requests, game start, and coin toss
         if (scenario == Scenario.DM_NUMBER_REQUEST || scenario == Scenario.KICKOFF_NUMBER_REQUEST ||
@@ -138,35 +130,153 @@ class DiscordMessages {
             }
         }
 
-        // Get the embed
-        val embedData =
-            scorebug?.let {
-                EmbedData(
-                    title = Optional("${game.homeTeam.orEmpty()} vs ${game.awayTeam.orEmpty()}"),
-                    description = Optional(messageContent.orEmpty()),
-                    image = Optional(EmbedImageData(url = Optional(scorebugUrl!!))),
-                )
+        val originalScorebug = scorebugClient.getScorebugByGameId(game.gameId)
+
+        // If no scorebug was found, generate one and try to read it again
+        val scorebug =
+            if (originalScorebug == null) {
+                scorebugClient.generateScorebug(game.gameId)
+                scorebugClient.getScorebugByGameId(game.gameId)
+            } else {
+                originalScorebug
             }
 
-        val messageToSend =
+        if (scorebug != null) {
+            return getGameMessageWithScorebug(
+                game,
+                scenario,
+                messageContent,
+                homeCoaches,
+                awayCoaches,
+                offensiveCoaches,
+                defensiveCoaches,
+                scorebug,
+            )
+        } else {
+            return getGameMessageWithoutScorebug(
+                game,
+                scenario,
+                messageContent,
+                homeCoaches,
+                awayCoaches,
+                offensiveCoaches,
+                defensiveCoaches,
+            )
+        }
+    }
+
+    private fun getGameMessageWithoutScorebug(
+        game: Game,
+        scenario: Scenario,
+        messageContent: String?,
+        homeCoaches: List<User?>,
+        awayCoaches: List<User?>,
+        offensiveCoaches: List<User?>,
+        defensiveCoaches: List<User?>,
+    ): Pair<Pair<String, EmbedData?>, List<User?>> {
+        val textScorebug =
             buildString {
-                when (scenario) {
-                    Scenario.GAME_START, Scenario.COIN_TOSS_CHOICE -> {
-                        append("\n\n").append(discordUtils.joinMentions(homeCoaches))
-                        append(" ").append(discordUtils.joinMentions(awayCoaches))
-                    }
-                    Scenario.NORMAL_NUMBER_REQUEST -> {
-                        append("\n\n").append(discordUtils.joinMentions(offensiveCoaches))
-                    }
-                    !in listOf(Scenario.DM_NUMBER_REQUEST, Scenario.NORMAL_NUMBER_REQUEST) -> {
-                        val coachesToMention = if (game.possession == TeamSide.HOME) awayCoaches else homeCoaches
-                        append("\n\n").append(discordUtils.joinMentions(coachesToMention))
-                    }
-                    else -> {}
-                }
+                append("\n\n----------------\n")
+                append("**" + game.homeTeam).append(":** ").append(game.homeScore).append("\n")
+                append("**" + game.awayTeam).append(":** ").append(game.awayScore).append("\n")
+                append("----------------\n")
             }
+        val embedData =
+            EmbedData(
+                title = Optional("${game.homeTeam.orEmpty()} vs ${game.awayTeam.orEmpty()}"),
+                description = Optional(messageContent + textScorebug),
+            )
+
+        val messageToSend = appendUserPings(scenario, game, homeCoaches, awayCoaches, offensiveCoaches)
 
         return (messageToSend to embedData) to defensiveCoaches
+    }
+
+    /**
+     * Get and return a game message with the scorebug as an embed
+     * @param game The game object
+     * @param scenario The scenario
+     * @param scorebug The scorebug image
+     * @param messageContent The message content
+     * @param homeCoaches The home team coaches
+     * @param awayCoaches The away team coaches
+     * @param offensiveCoaches The offensive team coaches
+     * @param defensiveCoaches The defensive team coaches
+     * @return The message content and embed data
+     */
+    private fun getGameMessageWithScorebug(
+        game: Game,
+        scenario: Scenario,
+        messageContent: String?,
+        homeCoaches: List<User?>,
+        awayCoaches: List<User?>,
+        offensiveCoaches: List<User?>,
+        defensiveCoaches: List<User?>,
+        scorebug: ByteArray,
+    ): Pair<Pair<String, EmbedData?>, List<User?>> {
+        val scorebugUrl =
+            scorebug.let {
+                val file = File("images/${game.gameId}_scorebug.png")
+                try {
+                    Files.write(file.toPath(), it, StandardOpenOption.CREATE)
+                } catch (e: Exception) {
+                    Logger.error("Failed to write scorebug image: ${e.stackTraceToString()}")
+                    return getGameMessageWithoutScorebug(
+                        game,
+                        scenario,
+                        messageContent,
+                        homeCoaches,
+                        awayCoaches,
+                        offensiveCoaches,
+                        defensiveCoaches,
+                    )
+                }
+                file.path
+            }
+
+        val embedData =
+            EmbedData(
+                title = Optional("${game.homeTeam.orEmpty()} vs ${game.awayTeam.orEmpty()}"),
+                description = Optional(messageContent.orEmpty()),
+                image = Optional(EmbedImageData(url = Optional(scorebugUrl))),
+            )
+
+        val messageToSend = appendUserPings(scenario, game, homeCoaches, awayCoaches, offensiveCoaches)
+
+        return (messageToSend to embedData) to defensiveCoaches
+    }
+
+    /**
+     * Append user pings to a message based on the scenario
+     * @param scenario The scenario
+     * @param game The game object
+     * @param homeCoaches The home team coaches
+     * @param awayCoaches The away team coaches
+     * @param offensiveCoaches The offensive team coaches
+     */
+    private fun appendUserPings(
+        scenario: Scenario,
+        game: Game,
+        homeCoaches: List<User?>,
+        awayCoaches: List<User?>,
+        offensiveCoaches: List<User?>,
+    ): String {
+        return buildString {
+            when (scenario) {
+                Scenario.GAME_START, Scenario.COIN_TOSS_CHOICE -> {
+                    append("\n\n").append(discordUtils.joinMentions(homeCoaches))
+                    append(" ").append(discordUtils.joinMentions(awayCoaches))
+                }
+                Scenario.NORMAL_NUMBER_REQUEST -> {
+                    append("\n\n").append(discordUtils.joinMentions(offensiveCoaches))
+                }
+                !in listOf(Scenario.DM_NUMBER_REQUEST, Scenario.NORMAL_NUMBER_REQUEST) -> {
+                    val coachesToMention = if (game.possession == TeamSide.HOME) awayCoaches else homeCoaches
+                    append("\n\n").append(discordUtils.joinMentions(coachesToMention))
+                }
+                else -> {}
+            }
+        }
     }
 
     /**
@@ -266,20 +376,34 @@ class DiscordMessages {
         user?.let {
             it.getDmChannel().createMessage {
                 embedData?.let { embed ->
-                    val file = addFile(Path(embed.image.value?.url?.value.toString()))
-                    embeds =
-                        mutableListOf(
-                            EmbedBuilder().apply {
-                                title = embed.title.value
-                                description = embed.description.value
-                                image = file.url
-                            },
-                        )
+                    if (embed.image.value?.url?.value == null) {
+                        embeds =
+                            mutableListOf(
+                                EmbedBuilder().apply {
+                                    title = embed.title.value
+                                    description = embed.description.value
+                                },
+                            )
+                    } else {
+                        val file = addFile(Path(embed.image.value?.url?.value.toString()))
+                        embeds =
+                            mutableListOf(
+                                EmbedBuilder().apply {
+                                    title = embed.title.value
+                                    description = embed.description.value
+                                    image = file.url
+                                },
+                            )
+                    }
                 }
                 content = messageContent
             }
         } ?: run {
             Logger.error(Error.PRIVATE_MESSAGE_EXCEPTION.message)
+        }
+
+        if (embedData != null) {
+            fileHandler.deleteFile(embedData.image.value?.url?.value.toString())
         }
     }
 
@@ -297,20 +421,34 @@ class DiscordMessages {
         message?.let {
             it.getChannel().createMessage {
                 embedData?.let { embed ->
-                    val file = addFile(Path(embed.image.value?.url?.value.toString()))
-                    embeds =
-                        mutableListOf(
-                            EmbedBuilder().apply {
-                                title = embed.title.value
-                                description = embed.description.value
-                                image = file.url
-                            },
-                        )
+                    if (embed.image.value?.url?.value == null) {
+                        embeds =
+                            mutableListOf(
+                                EmbedBuilder().apply {
+                                    title = embed.title.value
+                                    description = embed.description.value
+                                },
+                            )
+                    } else {
+                        val file = addFile(Path(embed.image.value?.url?.value.toString()))
+                        embeds =
+                            mutableListOf(
+                                EmbedBuilder().apply {
+                                    title = embed.title.value
+                                    description = embed.description.value
+                                    image = file.url
+                                },
+                            )
+                    }
                 }
                 content = messageContent
             }
         } ?: run {
             Logger.error(Error.GAME_THREAD_MESSAGE_EXCEPTION.message)
+        }
+
+        if (embedData != null) {
+            fileHandler.deleteFile(embedData.image.value?.url?.value.toString())
         }
     }
 
@@ -328,20 +466,34 @@ class DiscordMessages {
         textChannel?.let {
             it.createMessage {
                 embedData?.let { embed ->
-                    val file = addFile(Path(embed.image.value?.url?.value.toString()))
-                    embeds =
-                        mutableListOf(
-                            EmbedBuilder().apply {
-                                title = embed.title.value
-                                description = embed.description.value
-                                image = file.url
-                            },
-                        )
+                    if (embed.image.value?.url?.value == null) {
+                        embeds =
+                            mutableListOf(
+                                EmbedBuilder().apply {
+                                    title = embed.title.value
+                                    description = embed.description.value
+                                },
+                            )
+                    } else {
+                        val file = addFile(Path(embed.image.value?.url?.value.toString()))
+                        embeds =
+                            mutableListOf(
+                                EmbedBuilder().apply {
+                                    title = embed.title.value
+                                    description = embed.description.value
+                                    image = file.url
+                                },
+                            )
+                    }
                 }
                 content = messageContent
             }
         } ?: run {
             Logger.error(Error.GAME_THREAD_MESSAGE_EXCEPTION.message)
+        }
+
+        if (embedData != null) {
+            fileHandler.deleteFile(embedData.image.value?.url?.value.toString())
         }
     }
 }

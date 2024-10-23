@@ -1,4 +1,4 @@
-package com.fcfb.discord.refbot.discord.commands
+package com.fcfb.discord.refbot.commands
 
 import com.fcfb.discord.refbot.api.TeamClient
 import com.fcfb.discord.refbot.model.fcfb.CoachPosition

@@ -463,7 +463,7 @@ class GameUtils {
         val yardsToGoDescription = if ((this.yardsToGo?.plus(this.ballLocation ?: 0) ?: 0) >= 100) "goal" else "${this.yardsToGo}"
         val locationDescription = getLocationDescription()
 
-        return "It's $downDescription & $yardsToGoDescription on the $locationDescription"
+        return "It's $downDescription & $yardsToGoDescription on the $locationDescription."
     }
 
     /**

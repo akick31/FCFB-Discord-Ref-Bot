@@ -1,6 +1,9 @@
 ### Resources ###
 application.properties
 
+### Images ###
+*.png
+
 .idea
 .gradle
 build/

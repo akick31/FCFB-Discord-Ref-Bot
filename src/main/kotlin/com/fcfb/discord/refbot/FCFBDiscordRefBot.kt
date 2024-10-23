@@ -1,11 +1,11 @@
 package com.fcfb.discord.refbot
 
 import com.fcfb.discord.refbot.api.UserClient
-import com.fcfb.discord.refbot.discord.commands.AuthCommands
-import com.fcfb.discord.refbot.discord.commands.GeneralCommands
-import com.fcfb.discord.refbot.discord.commands.TeamCommands
-import com.fcfb.discord.refbot.game.DMLogic
-import com.fcfb.discord.refbot.game.GameLogic
+import com.fcfb.discord.refbot.commands.AuthCommands
+import com.fcfb.discord.refbot.commands.GeneralCommands
+import com.fcfb.discord.refbot.commands.TeamCommands
+import com.fcfb.discord.refbot.handlers.game.DMHandler
+import com.fcfb.discord.refbot.handlers.game.GameThreadHandler
 import com.fcfb.discord.refbot.model.fcfb.Role
 import com.fcfb.discord.refbot.model.fcfb.game.DefensivePlaybook
 import com.fcfb.discord.refbot.model.fcfb.game.Game
@@ -48,6 +48,11 @@ class FCFBDiscordRefBot {
 
     private val properties = Properties()
     private val startGameRequest = StartGameRequest()
+    private val gameThreadHandler = GameThreadHandler()
+    private val dmHandler = DMHandler()
+    private val authCommands = AuthCommands()
+    private val generalCommands = GeneralCommands()
+    private val teamCommands = TeamCommands()
     private val discordProperties = properties.getDiscordProperties()
 
     fun start() =
@@ -164,13 +169,13 @@ class FCFBDiscordRefBot {
             val command = interaction.command
             when (command.data.name.value) {
                 "register" -> {
-                    AuthCommands().registerUser(interaction, command)
+                    authCommands.registerUser(interaction, command)
                 }
                 "hire_coach" -> {
-                    TeamCommands().hireCoach(userRole, interaction, command)
+                    teamCommands.hireCoach(userRole, interaction, command)
                 }
                 "help" -> {
-                    GeneralCommands().help(interaction, userRole)
+                    generalCommands.help(interaction, userRole)
                 }
             }
         }
@@ -193,11 +198,11 @@ class FCFBDiscordRefBot {
                 // Check if the message is in a game thread and not sent by a bot, then handle game logic
                 if (channel.type == ChannelType.PublicGuildThread && channelParentId == discordProperties.gameChannelId) {
                     // Handle game logic here
-                    GameLogic().handleGameLogic(client, message)
+                    gameThreadHandler.handleGameLogic(client, message)
                 }
                 if (channel.type == ChannelType.DM) {
                     // Handle DM logic here
-                    DMLogic().handleDMLogic(client, message)
+                    dmHandler.handleDMLogic(client, message)
                 }
             } catch (e: Exception) {
                 Logger.error(e.message ?: "Unknown error occurred")

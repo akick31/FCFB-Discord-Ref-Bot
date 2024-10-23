@@ -1,25 +1,25 @@
-package com.fcfb.discord.refbot.game
+package com.fcfb.discord.refbot.handlers.game
 
 import com.fcfb.discord.refbot.api.GameClient
 import com.fcfb.discord.refbot.api.PlayClient
-import com.fcfb.discord.refbot.discord.DiscordMessages
+import com.fcfb.discord.refbot.handlers.ErrorHandler
+import com.fcfb.discord.refbot.handlers.discord.DiscordMessageHandler
 import com.fcfb.discord.refbot.model.discord.MessageConstants.Info
 import com.fcfb.discord.refbot.model.fcfb.game.ActualResult
 import com.fcfb.discord.refbot.model.fcfb.game.Game
 import com.fcfb.discord.refbot.model.fcfb.game.Scenario
 import com.fcfb.discord.refbot.utils.DiscordUtils
-import com.fcfb.discord.refbot.utils.ErrorUtils
 import com.fcfb.discord.refbot.utils.GameUtils
 import com.fcfb.discord.refbot.utils.Logger
 import dev.kord.core.Kord
 import dev.kord.core.entity.Message
 
-class GameLogic {
-    private val discordMessages = DiscordMessages()
+class GameThreadHandler {
+    private val discordMessageHandler = DiscordMessageHandler()
     private val gameClient = GameClient()
     private val playClient = PlayClient()
     private val gameUtils = GameUtils()
-    private val errorUtils = ErrorUtils()
+    private val errorHandler = ErrorHandler()
     private val discordUtils = DiscordUtils()
 
     /**
@@ -32,7 +32,7 @@ class GameLogic {
         message: Message,
     ) {
         val channelId = message.channelId.value.toString()
-        val game = gameClient.fetchGameByThreadId(channelId) ?: return errorUtils.noGameFoundError(message)
+        val game = gameClient.fetchGameByThreadId(channelId) ?: return errorHandler.noGameFoundError(message)
 
         // TODO: add command to ping user/resend message
 
@@ -40,8 +40,8 @@ class GameLogic {
             gameUtils.isPreGameBeforeCoinToss(game) -> handleCoinToss(client, game, message)
             gameUtils.isPreGameAfterCoinToss(game) -> handleCoinTossChoice(client, game, message)
             gameUtils.isWaitingOnOffensiveNumber(game, message) -> handleOffensiveNumberSubmission(client, game.gameId, message)
-            gameUtils.isWaitingOnDefensiveNumber(game, message) -> return errorUtils.waitingOnUserError(message)
-            !gameUtils.isGameWaitingOnUser(game, message) -> return errorUtils.notWaitingForUserError(message)
+            gameUtils.isWaitingOnDefensiveNumber(game, message) -> return errorHandler.waitingOnUserError(message)
+            !gameUtils.isGameWaitingOnUser(game, message) -> return errorHandler.notWaitingForUserError(message)
             else -> Logger.info("Could not determine what to do with the game state")
         }
     }
@@ -59,15 +59,15 @@ class GameLogic {
     ) {
         val number =
             when (val messageNumber = gameUtils.parseValidNumberFromMessage(message)) {
-                -1 -> return errorUtils.multipleNumbersFoundError(message)
-                -2 -> return errorUtils.invalidNumberError(message)
+                -1 -> return errorHandler.multipleNumbersFoundError(message)
+                -2 -> return errorHandler.invalidNumberError(message)
                 else -> messageNumber
             }
 
-        val playCall = gameUtils.parsePlayCallFromMessage(message) ?: return errorUtils.invalidPlayCall(message)
+        val playCall = gameUtils.parsePlayCallFromMessage(message) ?: return errorHandler.invalidPlayCall(message)
         val runoffType = gameUtils.parseRunoffTypeFromMessage(message)
         val timeoutCalled = gameUtils.parseTimeoutFromMessage(message)
-        val offensiveSubmitter = message.author?.username ?: return errorUtils.invalidOffensiveSubmitter(message)
+        val offensiveSubmitter = message.author?.username ?: return errorHandler.invalidOffensiveSubmitter(message)
 
         // Submit the offensive number and get the play outcome
         val playOutcome =
@@ -78,12 +78,12 @@ class GameLogic {
                 playCall,
                 runoffType,
                 timeoutCalled,
-            ) ?: return errorUtils.invalidOffensiveNumberSubmission(message)
+            ) ?: return errorHandler.invalidOffensiveNumberSubmission(message)
 
-        val game = gameClient.fetchGameByThreadId(message.channelId.value.toString()) ?: return errorUtils.noGameFoundError(message)
+        val game = gameClient.fetchGameByThreadId(message.channelId.value.toString()) ?: return errorHandler.noGameFoundError(message)
         val scenario = if (playOutcome.actualResult == ActualResult.TOUCHDOWN) Scenario.TOUCHDOWN else playOutcome.result!!
-        discordMessages.sendGameMessage(client, game, scenario, playOutcome, message, null, timeoutCalled)
-        discordMessages.sendRequestForDefensiveNumber(client, game, Scenario.DM_NUMBER_REQUEST, playOutcome)
+        discordMessageHandler.sendGameMessage(client, game, scenario, playOutcome, message, null, timeoutCalled)
+        discordMessageHandler.sendRequestForDefensiveNumber(client, game, Scenario.DM_NUMBER_REQUEST, playOutcome)
     }
 
     /**
@@ -99,18 +99,18 @@ class GameLogic {
     ) {
         val authorId = message.author?.id?.value.toString()
         if (!gameUtils.isValidCoinTossAuthor(authorId, game) || !gameUtils.isValidCoinTossResponse(message.content)) {
-            return errorUtils.waitingForCoinTossError(message)
+            return errorHandler.waitingForCoinTossError(message)
         }
 
         val updatedGame =
             gameClient.callCoinToss(game.gameId, message.content.uppercase())
-                ?: return errorUtils.invalidCoinToss(message)
+                ?: return errorHandler.invalidCoinToss(message)
 
         val coinTossWinningCoachList =
             gameUtils.getCoinTossWinners(client, updatedGame)
-                ?: return errorUtils.invalidCoinTossWinner(message)
+                ?: return errorHandler.invalidCoinTossWinner(message)
 
-        discordMessages.sendMessageFromMessageObject(
+        discordMessageHandler.sendMessageFromMessageObject(
             message,
             Info.COIN_TOSS_OUTCOME.message.format(discordUtils.joinMentions(coinTossWinningCoachList)),
             null,
@@ -128,15 +128,15 @@ class GameLogic {
         game: Game,
         message: Message,
     ) {
-        val coinTossWinningCoachList = gameUtils.getCoinTossWinners(client, game) ?: return errorUtils.invalidCoinTossWinner(message)
+        val coinTossWinningCoachList = gameUtils.getCoinTossWinners(client, game) ?: return errorHandler.invalidCoinTossWinner(message)
 
         if (message.author !in coinTossWinningCoachList && !gameUtils.isValidCoinTossChoice(message.content)) {
-            return errorUtils.waitingOnCoinTossChoiceError(message)
+            return errorHandler.waitingOnCoinTossChoiceError(message)
         }
 
-        gameClient.makeCoinTossChoice(game.gameId, message.content.uppercase()) ?: return errorUtils.invalidCoinTossChoice(message)
+        gameClient.makeCoinTossChoice(game.gameId, message.content.uppercase()) ?: return errorHandler.invalidCoinTossChoice(message)
 
-        discordMessages.sendGameMessage(client, game, Scenario.COIN_TOSS_CHOICE, null, message, null)
-        discordMessages.sendRequestForDefensiveNumber(client, game, Scenario.KICKOFF_NUMBER_REQUEST, null)
+        discordMessageHandler.sendGameMessage(client, game, Scenario.COIN_TOSS_CHOICE, null, message, null)
+        discordMessageHandler.sendRequestForDefensiveNumber(client, game, Scenario.KICKOFF_NUMBER_REQUEST, null)
     }
 }
