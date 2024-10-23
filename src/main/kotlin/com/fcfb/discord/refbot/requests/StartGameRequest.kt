@@ -1,6 +1,6 @@
 package com.fcfb.discord.refbot.requests
 
-import com.fcfb.discord.refbot.discord.DiscordMessages
+import com.fcfb.discord.refbot.handlers.discord.DiscordMessageHandler
 import com.fcfb.discord.refbot.model.fcfb.game.Game
 import com.fcfb.discord.refbot.model.fcfb.game.Scenario
 import com.fcfb.discord.refbot.utils.Logger
@@ -13,7 +13,7 @@ import dev.kord.core.entity.channel.thread.TextChannelThread
 class StartGameRequest {
     private val properties = Properties()
     private val discordProperties = properties.getDiscordProperties()
-    private val discordMessages = DiscordMessages()
+    private val discordMessageHandler = DiscordMessageHandler()
 
     /**
      * Start a new Discord game thread
@@ -66,7 +66,7 @@ class StartGameRequest {
                 }
 
             val message =
-                discordMessages.sendGameMessage(
+                discordMessageHandler.sendGameMessage(
                     client,
                     game,
                     Scenario.GAME_START,
