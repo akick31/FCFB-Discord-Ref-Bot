@@ -45,7 +45,7 @@ class DiscordMessageHandler {
      * @param timeoutCalled Whether a timeout was called
      * @return The message content and embed data
      */
-    private suspend fun getGameMessage(
+    private suspend fun createGameMessage(
         client: Kord,
         game: Game,
         scenario: Scenario,
@@ -142,7 +142,7 @@ class DiscordMessageHandler {
             }
 
         if (scorebug != null) {
-            return getGameMessageWithScorebug(
+            return createGameMessageWithScorebug(
                 game,
                 scenario,
                 messageContent,
@@ -153,7 +153,7 @@ class DiscordMessageHandler {
                 scorebug,
             )
         } else {
-            return getGameMessageWithoutScorebug(
+            return createGameMessageWithoutScorebug(
                 game,
                 scenario,
                 messageContent,
@@ -165,7 +165,7 @@ class DiscordMessageHandler {
         }
     }
 
-    private fun getGameMessageWithoutScorebug(
+    private fun createGameMessageWithoutScorebug(
         game: Game,
         scenario: Scenario,
         messageContent: String?,
@@ -204,7 +204,7 @@ class DiscordMessageHandler {
      * @param defensiveCoaches The defensive team coaches
      * @return The message content and embed data
      */
-    private fun getGameMessageWithScorebug(
+    private fun createGameMessageWithScorebug(
         game: Game,
         scenario: Scenario,
         messageContent: String?,
@@ -218,10 +218,19 @@ class DiscordMessageHandler {
             scorebug.let {
                 val file = File("images/${game.gameId}_scorebug.png")
                 try {
+                    // Ensure the images directory exists
+                    val imagesDir = File("images")
+                    if (!imagesDir.exists()) {
+                        if (imagesDir.mkdirs()) {
+                            Logger.info("Created images directory: ${imagesDir.absolutePath}")
+                        } else {
+                            Logger.info("Failed to create images directory.")
+                        }
+                    }
                     Files.write(file.toPath(), it, StandardOpenOption.CREATE)
                 } catch (e: Exception) {
                     Logger.error("Failed to write scorebug image: ${e.stackTraceToString()}")
-                    return getGameMessageWithoutScorebug(
+                    return createGameMessageWithoutScorebug(
                         game,
                         scenario,
                         messageContent,
@@ -300,7 +309,7 @@ class DiscordMessageHandler {
     ) {
         if (message != null && gameThread == null) {
             val gameMessage =
-                getGameMessage(client, game, scenario, play, timeoutCalled) ?: run {
+                createGameMessage(client, game, scenario, play, timeoutCalled) ?: run {
                     sendMessageFromMessageObject(message, Error.NO_WRITEUP_FOUND.message, null)
                     Logger.error(Error.NO_WRITEUP_FOUND.message)
                     return
@@ -308,7 +317,7 @@ class DiscordMessageHandler {
             sendMessageFromMessageObject(message, gameMessage.first.first, gameMessage.first.second)
         } else if (message == null && gameThread != null) {
             val gameMessage =
-                getGameMessage(client, game, scenario, play, timeoutCalled) ?: run {
+                createGameMessage(client, game, scenario, play, timeoutCalled) ?: run {
                     sendMessageFromTextChannelObject(gameThread, Error.NO_WRITEUP_FOUND.message, null)
                     Logger.error(Error.NO_WRITEUP_FOUND.message)
                     return
@@ -334,7 +343,7 @@ class DiscordMessageHandler {
         play: Play?,
     ) {
         val gameMessage =
-            getGameMessage(client, game, scenario, play, false) ?: run {
+            createGameMessage(client, game, scenario, play, false) ?: run {
                 Logger.error(Error.NO_WRITEUP_FOUND.message)
                 return
             }
