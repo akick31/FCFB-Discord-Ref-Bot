@@ -75,13 +75,13 @@ class RegisterCommand {
     ) {
         Logger.info("${interaction.user.username} is registering a new user")
         val response = interaction.deferEphemeralResponse()
-        val username = command.strings["username"]!!
-        val coachName = command.strings["coach_name"]!!
+        val username = command.options["username"]!!.value.toString()
+        val coachName = command.options["coach_name"]!!.value.toString()
         val discordUsername = interaction.user.username
-        val email = command.options["email"]!!
-        val password = command.options["password"]!!
+        val email = command.options["email"]!!.value.toString()
+        val password = command.options["password"]!!.value.toString()
         val positionString = command.options["position"]!!.value.toString()
-        val redditUsername = command.options["reddit_username"]
+        val redditUsername = command.options["reddit_username"]?.value.toString()
         val offensivePlaybookString = command.options["offensive_playbook"]!!.value.toString()
         val defensivePlaybookString = command.options["defensive_playbook"]!!.value.toString()
 
@@ -133,11 +133,11 @@ class RegisterCommand {
                 username = username,
                 coachName = coachName,
                 discordTag = discordUsername,
-                email = email.value.toString(),
-                password = password.value.toString(),
+                email = email,
+                password = password,
                 salt = "",
                 position = position,
-                redditUsername = redditUsername?.value.toString(),
+                redditUsername = redditUsername,
                 offensivePlaybook = offensivePlaybook,
                 defensivePlaybook = defensivePlaybook,
                 verificationToken = "",
