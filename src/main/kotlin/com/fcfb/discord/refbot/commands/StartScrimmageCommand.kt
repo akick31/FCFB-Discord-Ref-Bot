@@ -49,6 +49,6 @@ class StartScrimmageCommand {
             response.respond { this.content = "Started game between $homeTeam and $awayTeam" }
             Logger.info("${interaction.user.username} successfully started a scrimmage between $homeTeam and $awayTeam")
         }
-        //TODO add option to check db if game WAS created and remove it
+        // TODO add option to check db if game WAS created and remove it
     }
 }
