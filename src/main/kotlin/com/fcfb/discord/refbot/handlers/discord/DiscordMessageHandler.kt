@@ -141,7 +141,7 @@ class DiscordMessageHandler {
                 originalScorebug
             }
 
-        if (scorebug != null) {
+        if (scorebug != null && scenario != Scenario.NORMAL_NUMBER_REQUEST) {
             return createGameMessageWithScorebug(
                 game,
                 scenario,
