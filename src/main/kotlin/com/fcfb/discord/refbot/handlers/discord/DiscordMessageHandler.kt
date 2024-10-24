@@ -152,8 +152,19 @@ class DiscordMessageHandler {
                 defensiveCoaches,
                 scorebug,
             )
-        } else {
+        } else if (scenario == Scenario.NORMAL_NUMBER_REQUEST) {
             return createGameMessageWithoutScorebug(
+                game,
+                scenario,
+                messageContent,
+                homeCoaches,
+                awayCoaches,
+                offensiveCoaches,
+                defensiveCoaches,
+            )
+
+        } else {
+            return createGameMessageWithoutFallbackScorebug(
                 game,
                 scenario,
                 messageContent,
@@ -166,6 +177,26 @@ class DiscordMessageHandler {
     }
 
     private fun createGameMessageWithoutScorebug(
+        game: Game,
+        scenario: Scenario,
+        messageContent: String?,
+        homeCoaches: List<User?>,
+        awayCoaches: List<User?>,
+        offensiveCoaches: List<User?>,
+        defensiveCoaches: List<User?>,
+    ): Pair<Pair<String, EmbedData?>, List<User?>> {
+        val embedData =
+            EmbedData(
+                title = Optional("${game.homeTeam.orEmpty()} vs ${game.awayTeam.orEmpty()}"),
+                description = Optional(messageContent + ""),
+            )
+
+        val messageToSend = appendUserPings(scenario, game, homeCoaches, awayCoaches, offensiveCoaches)
+
+        return (messageToSend to embedData) to defensiveCoaches
+    }
+
+    private fun createGameMessageWithoutFallbackScorebug(
         game: Game,
         scenario: Scenario,
         messageContent: String?,
