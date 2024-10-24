@@ -83,6 +83,7 @@ enum class GameStatus(val description: String) {
 }
 
 enum class Subdivision(val description: String) {
+    FCFB("FCFB"),
     FBS("FBS"),
     FCS("FCS"),
     ;

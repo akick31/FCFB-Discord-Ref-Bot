@@ -35,7 +35,7 @@ class AuthClient {
 
     /**
      * Create a user in Arceus
-     * @param userId
+     * @param user
      * @return OngoingGame
      */
     internal suspend fun registerUser(user: FCFBUser): FCFBUser? {

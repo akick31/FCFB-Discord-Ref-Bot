@@ -2,19 +2,27 @@ package com.fcfb.discord.refbot.commands
 
 import com.fcfb.discord.refbot.model.fcfb.Role
 import com.fcfb.discord.refbot.utils.Logger
+import dev.kord.core.Kord
 import dev.kord.core.behavior.interaction.response.respond
 import dev.kord.core.entity.interaction.ChatInputCommandInteraction
 
-class GeneralCommands {
+class HelpCommand {
+    suspend fun register(client: Kord) {
+        client.createGlobalChatInputCommand(
+            "help",
+            "Shows help info and commands",
+        )
+    }
+
     /**
      * Display the help message
      * @param interaction The interaction object
      * @param userRole The role of the user
      * @return The help message
      */
-    suspend fun help(
-        interaction: ChatInputCommandInteraction,
+    suspend fun execute(
         userRole: Role,
+        interaction: ChatInputCommandInteraction,
     ) {
         Logger.info("${interaction.user.username} is calling the help command")
         val response = interaction.deferEphemeralResponse()
