@@ -36,11 +36,12 @@ class DMHandler {
         Logger.info("Game fetched: $game")
 
         if (game.waitingOn != game.possession) {
-            val number = when (val messageNumber = gameUtils.parseValidNumberFromMessage(message)) {
-                -1 -> return errorHandler.multipleNumbersFoundError(message)
-                -2 -> return errorHandler.invalidNumberError(message)
-                else -> messageNumber
-            }
+            val number =
+                when (val messageNumber = gameUtils.parseValidNumberFromMessage(message)) {
+                    -1 -> return errorHandler.multipleNumbersFoundError(message)
+                    -2 -> return errorHandler.invalidNumberError(message)
+                    else -> messageNumber
+                }
             val timeoutCalled = gameUtils.parseTimeoutFromMessage(message)
             val defensiveSubmitter = message.author?.username ?: return errorHandler.invalidDefensiveSubmitter(message)
 
