@@ -2,19 +2,34 @@ package com.fcfb.discord.refbot.api
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fcfb.discord.refbot.model.fcfb.game.Game
+import com.fcfb.discord.refbot.model.fcfb.game.GameType
+import com.fcfb.discord.refbot.model.fcfb.game.Platform
+import com.fcfb.discord.refbot.model.fcfb.game.Subdivision
+import com.fcfb.discord.refbot.model.fcfb.game.TVChannel
+import com.fcfb.discord.refbot.model.request.StartRequest
 import com.fcfb.discord.refbot.utils.Logger
 import io.ktor.client.HttpClient
+import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.request.get
+import io.ktor.client.request.post
 import io.ktor.client.request.put
+import io.ktor.client.request.setBody
 import io.ktor.client.statement.HttpResponse
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.ContentType
 import io.ktor.http.contentType
+import io.ktor.serialization.jackson.jackson
 import java.util.Properties
 
 class GameClient {
     private val baseUrl: String
-    private val httpClient = HttpClient()
+    private val httpClient =
+        HttpClient {
+            install(ContentNegotiation) {
+                // Configure Jackson for JSON serialization
+                jackson {}
+            }
+        }
 
     init {
         val stream =
@@ -23,6 +38,61 @@ class GameClient {
         val properties = Properties()
         properties.load(stream)
         baseUrl = properties.getProperty("api.url")
+    }
+
+    /**
+     * Start a new game
+     * @param homeTeam
+     * @param awayTeam
+     * @param season
+     * @param week
+     * @param subdivision
+     * @param tvChannel
+     * @param startTime
+     * @param location
+     * @param gameType
+     */
+    internal suspend fun startGame(
+        season: String?,
+        week: String?,
+        subdivision: Subdivision?,
+        homeTeam: String,
+        awayTeam: String,
+        tvChannel: TVChannel?,
+        startTime: String?,
+        location: String?,
+        gameType: GameType,
+    ): Game? {
+        val startRequest =
+            StartRequest(
+                homePlatform = Platform.DISCORD,
+                awayPlatform = Platform.DISCORD,
+                season = season,
+                week = week,
+                subdivision = subdivision,
+                homeTeam = homeTeam,
+                awayTeam = awayTeam,
+                tvChannel = tvChannel,
+                startTime = startTime,
+                location = location,
+                gameType = gameType,
+            )
+
+        val endpointUrl = "$baseUrl/game/start"
+
+        return try {
+            val response: HttpResponse =
+                httpClient.post(endpointUrl) {
+                    contentType(ContentType.Application.Json)
+                    setBody(startRequest)
+                }
+            val jsonResponse: String = response.bodyAsText()
+            val objectMapper = ObjectMapper()
+            return objectMapper.readValue(jsonResponse, Game::class.java)
+        } catch (e: Exception) {
+            Logger.error(e.message!!)
+            null
+        }
     }
 
     /**

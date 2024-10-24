@@ -10,16 +10,16 @@ import com.fcfb.discord.refbot.model.fcfb.game.OffensivePlaybook
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy::class)
 data class FCFBUser(
     @JsonProperty("id") var id: Long? = 0,
-    @JsonProperty("username") var username: String,
-    @JsonProperty("coach_name") var coachName: String,
-    @JsonProperty("discord_tag") var discordTag: String,
+    @JsonProperty("username") var username: String?,
+    @JsonProperty("coach_name") var coachName: String?,
+    @JsonProperty("discord_tag") var discordTag: String?,
     @JsonProperty("discord_id") var discordId: String? = null,
-    @JsonProperty("email") var email: String,
-    @JsonProperty("password") var password: String,
-    @JsonProperty("position") var position: CoachPosition,
+    @JsonProperty("email") var email: String?,
+    @JsonProperty("password") var password: String?,
+    @JsonProperty("position") var position: CoachPosition?,
     @JsonProperty("reddit_username") var redditUsername: String? = null,
     @JsonProperty("role") var role: Role? = USER,
-    @JsonProperty("salt") var salt: String,
+    @JsonProperty("salt") var salt: String?,
     @JsonProperty("team") var team: String? = null,
     @JsonProperty("wins") var wins: Int? = 0,
     @JsonProperty("losses") var losses: Int? = 0,
@@ -27,7 +27,7 @@ data class FCFBUser(
     @JsonProperty("offensive_playbook") var offensivePlaybook: OffensivePlaybook? = null,
     @JsonProperty("defensive_playbook") var defensivePlaybook: DefensivePlaybook? = null,
     @JsonProperty("approved") var approved: Byte? = 0,
-    @JsonProperty("verification_token") var verificationToken: String,
+    @JsonProperty("verification_token") var verificationToken: String?,
 )
 
 enum class CoachPosition(val description: String) {

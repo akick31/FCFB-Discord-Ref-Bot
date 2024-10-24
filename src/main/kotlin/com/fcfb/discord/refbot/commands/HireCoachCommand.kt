@@ -4,18 +4,43 @@ import com.fcfb.discord.refbot.api.TeamClient
 import com.fcfb.discord.refbot.model.fcfb.CoachPosition
 import com.fcfb.discord.refbot.model.fcfb.Role
 import com.fcfb.discord.refbot.utils.Logger
+import dev.kord.core.Kord
 import dev.kord.core.behavior.interaction.response.respond
 import dev.kord.core.entity.interaction.ChatInputCommandInteraction
 import dev.kord.core.entity.interaction.InteractionCommand
+import dev.kord.rest.builder.interaction.string
+import dev.kord.rest.builder.interaction.user
 
-class TeamCommands {
+class HireCoachCommand {
+    suspend fun register(client: Kord) {
+        client.createGlobalChatInputCommand(
+            "hire_coach",
+            "Hire a coach for a team",
+        ) {
+            user("coach", "Coach") {
+                required = true
+            }
+            string("team", "Team") {
+                required = true
+            }
+            string("position", "Position Hiring For") {
+                required = true
+                mutableListOf(
+                    choice("Head Coach", "Head Coach"),
+                    choice("Offensive Coordinator", "Offensive Coordinator"),
+                    choice("Defensive Coordinator", "Defensive Coordinator"),
+                )
+            }
+        }
+    }
+
     /**
      * Hire a new coach for a team
      * @param userRole The role of the user
      * @param interaction The interaction object
      * @param command The command object
      */
-    suspend fun hireCoach(
+    suspend fun execute(
         userRole: Role,
         interaction: ChatInputCommandInteraction,
         command: InteractionCommand,

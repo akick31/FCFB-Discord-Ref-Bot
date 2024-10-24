@@ -33,7 +33,7 @@ class TeamClient {
         teamName: String,
         discordId: String,
         coachPosition: CoachPosition,
-    ): com.fcfb.discord.refbot.model.fcfb.Team? {
+    ): Team? {
         val endpointUrl = "$baseUrl/team/${teamName.replace(" ", "_")}/hire?discordId=$discordId&coachPosition=$coachPosition"
 
         return try {

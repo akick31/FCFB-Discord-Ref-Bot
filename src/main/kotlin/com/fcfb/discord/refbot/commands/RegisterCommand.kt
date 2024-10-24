@@ -6,17 +6,70 @@ import com.fcfb.discord.refbot.model.fcfb.FCFBUser
 import com.fcfb.discord.refbot.model.fcfb.game.DefensivePlaybook
 import com.fcfb.discord.refbot.model.fcfb.game.OffensivePlaybook
 import com.fcfb.discord.refbot.utils.Logger
+import dev.kord.core.Kord
 import dev.kord.core.behavior.interaction.response.respond
 import dev.kord.core.entity.interaction.ChatInputCommandInteraction
 import dev.kord.core.entity.interaction.InteractionCommand
+import dev.kord.rest.builder.interaction.string
 
-class AuthCommands {
+class RegisterCommand {
+    suspend fun register(client: Kord) {
+        client.createGlobalChatInputCommand(
+            "register",
+            "Register a user to FCFB",
+        ) {
+            string("username", "Username") {
+                required = true
+            }
+            string("coach_name", "Coach Name") {
+                required = true
+            }
+            string("email", "Email") {
+                required = true
+            }
+            string("password", "Password") {
+                required = true
+            }
+            string("position", "Position") {
+                required = true
+                mutableListOf(
+                    choice("Head Coach", "Head Coach"),
+                    choice("Offensive Coordinator", "Offensive Coordinator"),
+                    choice("Defensive Coordinator", "Defensive Coordinator"),
+                )
+            }
+            string("offensive_playbook", "Offensive Playbook") {
+                required = true
+                mutableListOf(
+                    choice("Air Raid", OffensivePlaybook.AIR_RAID.toString()),
+                    choice("Spread", OffensivePlaybook.SPREAD.toString()),
+                    choice("Pro", OffensivePlaybook.PRO.toString()),
+                    choice("Flexbone", OffensivePlaybook.FLEXBONE.toString()),
+                    choice("West Coast", OffensivePlaybook.WEST_COAST.toString()),
+                )
+            }
+            string("defensive_playbook", "Defensive Playbook") {
+                required = true
+                mutableListOf(
+                    choice("4-3", DefensivePlaybook.FOUR_THREE.toString()),
+                    choice("3-4", DefensivePlaybook.THREE_FOUR.toString()),
+                    choice("5-2", DefensivePlaybook.FIVE_TWO.toString()),
+                    choice("4-4", DefensivePlaybook.FOUR_FOUR.toString()),
+                    choice("3-3-5", DefensivePlaybook.THREE_THREE_FIVE.toString()),
+                )
+            }
+            string("reddit_username", "Reddit Username") {
+                required = false
+            }
+        }
+    }
+
     /**
      * Register a new user
      * @param interaction The interaction object
      * @param command The command object
      */
-    suspend fun registerUser(
+    suspend fun execute(
         interaction: ChatInputCommandInteraction,
         command: InteractionCommand,
     ) {
