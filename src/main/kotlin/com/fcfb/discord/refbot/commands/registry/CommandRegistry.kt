@@ -22,11 +22,12 @@ class CommandRegistry {
     }
 
     suspend fun executeCommand(interaction: ChatInputCommandInteraction) {
-        val userRole = try {
-            userClient.getUserByDiscordId(interaction.user.id.toString())?.role ?: Role.USER
-        } catch (e: Exception) {
-            Role.USER
-        }
+        val userRole =
+            try {
+                userClient.getUserByDiscordId(interaction.user.id.toString())?.role ?: Role.USER
+            } catch (e: Exception) {
+                Role.USER
+            }
         val commandName = interaction.command.data.name.value
 
         when (commandName) {
