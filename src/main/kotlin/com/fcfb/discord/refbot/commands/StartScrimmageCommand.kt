@@ -43,11 +43,12 @@ class StartScrimmageCommand {
 
         val startedGame = gameClient.startGame(null, null, Subdivision.FCFB, homeTeam, awayTeam, null, null, null, gameType)
         if (startedGame == null) {
-            response.respond { this.content = "Start scrimmaged failed!" }
+            response.respond { this.content = "Start scrimmage failed!" }
             Logger.error("${interaction.user.username} failed to start a scrimmage between $homeTeam and $awayTeam")
         } else {
             response.respond { this.content = "Started game between $homeTeam and $awayTeam" }
             Logger.info("${interaction.user.username} successfully started a scrimmage between $homeTeam and $awayTeam")
         }
+        //TODO add option to check db if game WAS created and remove it
     }
 }
