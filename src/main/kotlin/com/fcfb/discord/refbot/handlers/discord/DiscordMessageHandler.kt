@@ -18,6 +18,7 @@ import dev.kord.common.entity.optional.Optional
 import dev.kord.core.Kord
 import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.cache.data.EmbedData
+import dev.kord.core.cache.data.EmbedFooterData
 import dev.kord.core.cache.data.EmbedImageData
 import dev.kord.core.entity.Message
 import dev.kord.core.entity.User
@@ -162,9 +163,8 @@ class DiscordMessageHandler {
                 offensiveCoaches,
                 defensiveCoaches,
             )
-
         } else {
-            return createGameMessageWithoutFallbackScorebug(
+            return createGameMessageWithFallbackScorebug(
                 game,
                 scenario,
                 messageContent,
@@ -176,6 +176,17 @@ class DiscordMessageHandler {
         }
     }
 
+    /**
+     * Get and return a game message without the scorebug as an embed
+     * @param game The game object
+     * @param scenario The scenario
+     * @param messageContent The message content
+     * @param homeCoaches The home team coaches
+     * @param awayCoaches The away team coaches
+     * @param offensiveCoaches The offensive team coaches
+     * @param defensiveCoaches The defensive team coaches
+     * @return The message content and embed data
+     */
     private fun createGameMessageWithoutScorebug(
         game: Game,
         scenario: Scenario,
@@ -189,6 +200,7 @@ class DiscordMessageHandler {
             EmbedData(
                 title = Optional("${game.homeTeam.orEmpty()} vs ${game.awayTeam.orEmpty()}"),
                 description = Optional(messageContent + ""),
+                footer = Optional(EmbedFooterData("Play ID: ${game.currentPlayId}")),
             )
 
         val messageToSend = appendUserPings(scenario, game, homeCoaches, awayCoaches, offensiveCoaches)
@@ -196,7 +208,18 @@ class DiscordMessageHandler {
         return (messageToSend to embedData) to defensiveCoaches
     }
 
-    private fun createGameMessageWithoutFallbackScorebug(
+    /**
+     * Get and return a game message with the fallback scorebug as an embed
+     * @param game The game object
+     * @param scenario The scenario
+     * @param messageContent The message content
+     * @param homeCoaches The home team coaches
+     * @param awayCoaches The away team coaches
+     * @param offensiveCoaches The offensive team coaches
+     * @param defensiveCoaches The defensive team coaches
+     * @return The message content and embed data
+     */
+    private fun createGameMessageWithFallbackScorebug(
         game: Game,
         scenario: Scenario,
         messageContent: String?,
@@ -216,6 +239,7 @@ class DiscordMessageHandler {
             EmbedData(
                 title = Optional("${game.homeTeam.orEmpty()} vs ${game.awayTeam.orEmpty()}"),
                 description = Optional(messageContent + textScorebug),
+                footer = Optional(EmbedFooterData("Play ID: ${game.currentPlayId}")),
             )
 
         val messageToSend = appendUserPings(scenario, game, homeCoaches, awayCoaches, offensiveCoaches)
@@ -279,6 +303,7 @@ class DiscordMessageHandler {
                 title = Optional("${game.homeTeam.orEmpty()} vs ${game.awayTeam.orEmpty()}"),
                 description = Optional(messageContent.orEmpty()),
                 image = Optional(EmbedImageData(url = Optional(scorebugUrl))),
+                footer = Optional(EmbedFooterData("Play ID: ${game.currentPlayId}")),
             )
 
         val messageToSend = appendUserPings(scenario, game, homeCoaches, awayCoaches, offensiveCoaches)
