@@ -6,7 +6,7 @@ pipeline {
         CONTAINER_NAME = 'FCFB-Discord-Ref-Bot_DEV'
         DOCKERFILE = 'Dockerfile'
         APP_PROPERTIES = "${env.WORKSPACE}/src/main/resources/application.properties"
-        DISCORD_TOKEN = credentials('REFBOT_DISCORD_TOKEN')
+        DISCORD_TOKEN = credentials('DEV_REFBOT_DISCORD_TOKEN')
         DISCORD_GUILD_ID = credentials('DEV_DISCORD_GUILD_ID')
         DISCORD_FORUM_CHANNEL_ID = credentials('DEV_DISCORD_FORUM_CHANNEL_ID')
     }
