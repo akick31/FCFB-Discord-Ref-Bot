@@ -2,8 +2,8 @@ pipeline {
     agent any
 
     environment {
-        IMAGE_NAME = 'fcfb-discord-ref-bot'
-        CONTAINER_NAME = 'FCFB-Discord-Ref-Bot'
+        IMAGE_NAME = 'fcfb-discord-ref-bot_PRD'
+        CONTAINER_NAME = 'FCFB-Discord-Ref-Bot_PRD'
         DOCKERFILE = 'Dockerfile'
         APP_PROPERTIES = "${env.WORKSPACE}/src/main/resources/application.properties"
         DISCORD_TOKEN = credentials('REFBOT_DISCORD_TOKEN')
@@ -62,6 +62,7 @@ pipeline {
                         discord.game.forum.id=${env.DISCORD_FORUM_CHANNEL_ID}
                         discord.guild.id=${env.DISCORD_GUILD_ID}
                         api.url=http://51.81.32.234:1212/arceus
+                        server.port=1211
                     """.stripIndent()
 
                     writeFile file: "${env.APP_PROPERTIES}", text: propertiesContent

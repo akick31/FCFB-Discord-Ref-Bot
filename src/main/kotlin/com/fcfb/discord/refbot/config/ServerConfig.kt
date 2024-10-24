@@ -2,6 +2,7 @@ package com.fcfb.discord.refbot.config
 
 import com.fcfb.discord.refbot.model.fcfb.game.Game
 import com.fcfb.discord.refbot.requests.StartGameRequest
+import com.fcfb.discord.refbot.utils.Properties
 import com.google.gson.FieldNamingPolicy
 import dev.kord.core.Kord
 import io.ktor.http.HttpStatusCode
@@ -23,7 +24,7 @@ class ServerConfig {
     private val startGameRequest = StartGameRequest()
 
     fun startKtorServer(client: Kord) {
-        embeddedServer(Netty, port = 1211) {
+        embeddedServer(Netty, port = Properties().getServerPort()) {
             configureServer(client)
         }.start(wait = true)
     }

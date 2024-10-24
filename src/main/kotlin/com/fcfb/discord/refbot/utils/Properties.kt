@@ -19,4 +19,12 @@ class Properties {
             gameChannelId,
         )
     }
+
+    @OptIn(KordPreview::class)
+    fun getServerPort(): Int {
+        val properties = java.util.Properties()
+        val configFile = FCFBDiscordRefBot::class.java.classLoader.getResourceAsStream("application.properties")
+        properties.load(configFile)
+        return properties.getProperty("server.port").toInt()
+    }
 }
