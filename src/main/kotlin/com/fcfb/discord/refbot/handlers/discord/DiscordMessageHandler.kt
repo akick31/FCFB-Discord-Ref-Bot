@@ -13,6 +13,7 @@ import com.fcfb.discord.refbot.model.fcfb.game.TeamSide
 import com.fcfb.discord.refbot.utils.DiscordUtils
 import com.fcfb.discord.refbot.utils.GameUtils
 import com.fcfb.discord.refbot.utils.Logger
+import com.kotlindiscord.kord.extensions.utils.getJumpUrl
 import dev.kord.common.entity.Snowflake
 import dev.kord.common.entity.optional.Optional
 import dev.kord.core.Kord
@@ -362,26 +363,26 @@ class DiscordMessageHandler {
         message: Message?,
         gameThread: TextChannelThread?,
         timeoutCalled: Boolean = false,
-    ) {
+    ): Message? {
         if (message != null && gameThread == null) {
             val gameMessage =
                 createGameMessage(client, game, scenario, play, timeoutCalled) ?: run {
-                    sendMessageFromMessageObject(message, Error.NO_WRITEUP_FOUND.message, null)
+                    val submittedMessage = sendMessageFromMessageObject(message, Error.NO_WRITEUP_FOUND.message, null)
                     Logger.error(Error.NO_WRITEUP_FOUND.message)
-                    return
+                    return submittedMessage
                 }
-            sendMessageFromMessageObject(message, gameMessage.first.first, gameMessage.first.second)
+            return sendMessageFromMessageObject(message, gameMessage.first.first, gameMessage.first.second)
         } else if (message == null && gameThread != null) {
             val gameMessage =
                 createGameMessage(client, game, scenario, play, timeoutCalled) ?: run {
-                    sendMessageFromTextChannelObject(gameThread, Error.NO_WRITEUP_FOUND.message, null)
+                    val submittedMessage = sendMessageFromTextChannelObject(gameThread, Error.NO_WRITEUP_FOUND.message, null)
                     Logger.error(Error.NO_WRITEUP_FOUND.message)
-                    return
+                    return submittedMessage
                 }
-            sendMessageFromTextChannelObject(gameThread, gameMessage.first.first, gameMessage.first.second)
+            return sendMessageFromTextChannelObject(gameThread, gameMessage.first.first, gameMessage.first.second)
         } else {
             Logger.error(Error.GAME_THREAD_MESSAGE_EXCEPTION.message)
-            return
+            return null
         }
     }
 
@@ -397,6 +398,7 @@ class DiscordMessageHandler {
         game: Game,
         scenario: Scenario,
         play: Play?,
+        previousMessage: Message? = null,
     ) {
         val gameMessage =
             createGameMessage(client, game, scenario, play, false) ?: run {
@@ -407,10 +409,10 @@ class DiscordMessageHandler {
         val defensiveCoaches = gameMessage.second
 
         return if (defensiveCoaches.size == 1) {
-            sendPrivateMessage(defensiveCoaches[0], embedData, messageContent)
+            sendPrivateMessage(defensiveCoaches[0], embedData, messageContent, previousMessage)
         } else {
-            sendPrivateMessage(defensiveCoaches[0], embedData, messageContent)
-            sendPrivateMessage(defensiveCoaches[1], embedData, messageContent)
+            sendPrivateMessage(defensiveCoaches[0], embedData, messageContent, previousMessage)
+            sendPrivateMessage(defensiveCoaches[1], embedData, messageContent, previousMessage)
         }
     }
 
@@ -437,6 +439,7 @@ class DiscordMessageHandler {
         user: User?,
         embedData: EmbedData?,
         messageContent: String,
+        previousMessage: Message? = null,
     ) {
         user?.let {
             it.getDmChannel().createMessage {
@@ -461,7 +464,7 @@ class DiscordMessageHandler {
                             )
                     }
                 }
-                content = messageContent
+                content = previousMessage?.getJumpUrl() + "\n" + messageContent
             }
         } ?: run {
             Logger.error(Error.PRIVATE_MESSAGE_EXCEPTION.message)
@@ -482,8 +485,8 @@ class DiscordMessageHandler {
         message: Message?,
         messageContent: String,
         embedData: EmbedData?,
-    ) {
-        message?.let {
+    ): Message? {
+        val submittedMessage = message?.let {
             it.getChannel().createMessage {
                 embedData?.let { embed ->
                     if (embed.image.value?.url?.value == null) {
@@ -510,11 +513,14 @@ class DiscordMessageHandler {
             }
         } ?: run {
             Logger.error(Error.GAME_THREAD_MESSAGE_EXCEPTION.message)
+            null
         }
 
         if (embedData != null) {
             fileHandler.deleteFile(embedData.image.value?.url?.value.toString())
         }
+
+        return submittedMessage
     }
 
     /**
@@ -527,38 +533,41 @@ class DiscordMessageHandler {
         textChannel: TextChannelThread?,
         messageContent: String,
         embedData: EmbedData?,
-    ) {
-        textChannel?.let {
+    ): Message? {
+        val submittedMessage = textChannel?.let {
             it.createMessage {
                 embedData?.let { embed ->
                     if (embed.image.value?.url?.value == null) {
                         embeds =
                             mutableListOf(
                                 EmbedBuilder().apply {
-                                    title = embed.title.value
-                                    description = embed.description.value
-                                },
-                            )
+                                   title = embed.title.value
+                                   description = embed.description.value
+                               },
+                           )
                     } else {
                         val file = addFile(Path(embed.image.value?.url?.value.toString()))
                         embeds =
                             mutableListOf(
                                 EmbedBuilder().apply {
-                                    title = embed.title.value
-                                    description = embed.description.value
-                                    image = file.url
-                                },
-                            )
-                    }
-                }
-                content = messageContent
-            }
+                                   title = embed.title.value
+                                   description = embed.description.value
+                                   image = file.url
+                               },
+                           )
+                   }
+               }
+               content = messageContent
+           }
         } ?: run {
             Logger.error(Error.GAME_THREAD_MESSAGE_EXCEPTION.message)
+            null
         }
 
         if (embedData != null) {
             fileHandler.deleteFile(embedData.image.value?.url?.value.toString())
         }
+
+        return submittedMessage
     }
 }

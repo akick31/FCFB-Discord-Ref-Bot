@@ -82,8 +82,8 @@ class GameThreadHandler {
 
         val game = gameClient.fetchGameByThreadId(message.channelId.value.toString()) ?: return errorHandler.noGameFoundError(message)
         val scenario = if (playOutcome.actualResult == ActualResult.TOUCHDOWN) Scenario.TOUCHDOWN else playOutcome.result!!
-        discordMessageHandler.sendGameMessage(client, game, scenario, playOutcome, message, null, timeoutCalled)
-        discordMessageHandler.sendRequestForDefensiveNumber(client, game, Scenario.DM_NUMBER_REQUEST, playOutcome)
+        val submittedMessage = discordMessageHandler.sendGameMessage(client, game, scenario, playOutcome, message, null, timeoutCalled)
+        discordMessageHandler.sendRequestForDefensiveNumber(client, game, Scenario.DM_NUMBER_REQUEST, playOutcome, submittedMessage)
     }
 
     /**
