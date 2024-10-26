@@ -77,7 +77,7 @@ class HireCoachCommand {
             Logger.error("${interaction.user.username} failed to hire a new coach for ${command.options["team"]!!.value}")
         } else {
             response.respond { this.content = "Hired ${coach.username} for $team" }
-            Logger.info("${interaction.user.username} successfully hired a new coach for for ${command.options["team"]!!.value}")
+            Logger.info("${interaction.user.username} successfully hired a new coach for ${command.options["team"]!!.value}")
         }
     }
 }

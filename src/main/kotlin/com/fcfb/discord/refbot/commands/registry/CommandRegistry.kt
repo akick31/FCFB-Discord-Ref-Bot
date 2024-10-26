@@ -4,6 +4,7 @@ import com.fcfb.discord.refbot.api.UserClient
 import com.fcfb.discord.refbot.commands.HelpCommand
 import com.fcfb.discord.refbot.commands.HireCoachCommand
 import com.fcfb.discord.refbot.commands.RegisterCommand
+import com.fcfb.discord.refbot.commands.RoleCommand
 import com.fcfb.discord.refbot.commands.StartGameCommand
 import com.fcfb.discord.refbot.commands.StartScrimmageCommand
 import com.fcfb.discord.refbot.model.fcfb.Role
@@ -19,6 +20,7 @@ class CommandRegistry {
 
         // Register all commands
         RegisterCommand().register(client)
+        RoleCommand().register(client)
         StartGameCommand().register(client)
         StartScrimmageCommand().register(client)
         HireCoachCommand().register(client)
@@ -37,6 +39,7 @@ class CommandRegistry {
         when (commandName) {
             "help" -> HelpCommand().execute(userRole, interaction)
             "register" -> RegisterCommand().execute(interaction, interaction.command)
+            "role" -> RoleCommand().execute(userRole, interaction, interaction.command)
             "start_game" -> StartGameCommand().execute(userRole, interaction, interaction.command)
             "start_scrimmage" -> StartScrimmageCommand().execute(interaction, interaction.command)
             "hire_coach" -> HireCoachCommand().execute(userRole, interaction, interaction.command)
