@@ -4,9 +4,11 @@ import com.fcfb.discord.refbot.api.GameClient
 import com.fcfb.discord.refbot.api.PlayClient
 import com.fcfb.discord.refbot.handlers.ErrorHandler
 import com.fcfb.discord.refbot.handlers.discord.DiscordMessageHandler
+import com.fcfb.discord.refbot.model.discord.MessageConstants.Error
 import com.fcfb.discord.refbot.model.discord.MessageConstants.Info
 import com.fcfb.discord.refbot.model.fcfb.game.ActualResult
 import com.fcfb.discord.refbot.model.fcfb.game.Game
+import com.fcfb.discord.refbot.model.fcfb.game.GameStatus
 import com.fcfb.discord.refbot.model.fcfb.game.Scenario
 import com.fcfb.discord.refbot.utils.DiscordUtils
 import com.fcfb.discord.refbot.utils.GameUtils
@@ -33,6 +35,9 @@ class GameThreadHandler {
     ) {
         val channelId = message.channelId.value.toString()
         val game = gameClient.fetchGameByThreadId(channelId) ?: return errorHandler.noGameFoundError(message)
+        if (game.gameStatus == GameStatus.FINAL) {
+            return discordMessageHandler.sendErrorMessage(message, Error.GAME_OVER)
+        }
 
         // TODO: add command to ping user/resend message
 
@@ -83,7 +88,17 @@ class GameThreadHandler {
         val game = gameClient.fetchGameByThreadId(message.channelId.value.toString()) ?: return errorHandler.noGameFoundError(message)
         val scenario = if (playOutcome.actualResult == ActualResult.TOUCHDOWN) Scenario.TOUCHDOWN else playOutcome.result!!
         val submittedMessage = discordMessageHandler.sendGameMessage(client, game, scenario, playOutcome, message, null, timeoutCalled)
-        discordMessageHandler.sendRequestForDefensiveNumber(client, game, Scenario.DM_NUMBER_REQUEST, playOutcome, submittedMessage)
+        if (game.gameStatus == GameStatus.FINAL) {
+            discordMessageHandler.sendGameMessage(client, game, Scenario.GAME_OVER, null, message, null)
+        } else {
+            discordMessageHandler.sendRequestForDefensiveNumber(
+                client,
+                game,
+                Scenario.DM_NUMBER_REQUEST,
+                playOutcome,
+                submittedMessage,
+            )
+        }
     }
 
     /**

@@ -558,4 +558,19 @@ class GameUtils {
             else -> "**COULD NOT DETERMINE PLAY OPTIONS, PLEASE USE YOUR BEST JUDGEMENT**"
         }
     }
+
+    /**
+     * Get the outcome message for a game
+     * @param game The game object
+     * @return The outcome message
+     */
+    fun getOutcomeMessage(game: Game): String {
+        if ((game.homeScore ?: 0) > (game.awayScore ?: 0)) {
+            return "${game.homeTeam} wins ${(game.homeScore ?: 0)}-${(game.awayScore ?: 0)}!"
+        } else if ((game.homeScore ?: 0) < (game.awayScore ?: 0)) {
+            return "${game.awayTeam} wins ${(game.awayScore ?: 0)}-${(game.homeScore ?: 0)}!"
+        } else {
+            return "The game ends in a tie!"
+        }
+    }
 }
