@@ -4,7 +4,9 @@ import com.fcfb.discord.refbot.api.GameClient
 import com.fcfb.discord.refbot.api.PlayClient
 import com.fcfb.discord.refbot.handlers.ErrorHandler
 import com.fcfb.discord.refbot.handlers.discord.DiscordMessageHandler
+import com.fcfb.discord.refbot.model.discord.MessageConstants.Error
 import com.fcfb.discord.refbot.model.discord.MessageConstants.Info
+import com.fcfb.discord.refbot.model.fcfb.game.GameStatus
 import com.fcfb.discord.refbot.model.fcfb.game.Platform
 import com.fcfb.discord.refbot.model.fcfb.game.Scenario
 import com.fcfb.discord.refbot.model.fcfb.game.TeamSide
@@ -31,8 +33,11 @@ class DMHandler {
         client: Kord,
         message: Message,
     ) {
-        val game =
-            gameClient.fetchGameByUserId(message.author?.id?.value.toString()) ?: return errorHandler.noGameFoundError(message)
+        val game = gameClient.fetchGameByUserId(message.author?.id?.value.toString())
+            ?: return errorHandler.noGameFoundError(message)
+        if (game.gameStatus == GameStatus.FINAL) {
+            return discordMessageHandler.sendErrorMessage(message, Error.GAME_OVER)
+        }
         Logger.info("Game fetched: $game")
 
         if (game.waitingOn != game.possession) {

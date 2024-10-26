@@ -23,6 +23,7 @@ class MessageConstants {
         NO_WRITEUP_FOUND("There was an issue getting the writeup message"),
         GAME_THREAD_MESSAGE_EXCEPTION("Could not send message to game thread via message object or text channel object"),
         PRIVATE_MESSAGE_EXCEPTION("Could not send private message to the user"),
+        GAME_OVER("This game is already over"),
         ;
 
         fun logError() {

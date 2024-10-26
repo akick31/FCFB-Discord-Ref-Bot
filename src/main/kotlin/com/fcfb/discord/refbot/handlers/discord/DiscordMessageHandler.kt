@@ -60,7 +60,7 @@ class DiscordMessageHandler {
         // Get message content but not play result for number requests, game start, and coin toss
         if (scenario == Scenario.DM_NUMBER_REQUEST || scenario == Scenario.KICKOFF_NUMBER_REQUEST ||
             scenario == Scenario.NORMAL_NUMBER_REQUEST || scenario == Scenario.GAME_START ||
-            scenario == Scenario.COIN_TOSS_CHOICE
+            scenario == Scenario.COIN_TOSS_CHOICE || scenario == Scenario.GAME_OVER
         ) {
             messageContent = gameWriteupClient.getGameMessageByScenario(scenario, null) ?: return null
         } else if (play?.playCall == PlayCall.PASS || play?.playCall == PlayCall.RUN) {
@@ -122,6 +122,7 @@ class DiscordMessageHandler {
                 "{ball_location_scenario}" to gameUtils.getBallLocationScenarioMessage(game, play),
                 "{dog_deadline}" to game.gameTimer.toString(),
                 "{play_options}" to gameUtils.getPlayOptions(game),
+                "{outcome}" to gameUtils.getOutcomeMessage(game),
                 "<br>" to "\n",
             )
 
@@ -329,7 +330,7 @@ class DiscordMessageHandler {
     ): String {
         return buildString {
             when (scenario) {
-                Scenario.GAME_START, Scenario.COIN_TOSS_CHOICE -> {
+                Scenario.GAME_START, Scenario.COIN_TOSS_CHOICE, Scenario.GAME_OVER-> {
                     append("\n\n").append(discordUtils.joinMentions(homeCoaches))
                     append(" ").append(discordUtils.joinMentions(awayCoaches))
                 }
