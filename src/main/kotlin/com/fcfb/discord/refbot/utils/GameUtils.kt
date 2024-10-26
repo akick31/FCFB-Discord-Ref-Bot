@@ -499,7 +499,6 @@ class GameUtils {
      * Get the message to append for a timeout if one was called
      * @param game The game object
      * @param play The play object
-     * @param timeoutCalled True if a timeout was called
      */
     fun getTimeoutMessage(
         game: Game,
@@ -532,7 +531,7 @@ class GameUtils {
                 play.offensiveTimeoutCalled == true &&
                 play.defensiveTimeoutCalled == true ->
                 "Both teams attempted to call a timeout, but the clock was stopped.\n\n"
-            timeoutCalled -> "${game.offensiveTeam()} called a timeout.\n\n"
+            timeoutCalled -> "${game.defensiveTeam()} is attempting to call a timeout.\n\n"
             else -> ""
         }
     }

@@ -87,9 +87,9 @@ class GameThreadHandler {
 
         val game = gameClient.fetchGameByThreadId(message.channelId.value.toString()) ?: return errorHandler.noGameFoundError(message)
         val scenario = if (playOutcome.actualResult == ActualResult.TOUCHDOWN) Scenario.TOUCHDOWN else playOutcome.result!!
-        val submittedMessage = discordMessageHandler.sendGameMessage(client, game, scenario, playOutcome, message, null, timeoutCalled)
+        val submittedMessage = discordMessageHandler.sendGameMessage(client, game, scenario, playOutcome, message, null, false)
         if (game.gameStatus == GameStatus.FINAL) {
-            discordMessageHandler.sendGameMessage(client, game, Scenario.GAME_OVER, null, message, null)
+            discordMessageHandler.sendGameMessage(client, game, Scenario.GAME_OVER, null, message, null, false)
         } else {
             discordMessageHandler.sendRequestForDefensiveNumber(
                 client,
@@ -151,7 +151,7 @@ class GameThreadHandler {
 
         gameClient.makeCoinTossChoice(game.gameId, message.content.uppercase()) ?: return errorHandler.invalidCoinTossChoice(message)
 
-        discordMessageHandler.sendGameMessage(client, game, Scenario.COIN_TOSS_CHOICE, null, message, null)
+        discordMessageHandler.sendGameMessage(client, game, Scenario.COIN_TOSS_CHOICE, null, message, null, false)
         discordMessageHandler.sendRequestForDefensiveNumber(client, game, Scenario.KICKOFF_NUMBER_REQUEST, null)
     }
 }
