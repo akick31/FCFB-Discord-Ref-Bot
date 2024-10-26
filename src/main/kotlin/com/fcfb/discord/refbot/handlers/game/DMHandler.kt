@@ -85,7 +85,7 @@ class DMHandler {
                 null,
                 null,
                 gameThread,
-                timeoutCalled
+                timeoutCalled,
             )
         } else {
             return errorHandler.notWaitingForUserError(message)

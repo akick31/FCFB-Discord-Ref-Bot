@@ -72,7 +72,7 @@ class StartGameRequest {
                 null,
                 null,
                 gameThread,
-                false
+                false,
             )
 
             Logger.info("Game thread created: $gameThread")
