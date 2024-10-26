@@ -71,6 +71,12 @@ class RoleCommand {
                 }
             }
 
+        if (userRole != Role.ADMIN && role == Role.ADMIN) {
+            response.respond { this.content = "You do not have permission to assign an admin role" }
+            Logger.error("${interaction.user.username} does not have permission to assign an admin role")
+            return
+        }
+
         val updatedRole = UserClient().updateUserRoleByDiscordId(user.id.value.toString(), role)
         if (updatedRole == null) {
             response.respond { this.content = "User role failed!" }
