@@ -91,7 +91,12 @@ class GameThreadHandler {
         if (game.gameStatus == GameStatus.FINAL) {
             discordMessageHandler.sendGameMessage(client, game, Scenario.GAME_OVER, null, message, null)
         } else {
-            discordMessageHandler.sendRequestForDefensiveNumber(client, game, Scenario.DM_NUMBER_REQUEST, playOutcome, submittedMessage
+            discordMessageHandler.sendRequestForDefensiveNumber(
+                client,
+                game,
+                Scenario.DM_NUMBER_REQUEST,
+                playOutcome,
+                submittedMessage,
             )
         }
     }

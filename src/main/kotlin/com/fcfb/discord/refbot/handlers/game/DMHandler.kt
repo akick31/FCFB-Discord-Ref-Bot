@@ -33,8 +33,9 @@ class DMHandler {
         client: Kord,
         message: Message,
     ) {
-        val game = gameClient.fetchGameByUserId(message.author?.id?.value.toString())
-            ?: return errorHandler.noGameFoundError(message)
+        val game =
+            gameClient.fetchGameByUserId(message.author?.id?.value.toString())
+                ?: return errorHandler.noGameFoundError(message)
         if (game.gameStatus == GameStatus.FINAL) {
             return discordMessageHandler.sendErrorMessage(message, Error.GAME_OVER)
         }

@@ -330,7 +330,7 @@ class DiscordMessageHandler {
     ): String {
         return buildString {
             when (scenario) {
-                Scenario.GAME_START, Scenario.COIN_TOSS_CHOICE, Scenario.GAME_OVER-> {
+                Scenario.GAME_START, Scenario.COIN_TOSS_CHOICE, Scenario.GAME_OVER -> {
                     append("\n\n").append(discordUtils.joinMentions(homeCoaches))
                     append(" ").append(discordUtils.joinMentions(awayCoaches))
                 }
@@ -487,35 +487,36 @@ class DiscordMessageHandler {
         messageContent: String,
         embedData: EmbedData?,
     ): Message? {
-        val submittedMessage = message?.let {
-            it.getChannel().createMessage {
-                embedData?.let { embed ->
-                    if (embed.image.value?.url?.value == null) {
-                        embeds =
-                            mutableListOf(
-                                EmbedBuilder().apply {
-                                    title = embed.title.value
-                                    description = embed.description.value
-                                },
-                            )
-                    } else {
-                        val file = addFile(Path(embed.image.value?.url?.value.toString()))
-                        embeds =
-                            mutableListOf(
-                                EmbedBuilder().apply {
-                                    title = embed.title.value
-                                    description = embed.description.value
-                                    image = file.url
-                                },
-                            )
+        val submittedMessage =
+            message?.let {
+                it.getChannel().createMessage {
+                    embedData?.let { embed ->
+                        if (embed.image.value?.url?.value == null) {
+                            embeds =
+                                mutableListOf(
+                                    EmbedBuilder().apply {
+                                        title = embed.title.value
+                                        description = embed.description.value
+                                    },
+                                )
+                        } else {
+                            val file = addFile(Path(embed.image.value?.url?.value.toString()))
+                            embeds =
+                                mutableListOf(
+                                    EmbedBuilder().apply {
+                                        title = embed.title.value
+                                        description = embed.description.value
+                                        image = file.url
+                                    },
+                                )
+                        }
                     }
+                    content = messageContent
                 }
-                content = messageContent
+            } ?: run {
+                Logger.error(Error.GAME_THREAD_MESSAGE_EXCEPTION.message)
+                null
             }
-        } ?: run {
-            Logger.error(Error.GAME_THREAD_MESSAGE_EXCEPTION.message)
-            null
-        }
 
         if (embedData != null) {
             fileHandler.deleteFile(embedData.image.value?.url?.value.toString())
@@ -535,35 +536,36 @@ class DiscordMessageHandler {
         messageContent: String,
         embedData: EmbedData?,
     ): Message? {
-        val submittedMessage = textChannel?.let {
-            it.createMessage {
-                embedData?.let { embed ->
-                    if (embed.image.value?.url?.value == null) {
-                        embeds =
-                            mutableListOf(
-                                EmbedBuilder().apply {
-                                   title = embed.title.value
-                                   description = embed.description.value
-                               },
-                           )
-                    } else {
-                        val file = addFile(Path(embed.image.value?.url?.value.toString()))
-                        embeds =
-                            mutableListOf(
-                                EmbedBuilder().apply {
-                                   title = embed.title.value
-                                   description = embed.description.value
-                                   image = file.url
-                               },
-                           )
-                   }
-               }
-               content = messageContent
-           }
-        } ?: run {
-            Logger.error(Error.GAME_THREAD_MESSAGE_EXCEPTION.message)
-            null
-        }
+        val submittedMessage =
+            textChannel?.let {
+                it.createMessage {
+                    embedData?.let { embed ->
+                        if (embed.image.value?.url?.value == null) {
+                            embeds =
+                                mutableListOf(
+                                    EmbedBuilder().apply {
+                                        title = embed.title.value
+                                        description = embed.description.value
+                                    },
+                                )
+                        } else {
+                            val file = addFile(Path(embed.image.value?.url?.value.toString()))
+                            embeds =
+                                mutableListOf(
+                                    EmbedBuilder().apply {
+                                        title = embed.title.value
+                                        description = embed.description.value
+                                        image = file.url
+                                    },
+                                )
+                        }
+                    }
+                    content = messageContent
+                }
+            } ?: run {
+                Logger.error(Error.GAME_THREAD_MESSAGE_EXCEPTION.message)
+                null
+            }
 
         if (embedData != null) {
             fileHandler.deleteFile(embedData.image.value?.url?.value.toString())
