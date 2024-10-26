@@ -34,7 +34,8 @@ class HelpCommand {
         if (userRole != Role.USER) {
             message += "\n" +
                 "`/start_game` - Start a new game\n" +
-                "`/assign_team` - Assign coach to a new team\n" +
+                "`/role` - Assign a role to a user\n" +
+                "`/hire_coach` - Assign coach to a new team\n" +
                 "`/delete_game` - Delete the current game\n" +
                 "`/end_game` - End the current game\n" +
                 "`/delete_user` - Delete a user\n" +

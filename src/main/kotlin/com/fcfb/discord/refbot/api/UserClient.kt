@@ -2,10 +2,12 @@ package com.fcfb.discord.refbot.api
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fcfb.discord.refbot.model.fcfb.FCFBUser
+import com.fcfb.discord.refbot.model.fcfb.Role
 import com.fcfb.discord.refbot.utils.Logger
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.request.get
+import io.ktor.client.request.put
 import io.ktor.client.statement.HttpResponse
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.ContentType
@@ -45,6 +47,29 @@ class UserClient {
                 httpClient.get(endpointUrl) {
                     contentType(ContentType.Application.Json)
                 }
+            val jsonResponse: String = response.bodyAsText()
+            val objectMapper = ObjectMapper()
+            objectMapper.readValue(jsonResponse, FCFBUser::class.java)
+        } catch (e: Exception) {
+            Logger.error(e.message!!)
+            null
+        }
+    }
+
+    /**
+     * Get a user by ID
+     * @param userId
+     * @return User
+     */
+    internal suspend fun updateUserRoleByDiscordId(
+        discordId: String,
+        role: Role,
+    ): FCFBUser? {
+        val endpointUrl = "$baseUrl/user/update/role?discord_id=$discordId&role=$role"
+
+        return try {
+            val response: HttpResponse =
+                httpClient.put(endpointUrl)
             val jsonResponse: String = response.bodyAsText()
             val objectMapper = ObjectMapper()
             objectMapper.readValue(jsonResponse, FCFBUser::class.java)
