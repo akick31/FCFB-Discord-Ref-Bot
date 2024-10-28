@@ -81,8 +81,8 @@ class DiscordMessageHandler {
         // Determine which team has possession and their coaches
         val (offensiveCoaches, defensiveCoaches) =
             when {
-                game.possession == TeamSide.HOME && gameUtils.isKickoff(play?.playCall) -> awayCoaches to homeCoaches
-                game.possession == TeamSide.AWAY && gameUtils.isKickoff(play?.playCall) -> homeCoaches to awayCoaches
+                game.possession == TeamSide.HOME && gameUtils.isKickoff(play?.playCall) -> homeCoaches to awayCoaches
+                game.possession == TeamSide.AWAY && gameUtils.isKickoff(play?.playCall) -> awayCoaches to homeCoaches
                 game.possession == TeamSide.HOME && game.currentPlayType == PlayType.KICKOFF -> homeCoaches to awayCoaches
                 game.possession == TeamSide.AWAY && game.currentPlayType == PlayType.KICKOFF -> awayCoaches to homeCoaches
                 game.possession == TeamSide.HOME -> homeCoaches to awayCoaches

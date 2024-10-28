@@ -8,7 +8,7 @@ class MessageConstants {
         WAITING_FOR_NUMBER_IN_DMS("This game is currently waiting on a number from you in your DMs"),
         WAITING_FOR_COIN_TOSS("This game is currently waiting on the away coach to call **heads** or **tails**"),
         WAITING_FOR_COIN_TOSS_CHOICE("This game is currently waiting on the coin toss winning coach to call **receive** or **defer**"),
-        NOT_WAITING_FOR_USER("This game is not currently waiting on you to submit a number"),
+        NOT_WAITING_FOR_USER("This game is not currently waiting on you to submit a number here"),
         MULTIPLE_NUMBERS_FOUND("Please only include one number in your message, multiple were found."),
         INVALID_NUMBER("Could not find a valid number in the message. Please include a valid number between 1 and 1500."),
         INVALID_PLAY("Could not find a valid play in the message"),
