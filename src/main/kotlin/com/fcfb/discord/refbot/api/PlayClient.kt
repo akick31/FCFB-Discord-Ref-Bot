@@ -47,8 +47,13 @@ class PlayClient {
                 "timeoutCalled=$timeoutCalled"
 
         return try {
-            val response: HttpResponse = httpClient.post(endpointUrl)
-            val jsonResponse: String = response.bodyAsText()
+            val response = httpClient.post(endpointUrl)
+            if (response.status.value != 200) {
+                Logger.error("Error submitting defensive number: ${response.status.value} error")
+                return null
+            }
+
+            val jsonResponse = response.bodyAsText()
             if (jsonResponse == "{}") {
                 return null
             }
@@ -96,8 +101,12 @@ class PlayClient {
                 "timeoutCalled=$offensiveTimeoutCalled"
 
         return try {
-            val response: HttpResponse = httpClient.put(endpointUrl)
-            val jsonResponse: String = response.bodyAsText()
+            val response = httpClient.put(endpointUrl)
+            if (response.status.value != 200) {
+                Logger.error("Error submitting offensive number: ${response.status.value} error")
+                return null
+            }
+            val jsonResponse = response.bodyAsText()
             if (jsonResponse == "{}") {
                 return null
             }
