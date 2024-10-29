@@ -202,7 +202,7 @@ class DiscordMessageHandler {
             EmbedData(
                 title = Optional("${game.homeTeam} vs ${game.awayTeam}"),
                 description = Optional(messageContent + ""),
-                footer = Optional(EmbedFooterData("Play ID: ${game.currentPlayId}")),
+                footer = Optional(EmbedFooterData(text = "Game ID: ${game.gameId} || Play ID: ${game.currentPlayId}")),
             )
 
         val messageToSend = appendUserPings(scenario, game, homeCoaches, awayCoaches, offensiveCoaches)
@@ -241,7 +241,7 @@ class DiscordMessageHandler {
             EmbedData(
                 title = Optional("${game.homeTeam} vs ${game.awayTeam}"),
                 description = Optional(messageContent + textScorebug),
-                footer = Optional(EmbedFooterData("Play ID: ${game.currentPlayId}")),
+                footer = Optional(EmbedFooterData(text = "Game ID: ${game.gameId} || Play ID: ${game.currentPlayId}")),
             )
 
         val messageToSend = appendUserPings(scenario, game, homeCoaches, awayCoaches, offensiveCoaches)
@@ -305,7 +305,7 @@ class DiscordMessageHandler {
                 title = Optional("${game.homeTeam} vs ${game.awayTeam}"),
                 description = Optional(messageContent.orEmpty()),
                 image = Optional(EmbedImageData(url = Optional(scorebugUrl))),
-                footer = Optional(EmbedFooterData("Play ID: ${game.currentPlayId}")),
+                footer = Optional(EmbedFooterData(text = "Game ID: ${game.gameId} || Play ID: ${game.currentPlayId}")),
             )
 
         val messageToSend = appendUserPings(scenario, game, homeCoaches, awayCoaches, offensiveCoaches)
@@ -451,6 +451,9 @@ class DiscordMessageHandler {
                                 EmbedBuilder().apply {
                                     title = embed.title.value
                                     description = embed.description.value
+                                    footer {
+                                        text = embed.footer.value?.text ?: ""
+                                    }
                                 },
                             )
                     } else {
@@ -461,6 +464,9 @@ class DiscordMessageHandler {
                                     title = embed.title.value
                                     description = embed.description.value
                                     image = file.url
+                                    footer {
+                                        text = embed.footer.value?.text ?: ""
+                                    }
                                 },
                             )
                     }
@@ -497,6 +503,9 @@ class DiscordMessageHandler {
                                     EmbedBuilder().apply {
                                         title = embed.title.value
                                         description = embed.description.value
+                                        footer {
+                                            text = embed.footer.value?.text ?: ""
+                                        }
                                     },
                                 )
                         } else {
@@ -507,6 +516,9 @@ class DiscordMessageHandler {
                                         title = embed.title.value
                                         description = embed.description.value
                                         image = file.url
+                                        footer {
+                                            text = embed.footer.value?.text ?: ""
+                                        }
                                     },
                                 )
                         }
@@ -546,6 +558,9 @@ class DiscordMessageHandler {
                                     EmbedBuilder().apply {
                                         title = embed.title.value
                                         description = embed.description.value
+                                        footer {
+                                            text = embed.footer.value?.text ?: ""
+                                        }
                                     },
                                 )
                         } else {
@@ -556,6 +571,9 @@ class DiscordMessageHandler {
                                         title = embed.title.value
                                         description = embed.description.value
                                         image = file.url
+                                        footer {
+                                            text = embed.footer.value?.text ?: ""
+                                        }
                                     },
                                 )
                         }
