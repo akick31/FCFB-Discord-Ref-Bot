@@ -41,7 +41,7 @@ class DMHandler {
         }
         Logger.info("Game fetched: $game")
 
-        if (game.waitingOn != game.possession) {
+        if (game.waitingOn != game.possession && game.gameStatus != GameStatus.PREGAME) {
             val number =
                 when (val messageNumber = gameUtils.parseValidNumberFromMessage(message)) {
                     -1 -> return errorHandler.multipleNumbersFoundError(message)

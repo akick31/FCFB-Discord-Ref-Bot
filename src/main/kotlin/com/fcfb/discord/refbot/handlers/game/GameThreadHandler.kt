@@ -117,12 +117,13 @@ class GameThreadHandler {
         message: Message,
     ) {
         val authorId = message.author?.id?.value.toString()
-        if (!gameUtils.isValidCoinTossAuthor(authorId, game) || !gameUtils.isValidCoinTossResponse(message.content)) {
+        val coinTossResponse = message.content.split(" ")[1]
+        if (!gameUtils.isValidCoinTossAuthor(authorId, game) || !gameUtils.isValidCoinTossResponse(coinTossResponse)) {
             return errorHandler.waitingForCoinTossError(message)
         }
 
         val updatedGame =
-            gameClient.callCoinToss(game.gameId, message.content.uppercase())
+            gameClient.callCoinToss(game.gameId, coinTossResponse.uppercase())
                 ?: return errorHandler.invalidCoinToss(message)
 
         val coinTossWinningCoachList =
@@ -148,12 +149,12 @@ class GameThreadHandler {
         message: Message,
     ) {
         val coinTossWinningCoachList = gameUtils.getCoinTossWinners(client, game) ?: return errorHandler.invalidCoinTossWinner(message)
-
-        if (message.author !in coinTossWinningCoachList && !gameUtils.isValidCoinTossChoice(message.content)) {
+        val coinTossChoice = message.content.split(" ")[1]
+        if (message.author !in coinTossWinningCoachList && !gameUtils.isValidCoinTossChoice(coinTossChoice)) {
             return errorHandler.waitingOnCoinTossChoiceError(message)
         }
 
-        gameClient.makeCoinTossChoice(game.gameId, message.content.uppercase()) ?: return errorHandler.invalidCoinTossChoice(message)
+        gameClient.makeCoinTossChoice(game.gameId, coinTossChoice.uppercase()) ?: return errorHandler.invalidCoinTossChoice(message)
 
         discordMessageHandler.sendGameMessage(client, game, Scenario.COIN_TOSS_CHOICE, null, message, null, false)
         discordMessageHandler.sendRequestForDefensiveNumber(client, game, Scenario.KICKOFF_NUMBER_REQUEST, null)
