@@ -46,12 +46,12 @@ class DMHandler {
         val isAwayCoach = game.awayCoachDiscordId1 == userId || game.awayCoachDiscordId2 == userId
 
         if (game.waitingOn != game.possession &&
-                game.gameStatus != GameStatus.PREGAME &&
-                (
-                    (game.waitingOn == TeamSide.HOME && isHomeCoach) ||
+            game.gameStatus != GameStatus.PREGAME &&
+            (
+                (game.waitingOn == TeamSide.HOME && isHomeCoach) ||
                     (game.waitingOn == TeamSide.AWAY && isAwayCoach)
-                )
-            ) {
+            )
+        ) {
             val number =
                 when (val messageNumber = gameUtils.parseValidNumberFromMessage(message)) {
                     -1 -> return errorHandler.multipleNumbersFoundError(message)
