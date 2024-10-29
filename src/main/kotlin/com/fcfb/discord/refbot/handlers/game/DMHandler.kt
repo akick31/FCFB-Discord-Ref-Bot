@@ -33,15 +33,25 @@ class DMHandler {
         client: Kord,
         message: Message,
     ) {
+        val userId = message.author?.id?.value.toString()
         val game =
-            gameClient.fetchGameByUserId(message.author?.id?.value.toString())
+            gameClient.fetchGameByUserId(userId)
                 ?: return errorHandler.noGameFoundError(message)
         if (game.gameStatus == GameStatus.FINAL) {
             return discordMessageHandler.sendErrorMessage(message, Error.GAME_OVER)
         }
         Logger.info("Game fetched: $game")
 
-        if (game.waitingOn != game.possession && game.gameStatus != GameStatus.PREGAME) {
+        val isHomeCoach = game.homeCoachDiscordId1 == userId || game.homeCoachDiscordId2 == userId
+        val isAwayCoach = game.awayCoachDiscordId1 == userId || game.awayCoachDiscordId2 == userId
+
+        if (game.waitingOn != game.possession &&
+                game.gameStatus != GameStatus.PREGAME &&
+                (
+                    (game.waitingOn == TeamSide.HOME && isHomeCoach) ||
+                    (game.waitingOn == TeamSide.AWAY && isAwayCoach)
+                )
+            ) {
             val number =
                 when (val messageNumber = gameUtils.parseValidNumberFromMessage(message)) {
                     -1 -> return errorHandler.multipleNumbersFoundError(message)

@@ -151,9 +151,9 @@ class GameThreadHandler {
             return errorHandler.waitingOnCoinTossChoiceError(message)
         }
 
-        gameClient.makeCoinTossChoice(game.gameId, coinTossChoice.uppercase()) ?: return errorHandler.invalidCoinTossChoice(message)
+        val updatedGame = gameClient.makeCoinTossChoice(game.gameId, coinTossChoice.uppercase()) ?: return errorHandler.invalidCoinTossChoice(message)
 
-        discordMessageHandler.sendGameMessage(client, game, Scenario.COIN_TOSS_CHOICE, null, message, null, false)
-        discordMessageHandler.sendRequestForDefensiveNumber(client, game, Scenario.KICKOFF_NUMBER_REQUEST, null)
+        discordMessageHandler.sendGameMessage(client, updatedGame, Scenario.COIN_TOSS_CHOICE, null, message, null, false)
+        discordMessageHandler.sendRequestForDefensiveNumber(client, updatedGame, Scenario.KICKOFF_NUMBER_REQUEST, null)
     }
 }
