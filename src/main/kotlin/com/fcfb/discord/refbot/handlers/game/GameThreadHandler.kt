@@ -14,10 +14,7 @@ import com.fcfb.discord.refbot.utils.DiscordUtils
 import com.fcfb.discord.refbot.utils.GameUtils
 import com.fcfb.discord.refbot.utils.Logger
 import dev.kord.core.Kord
-import dev.kord.core.behavior.channel.asChannelOf
-import dev.kord.core.behavior.channel.threads.edit
 import dev.kord.core.entity.Message
-import dev.kord.core.entity.channel.thread.TextChannelThread
 
 class GameThreadHandler {
     private val discordMessageHandler = DiscordMessageHandler()

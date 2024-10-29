@@ -471,11 +471,12 @@ class DiscordMessageHandler {
                             )
                     }
                 }
-                content = if (previousMessage == null) {
-                    messageContent
-                } else {
-                    (previousMessage.getJumpUrl()) + "\n" + messageContent
-                }
+                content =
+                    if (previousMessage == null) {
+                        messageContent
+                    } else {
+                        (previousMessage.getJumpUrl()) + "\n" + messageContent
+                    }
             }
         } ?: run {
             Logger.error(Error.PRIVATE_MESSAGE_EXCEPTION.message)
