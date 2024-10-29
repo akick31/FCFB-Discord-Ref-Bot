@@ -14,7 +14,10 @@ import com.fcfb.discord.refbot.utils.DiscordUtils
 import com.fcfb.discord.refbot.utils.GameUtils
 import com.fcfb.discord.refbot.utils.Logger
 import dev.kord.core.Kord
+import dev.kord.core.behavior.channel.asChannelOf
+import dev.kord.core.behavior.channel.threads.edit
 import dev.kord.core.entity.Message
+import dev.kord.core.entity.channel.thread.TextChannelThread
 
 class GameThreadHandler {
     private val discordMessageHandler = DiscordMessageHandler()
@@ -90,6 +93,7 @@ class GameThreadHandler {
         val submittedMessage = discordMessageHandler.sendGameMessage(client, game, scenario, playOutcome, message, null, false)
         if (game.gameStatus == GameStatus.FINAL) {
             discordMessageHandler.sendGameMessage(client, game, Scenario.GAME_OVER, null, message, null, false)
+            discordUtils.updateThread(discordUtils.getTextChannelThread(message), game)
         } else {
             discordMessageHandler.sendRequestForDefensiveNumber(
                 client,

@@ -3,6 +3,7 @@ package com.fcfb.discord.refbot.requests
 import com.fcfb.discord.refbot.handlers.discord.DiscordMessageHandler
 import com.fcfb.discord.refbot.model.fcfb.game.Game
 import com.fcfb.discord.refbot.model.fcfb.game.Scenario
+import com.fcfb.discord.refbot.utils.DiscordUtils
 import com.fcfb.discord.refbot.utils.Logger
 import com.fcfb.discord.refbot.utils.Properties
 import dev.kord.common.entity.Snowflake
@@ -11,8 +12,7 @@ import dev.kord.core.entity.channel.ForumChannel
 import dev.kord.core.entity.channel.thread.TextChannelThread
 
 class StartGameRequest {
-    private val properties = Properties()
-    private val discordProperties = properties.getDiscordProperties()
+    private val discordUtils = DiscordUtils()
     private val discordMessageHandler = DiscordMessageHandler()
 
     /**
@@ -26,44 +26,7 @@ class StartGameRequest {
     ): Snowflake? {
         var gameThread: TextChannelThread? = null
         return try {
-            val guild = client.getGuild(Snowflake(discordProperties.guildId))
-            val gameChannel = guild.getChannel(Snowflake(discordProperties.gameChannelId)) as ForumChannel
-
-            // Get the available tags in the game channel
-            val availableTags = gameChannel.availableTags
-            val tagsToApply = mutableListOf<Snowflake>()
-            for (tag in availableTags) {
-                if (tag.name == game.subdivision?.description) {
-                    tagsToApply.add(tag.id)
-                }
-                if (tag.name == "Week " + game.week) {
-                    tagsToApply.add(tag.id)
-                }
-                if (tag.name == "Season " + game.season) {
-                    tagsToApply.add(tag.id)
-                }
-            }
-
-            val tags = availableTags.filter { it.name == game.gameType?.description }.map { it.id }
-
-            for (tag in tags) {
-                tagsToApply.add(tag)
-            }
-
-            // Get the thread name
-            val threadName = game.homeTeam + " vs " + game.awayTeam
-
-            // Get the thread content
-            val threadContent = "Please submit bugs here: https://github.com/akick31/FCFB-Discord-Ref-Bot/issues"
-
-            gameThread =
-                gameChannel.startPublicThread(threadName) {
-                    name = threadName
-                    appliedTags = tagsToApply
-                    message {
-                        content = threadContent
-                    }
-                }
+            gameThread = discordUtils.createGameThread(client, game)
 
             discordMessageHandler.sendGameMessage(
                 client,
