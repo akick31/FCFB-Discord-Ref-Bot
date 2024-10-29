@@ -133,6 +133,7 @@ class RegisterCommand {
                 username = username,
                 coachName = coachName,
                 discordTag = discordUsername,
+                discordId = interaction.user.id.toString(),
                 email = email,
                 password = password,
                 salt = "",

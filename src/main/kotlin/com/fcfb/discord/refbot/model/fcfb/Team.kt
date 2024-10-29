@@ -9,12 +9,12 @@ import com.fcfb.discord.refbot.model.fcfb.game.Subdivision
 
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy::class)
 data class Team(
-    @JsonProperty("id") var id: Long? = 0,
+    @JsonProperty("id") var id: Long = 0,
     @JsonProperty("logo") var logo: String? = null,
-    @JsonProperty("coach_username1") var coachUsername1: String? = null,
-    @JsonProperty("coach_name1") var coachName1: String? = null,
-    @JsonProperty("coach_discord_tag1") var coachDiscordTag1: String? = null,
-    @JsonProperty("coach_discord_id1") var coachDiscordId1: String? = null,
+    @JsonProperty("coach_username1") var coachUsername1: String,
+    @JsonProperty("coach_name1") var coachName1: String,
+    @JsonProperty("coach_discord_tag1") var coachDiscordTag1: String,
+    @JsonProperty("coach_discord_id1") var coachDiscordId1: String,
     @JsonProperty("coach_username2") var coachUsername2: String? = null,
     @JsonProperty("coach_name2") var coachName2: String? = null,
     @JsonProperty("coach_discord_tag2") var coachDiscordTag2: String? = null,
@@ -26,8 +26,8 @@ data class Team(
     @JsonProperty("primary_color") var primaryColor: String? = null,
     @JsonProperty("secondary_color") var secondaryColor: String? = null,
     @JsonProperty("subdivision") var subdivision: Subdivision? = null,
-    @JsonProperty("offensive_playbook") var offensivePlaybook: OffensivePlaybook? = null,
-    @JsonProperty("defensive_playbook") var defensivePlaybook: DefensivePlaybook? = null,
+    @JsonProperty("offensive_playbook") var offensivePlaybook: OffensivePlaybook,
+    @JsonProperty("defensive_playbook") var defensivePlaybook: DefensivePlaybook,
     @JsonProperty("conference") var conference: Conference? = null,
     @JsonProperty("current_wins") var currentWins: Int? = null,
     @JsonProperty("current_losses") var currentLosses: Int? = null,
