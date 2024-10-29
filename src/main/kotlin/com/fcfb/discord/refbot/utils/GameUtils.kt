@@ -293,7 +293,7 @@ class GameUtils {
                     )
                 }
             TeamSide.AWAY ->
-                listOfNotNull(game.homeCoachDiscordId1, game.homeCoachDiscordId2).map {
+                listOfNotNull(game.awayCoachDiscordId1, game.awayCoachDiscordId1).map {
                     client.getUser(
                         Snowflake(it),
                     )
