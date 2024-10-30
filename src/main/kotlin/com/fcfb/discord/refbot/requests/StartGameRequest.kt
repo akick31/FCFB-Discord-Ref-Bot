@@ -1,5 +1,7 @@
 package com.fcfb.discord.refbot.requests
 
+import com.fcfb.discord.refbot.api.GameClient
+import com.fcfb.discord.refbot.handlers.ErrorHandler
 import com.fcfb.discord.refbot.handlers.discord.DiscordMessageHandler
 import com.fcfb.discord.refbot.handlers.discord.TextChannelThreadHandler
 import com.fcfb.discord.refbot.model.fcfb.game.Game
@@ -12,6 +14,7 @@ import dev.kord.core.entity.channel.thread.TextChannelThread
 class StartGameRequest {
     private val textChannelThreadHandler = TextChannelThreadHandler()
     private val discordMessageHandler = DiscordMessageHandler()
+    private val errorHandler = ErrorHandler()
 
     /**
      * Start a new Discord game thread
@@ -26,15 +29,18 @@ class StartGameRequest {
         return try {
             gameThread = textChannelThreadHandler.createGameThread(client, game)
 
-            discordMessageHandler.sendGameMessage(
-                client,
-                game,
-                Scenario.GAME_START,
-                null,
-                null,
-                gameThread,
-                false,
-            )
+            val numberRequestMessage =
+                discordMessageHandler.sendGameMessage(
+                    client,
+                    game,
+                    Scenario.GAME_START,
+                    null,
+                    null,
+                    gameThread,
+                    false,
+                ) ?: return null
+
+            GameClient().updateRequestMessageId(game.gameId, numberRequestMessage to null)
 
             Logger.info("Game thread created: $gameThread")
             gameThread.id

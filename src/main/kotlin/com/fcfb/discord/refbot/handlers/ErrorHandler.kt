@@ -103,6 +103,9 @@ class ErrorHandler {
      */
     internal suspend fun invalidNumberError(message: Message) = discordMessageHandler.sendErrorMessage(message, Error.INVALID_NUMBER)
 
-    internal suspend fun userMightBeAttemptingToPlayError(message: Message) =
-        discordMessageHandler.sendErrorMessage(message, Error.USER_MIGHT_BE_ATTEMPTING_TO_PLAY)
+    /**
+     * Handle failed to send number request message
+     */
+    internal suspend fun failedToSendNumberRequestMessage(message: Message) =
+        discordMessageHandler.sendErrorMessage(message, Error.FAILED_TO_SEND_NUMBER_REQUEST_MESSAGE)
 }

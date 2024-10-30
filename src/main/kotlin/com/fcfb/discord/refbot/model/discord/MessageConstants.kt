@@ -23,9 +23,7 @@ class MessageConstants {
         NO_WRITEUP_FOUND("There was an issue getting the writeup message"),
         GAME_THREAD_MESSAGE_EXCEPTION("Could not send message to game thread via message object or text channel object"),
         PRIVATE_MESSAGE_EXCEPTION("Could not send private message to the user"),
-        USER_MIGHT_BE_ATTEMPTING_TO_PLAY(
-            "It looks like you might be trying to call a play. Please use the play command **!p** or **!play** in the game thread.",
-        ),
+        FAILED_TO_SEND_NUMBER_REQUEST_MESSAGE("Failed to send the number request message"),
         GAME_OVER("This game is already over"),
         ;
 
