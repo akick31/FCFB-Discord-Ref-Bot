@@ -10,7 +10,6 @@ import com.fcfb.discord.refbot.model.fcfb.game.PlayCall
 import com.fcfb.discord.refbot.model.fcfb.game.PlayType
 import com.fcfb.discord.refbot.model.fcfb.game.Scenario
 import com.fcfb.discord.refbot.model.fcfb.game.TeamSide
-import com.fcfb.discord.refbot.utils.DiscordUtils
 import com.fcfb.discord.refbot.utils.GameUtils
 import com.fcfb.discord.refbot.utils.Logger
 import com.kotlindiscord.kord.extensions.utils.getJumpUrl
@@ -34,7 +33,6 @@ import kotlin.io.path.Path
 class DiscordMessageHandler {
     private val gameWriteupClient = GameWriteupClient()
     private val scorebugClient = ScorebugClient()
-    private val discordUtils = DiscordUtils()
     private val gameUtils = GameUtils()
     private val fileHandler = FileHandler()
 
@@ -103,10 +101,10 @@ class DiscordMessageHandler {
         val replacements =
             mapOf(
                 "{kicking_team}" to offensiveTeam,
-                "{home_coach}" to discordUtils.joinMentions(homeCoaches),
-                "{away_coach}" to discordUtils.joinMentions(awayCoaches),
-                "{offensive_coach}" to discordUtils.joinMentions(offensiveCoaches),
-                "{defensive_coach}" to discordUtils.joinMentions(defensiveCoaches),
+                "{home_coach}" to joinMentions(homeCoaches),
+                "{away_coach}" to joinMentions(awayCoaches),
+                "{offensive_coach}" to joinMentions(offensiveCoaches),
+                "{defensive_coach}" to joinMentions(defensiveCoaches),
                 "{offensive_team}" to offensiveTeam,
                 "{defensive_team}" to defensiveTeam,
                 "{play_writeup}" to playWriteup,
@@ -331,15 +329,15 @@ class DiscordMessageHandler {
         return buildString {
             when (scenario) {
                 Scenario.GAME_START, Scenario.COIN_TOSS_CHOICE, Scenario.GAME_OVER -> {
-                    append("\n\n").append(discordUtils.joinMentions(homeCoaches))
-                    append(" ").append(discordUtils.joinMentions(awayCoaches))
+                    append("\n\n").append(joinMentions(homeCoaches))
+                    append(" ").append(joinMentions(awayCoaches))
                 }
                 Scenario.NORMAL_NUMBER_REQUEST -> {
-                    append("\n\n").append(discordUtils.joinMentions(offensiveCoaches))
+                    append("\n\n").append(joinMentions(offensiveCoaches))
                 }
                 !in listOf(Scenario.DM_NUMBER_REQUEST, Scenario.NORMAL_NUMBER_REQUEST) -> {
                     val coachesToMention = if (game.possession == TeamSide.HOME) awayCoaches else homeCoaches
-                    append("\n\n").append(discordUtils.joinMentions(coachesToMention))
+                    append("\n\n").append(joinMentions(coachesToMention))
                 }
                 else -> {}
             }
@@ -596,4 +594,11 @@ class DiscordMessageHandler {
 
         return submittedMessage
     }
+
+    /**
+     * Join a list of users into a string of mentions for a message
+     * @param userList The list of users
+     * @return The string of mentions
+     */
+    fun joinMentions(userList: List<User?>) = userList.filterNotNull().joinToString(" ") { it.mention }
 }

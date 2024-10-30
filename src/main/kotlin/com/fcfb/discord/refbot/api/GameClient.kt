@@ -53,8 +53,6 @@ class GameClient {
      * @param gameType
      */
     internal suspend fun startGame(
-        season: String?,
-        week: String?,
         subdivision: Subdivision?,
         homeTeam: String,
         awayTeam: String,
@@ -67,8 +65,6 @@ class GameClient {
             StartRequest(
                 homePlatform = Platform.DISCORD,
                 awayPlatform = Platform.DISCORD,
-                season = season,
-                week = week,
                 subdivision = subdivision,
                 homeTeam = homeTeam,
                 awayTeam = awayTeam,

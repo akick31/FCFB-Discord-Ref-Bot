@@ -1,16 +1,16 @@
 package com.fcfb.discord.refbot.requests
 
 import com.fcfb.discord.refbot.handlers.discord.DiscordMessageHandler
+import com.fcfb.discord.refbot.handlers.discord.TextChannelThreadHandler
 import com.fcfb.discord.refbot.model.fcfb.game.Game
 import com.fcfb.discord.refbot.model.fcfb.game.Scenario
-import com.fcfb.discord.refbot.utils.DiscordUtils
 import com.fcfb.discord.refbot.utils.Logger
 import dev.kord.common.entity.Snowflake
 import dev.kord.core.Kord
 import dev.kord.core.entity.channel.thread.TextChannelThread
 
 class StartGameRequest {
-    private val discordUtils = DiscordUtils()
+    private val textChannelThreadHandler = TextChannelThreadHandler()
     private val discordMessageHandler = DiscordMessageHandler()
 
     /**
@@ -24,7 +24,7 @@ class StartGameRequest {
     ): Snowflake? {
         var gameThread: TextChannelThread? = null
         return try {
-            gameThread = discordUtils.createGameThread(client, game)
+            gameThread = textChannelThreadHandler.createGameThread(client, game)
 
             discordMessageHandler.sendGameMessage(
                 client,

@@ -48,6 +48,23 @@ class TeamClient {
     }
 
     /**
+     * Get a team by name
+     */
+    internal suspend fun getTeamByName(teamName: String): Team? {
+        val endpointUrl = "$baseUrl/team/name?name=$teamName"
+
+        return try {
+            val response: HttpResponse = httpClient.get(endpointUrl)
+            val jsonResponse: String = response.bodyAsText()
+            val objectMapper = ObjectMapper()
+            return objectMapper.readValue(jsonResponse, Team::class.java)
+        } catch (e: Exception) {
+            Logger.error(e.message!!)
+            null
+        }
+    }
+
+    /**
      * Get all teams
      * @return List<Team>
      */
