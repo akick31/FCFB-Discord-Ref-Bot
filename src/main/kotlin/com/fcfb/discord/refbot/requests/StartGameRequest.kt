@@ -14,7 +14,6 @@ import dev.kord.core.entity.channel.thread.TextChannelThread
 class StartGameRequest {
     private val textChannelThreadHandler = TextChannelThreadHandler()
     private val discordMessageHandler = DiscordMessageHandler()
-    private val errorHandler = ErrorHandler()
 
     /**
      * Start a new Discord game thread
@@ -24,7 +23,7 @@ class StartGameRequest {
     suspend fun startGameThread(
         client: Kord,
         game: Game,
-    ): Snowflake? {
+    ): String? {
         var gameThread: TextChannelThread? = null
         return try {
             gameThread = textChannelThreadHandler.createGameThread(client, game)
@@ -40,10 +39,8 @@ class StartGameRequest {
                     false,
                 ) ?: return null
 
-            GameClient().updateRequestMessageId(game.gameId, numberRequestMessage to null)
-
             Logger.info("Game thread created: $gameThread")
-            gameThread.id
+            gameThread.id.value.toString() + "," + numberRequestMessage.id.value.toString()
         } catch (e: Exception) {
             Logger.error(e.message!!)
             gameThread?.delete()

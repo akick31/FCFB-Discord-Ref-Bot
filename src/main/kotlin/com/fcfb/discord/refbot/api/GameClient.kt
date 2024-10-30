@@ -64,15 +64,15 @@ class GameClient {
     ): Game? {
         val startRequest =
             StartRequest(
-                homePlatform = Platform.DISCORD.description,
-                awayPlatform = Platform.DISCORD.description,
-                subdivision = subdivision.description,
+                homePlatform = Platform.DISCORD,
+                awayPlatform = Platform.DISCORD,
+                subdivision = subdivision,
                 homeTeam = homeTeam,
                 awayTeam = awayTeam,
-                tvChannel = tvChannel?.description,
+                tvChannel = tvChannel,
                 startTime = startTime,
                 location = location,
-                gameType = gameType.description,
+                gameType = gameType,
             )
 
         val endpointUrl = "$baseUrl/game/start"
