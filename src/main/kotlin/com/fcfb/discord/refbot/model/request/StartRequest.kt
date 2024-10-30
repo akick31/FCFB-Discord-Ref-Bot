@@ -6,13 +6,13 @@ import com.fcfb.discord.refbot.model.fcfb.game.Subdivision
 import com.fcfb.discord.refbot.model.fcfb.game.TVChannel
 
 data class StartRequest(
-    val homePlatform: Platform,
-    val awayPlatform: Platform,
-    val subdivision: Subdivision,
+    val homePlatform: String,
+    val awayPlatform: String,
+    val subdivision: String,
     val homeTeam: String,
     val awayTeam: String,
-    val tvChannel: TVChannel?,
+    val tvChannel: String?,
     val startTime: String?,
     val location: String?,
-    val gameType: GameType,
+    val gameType: String,
 )

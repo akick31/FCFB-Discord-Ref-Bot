@@ -33,7 +33,7 @@ class MessageConstants {
     }
 
     enum class Info(val message: String) {
-        COIN_TOSS_OUTCOME("%s won the coin toss! Please reply with **!p** or **!play** followed by **receive** or **defer**."),
+        COIN_TOSS_OUTCOME("%s won the coin toss! Please reply to this message with **receive** or **defer**."),
         SUCCESSFUL_NUMBER_SUBMISSION("I've got %s as your number"),
         MESSAGE_CONTAINS_TIMEOUT("The message contains 'timeout'"),
         MESSAGE_DOES_NOT_CONTAIN_TIMEOUT("The message does not contain 'timeout'"),
