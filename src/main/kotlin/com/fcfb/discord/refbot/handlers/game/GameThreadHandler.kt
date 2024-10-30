@@ -4,13 +4,13 @@ import com.fcfb.discord.refbot.api.GameClient
 import com.fcfb.discord.refbot.api.PlayClient
 import com.fcfb.discord.refbot.handlers.ErrorHandler
 import com.fcfb.discord.refbot.handlers.discord.DiscordMessageHandler
+import com.fcfb.discord.refbot.handlers.discord.TextChannelThreadHandler
 import com.fcfb.discord.refbot.model.discord.MessageConstants.Error
 import com.fcfb.discord.refbot.model.discord.MessageConstants.Info
 import com.fcfb.discord.refbot.model.fcfb.game.ActualResult
 import com.fcfb.discord.refbot.model.fcfb.game.Game
 import com.fcfb.discord.refbot.model.fcfb.game.GameStatus
 import com.fcfb.discord.refbot.model.fcfb.game.Scenario
-import com.fcfb.discord.refbot.utils.DiscordUtils
 import com.fcfb.discord.refbot.utils.GameUtils
 import com.fcfb.discord.refbot.utils.Logger
 import dev.kord.core.Kord
@@ -18,11 +18,11 @@ import dev.kord.core.entity.Message
 
 class GameThreadHandler {
     private val discordMessageHandler = DiscordMessageHandler()
+    private val textChannelThreadHandler = TextChannelThreadHandler()
     private val gameClient = GameClient()
     private val playClient = PlayClient()
     private val gameUtils = GameUtils()
     private val errorHandler = ErrorHandler()
-    private val discordUtils = DiscordUtils()
 
     /**
      * Handles the user side game logic for a message
@@ -90,7 +90,7 @@ class GameThreadHandler {
         val submittedMessage = discordMessageHandler.sendGameMessage(client, game, scenario, playOutcome, message, null, false)
         if (game.gameStatus == GameStatus.FINAL) {
             discordMessageHandler.sendGameMessage(client, game, Scenario.GAME_OVER, null, message, null, false)
-            discordUtils.updateThread(discordUtils.getTextChannelThread(message), game)
+            textChannelThreadHandler.updateThread(textChannelThreadHandler.getTextChannelThread(message), game)
         } else {
             discordMessageHandler.sendRequestForDefensiveNumber(
                 client,
@@ -129,7 +129,7 @@ class GameThreadHandler {
 
         discordMessageHandler.sendMessageFromMessageObject(
             message,
-            Info.COIN_TOSS_OUTCOME.message.format(discordUtils.joinMentions(coinTossWinningCoachList)),
+            Info.COIN_TOSS_OUTCOME.message.format(discordMessageHandler.joinMentions(coinTossWinningCoachList)),
             null,
         )
     }

@@ -142,6 +142,7 @@ class RegisterCommand {
                 offensivePlaybook = offensivePlaybook,
                 defensivePlaybook = defensivePlaybook,
                 verificationToken = "",
+                approved = 0,
             )
         val registeredUser = AuthClient().registerUser(user)
         if (registeredUser == null) {

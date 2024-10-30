@@ -20,12 +20,6 @@ class StartGameCommand {
             "start_game",
             "Start a new game",
         ) {
-            string("season", "Season") {
-                required = true
-            }
-            string("week", "Week") {
-                required = true
-            }
             string("subdivision", "Subdivision") {
                 required = true
                 mutableListOf(
@@ -178,7 +172,7 @@ class StartGameCommand {
                 else -> GameType.SCRIMMAGE
             }
 
-        val startedGame = gameClient.startGame(season, week, subdivision, homeTeam, awayTeam, tvChannel, startTime, location, gameType)
+        val startedGame = gameClient.startGame(subdivision, homeTeam, awayTeam, tvChannel, startTime, location, gameType)
         if (startedGame == null) {
             response.respond { this.content = "Start game failed!" }
             Logger.error("${interaction.user.username} failed to start a game between $homeTeam and $awayTeam")
