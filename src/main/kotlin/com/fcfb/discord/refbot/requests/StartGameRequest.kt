@@ -5,7 +5,6 @@ import com.fcfb.discord.refbot.handlers.discord.TextChannelThreadHandler
 import com.fcfb.discord.refbot.model.fcfb.game.Game
 import com.fcfb.discord.refbot.model.fcfb.game.Scenario
 import com.fcfb.discord.refbot.utils.Logger
-import dev.kord.common.entity.Snowflake
 import dev.kord.core.Kord
 import dev.kord.core.entity.channel.thread.TextChannelThread
 
@@ -21,23 +20,24 @@ class StartGameRequest {
     suspend fun startGameThread(
         client: Kord,
         game: Game,
-    ): Snowflake? {
+    ): String? {
         var gameThread: TextChannelThread? = null
         return try {
             gameThread = textChannelThreadHandler.createGameThread(client, game)
 
-            discordMessageHandler.sendGameMessage(
-                client,
-                game,
-                Scenario.GAME_START,
-                null,
-                null,
-                gameThread,
-                false,
-            )
+            val numberRequestMessage =
+                discordMessageHandler.sendGameMessage(
+                    client,
+                    game,
+                    Scenario.GAME_START,
+                    null,
+                    null,
+                    gameThread,
+                    false,
+                ) ?: return null
 
             Logger.info("Game thread created: $gameThread")
-            gameThread.id
+            gameThread.id.value.toString() + "," + numberRequestMessage.id.value.toString()
         } catch (e: Exception) {
             Logger.error(e.message!!)
             gameThread?.delete()

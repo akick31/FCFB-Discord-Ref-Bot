@@ -398,20 +398,20 @@ class DiscordMessageHandler {
         scenario: Scenario,
         play: Play?,
         previousMessage: Message? = null,
-    ) {
+    ): Pair<Message?, Message?>? {
         val gameMessage =
             createGameMessage(client, game, scenario, play, false) ?: run {
                 Logger.error(Error.NO_WRITEUP_FOUND.message)
-                return
+                return null
             }
         val (messageContent, embedData) = gameMessage.first
         val defensiveCoaches = gameMessage.second
 
         return if (defensiveCoaches.size == 1) {
-            sendPrivateMessage(defensiveCoaches[0], embedData, messageContent, previousMessage)
+            return sendPrivateMessage(defensiveCoaches[0], embedData, messageContent, previousMessage) to null
         } else {
-            sendPrivateMessage(defensiveCoaches[0], embedData, messageContent, previousMessage)
-            sendPrivateMessage(defensiveCoaches[1], embedData, messageContent, previousMessage)
+            sendPrivateMessage(defensiveCoaches[0], embedData, messageContent, previousMessage) to
+                sendPrivateMessage(defensiveCoaches[1], embedData, messageContent, previousMessage)
         }
     }
 
@@ -439,50 +439,53 @@ class DiscordMessageHandler {
         embedData: EmbedData?,
         messageContent: String,
         previousMessage: Message? = null,
-    ) {
-        user?.let {
-            it.getDmChannel().createMessage {
-                embedData?.let { embed ->
-                    if (embed.image.value?.url?.value == null) {
-                        embeds =
-                            mutableListOf(
-                                EmbedBuilder().apply {
-                                    title = embed.title.value
-                                    description = embed.description.value
-                                    footer {
-                                        text = embed.footer.value?.text ?: ""
-                                    }
-                                },
-                            )
-                    } else {
-                        val file = addFile(Path(embed.image.value?.url?.value.toString()))
-                        embeds =
-                            mutableListOf(
-                                EmbedBuilder().apply {
-                                    title = embed.title.value
-                                    description = embed.description.value
-                                    image = file.url
-                                    footer {
-                                        text = embed.footer.value?.text ?: ""
-                                    }
-                                },
-                            )
+    ): Message? {
+        val submittedMessage =
+            user?.let {
+                it.getDmChannel().createMessage {
+                    embedData?.let { embed ->
+                        if (embed.image.value?.url?.value == null) {
+                            embeds =
+                                mutableListOf(
+                                    EmbedBuilder().apply {
+                                        title = embed.title.value
+                                        description = embed.description.value
+                                        footer {
+                                            text = embed.footer.value?.text ?: ""
+                                        }
+                                    },
+                                )
+                        } else {
+                            val file = addFile(Path(embed.image.value?.url?.value.toString()))
+                            embeds =
+                                mutableListOf(
+                                    EmbedBuilder().apply {
+                                        title = embed.title.value
+                                        description = embed.description.value
+                                        image = file.url
+                                        footer {
+                                            text = embed.footer.value?.text ?: ""
+                                        }
+                                    },
+                                )
+                        }
                     }
+                    content =
+                        if (previousMessage == null) {
+                            messageContent
+                        } else {
+                            (previousMessage.getJumpUrl()) + "\n" + messageContent
+                        }
                 }
-                content =
-                    if (previousMessage == null) {
-                        messageContent
-                    } else {
-                        (previousMessage.getJumpUrl()) + "\n" + messageContent
-                    }
+            } ?: run {
+                Logger.error(Error.PRIVATE_MESSAGE_EXCEPTION.message)
+                return null
             }
-        } ?: run {
-            Logger.error(Error.PRIVATE_MESSAGE_EXCEPTION.message)
-        }
 
         if (embedData != null) {
             fileHandler.deleteFile(embedData.image.value?.url?.value.toString())
         }
+        return submittedMessage
     }
 
     /**

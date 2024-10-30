@@ -317,7 +317,6 @@ class GameUtils {
         return when (game.waitingOn) {
             TeamSide.AWAY -> authorId == game.awayCoachDiscordId1 || authorId == game.awayCoachDiscordId2
             TeamSide.HOME -> authorId == game.homeCoachDiscordId1 || authorId == game.homeCoachDiscordId2
-            else -> false
         }
     }
 

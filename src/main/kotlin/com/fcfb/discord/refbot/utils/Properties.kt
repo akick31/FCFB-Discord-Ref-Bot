@@ -13,12 +13,10 @@ class Properties {
         val token = properties.getProperty("discord.bot.token")
         val guildId = properties.getProperty("discord.guild.id")
         val gameChannelId = properties.getProperty("discord.game.forum.id")
-        val prefix = properties.getProperty("discord.command.prefix")
         return DiscordProperties(
             token,
             guildId,
             gameChannelId,
-            prefix,
         )
     }
 

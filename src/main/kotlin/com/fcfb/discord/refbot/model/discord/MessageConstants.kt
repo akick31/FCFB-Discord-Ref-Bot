@@ -4,7 +4,7 @@ import com.fcfb.discord.refbot.utils.Logger
 
 class MessageConstants {
     enum class Error(val message: String) {
-        NO_GAME_FOUND("Could not find a game associated with this user."),
+        NO_GAME_FOUND("Could not find a game associated with this number request message."),
         WAITING_FOR_NUMBER_IN_DMS("This game is currently waiting on a number from you in your DMs"),
         WAITING_FOR_COIN_TOSS("This game is currently waiting on the away coach to call **heads** or **tails**"),
         WAITING_FOR_COIN_TOSS_CHOICE("This game is currently waiting on the coin toss winning coach to call **receive** or **defer**"),
@@ -23,9 +23,7 @@ class MessageConstants {
         NO_WRITEUP_FOUND("There was an issue getting the writeup message"),
         GAME_THREAD_MESSAGE_EXCEPTION("Could not send message to game thread via message object or text channel object"),
         PRIVATE_MESSAGE_EXCEPTION("Could not send private message to the user"),
-        USER_MIGHT_BE_ATTEMPTING_TO_PLAY(
-            "It looks like you might be trying to call a play. Please use the play command **!p** or **!play** in the game thread.",
-        ),
+        FAILED_TO_SEND_NUMBER_REQUEST_MESSAGE("Failed to send the number request message"),
         GAME_OVER("This game is already over"),
         ;
 
@@ -35,7 +33,7 @@ class MessageConstants {
     }
 
     enum class Info(val message: String) {
-        COIN_TOSS_OUTCOME("%s won the coin toss! Please reply with **!p** or **!play** followed by **receive** or **defer**."),
+        COIN_TOSS_OUTCOME("%s won the coin toss! Please reply to this message with **receive** or **defer**."),
         SUCCESSFUL_NUMBER_SUBMISSION("I've got %s as your number"),
         MESSAGE_CONTAINS_TIMEOUT("The message contains 'timeout'"),
         MESSAGE_DOES_NOT_CONTAIN_TIMEOUT("The message does not contain 'timeout'"),

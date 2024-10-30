@@ -8,6 +8,7 @@ import com.fcfb.discord.refbot.model.fcfb.game.Subdivision
 import com.fcfb.discord.refbot.model.fcfb.game.TVChannel
 import com.fcfb.discord.refbot.model.request.StartRequest
 import com.fcfb.discord.refbot.utils.Logger
+import dev.kord.core.entity.Message
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.request.get
@@ -53,7 +54,7 @@ class GameClient {
      * @param gameType
      */
     internal suspend fun startGame(
-        subdivision: Subdivision?,
+        subdivision: Subdivision,
         homeTeam: String,
         awayTeam: String,
         tvChannel: TVChannel?,
@@ -92,21 +93,29 @@ class GameClient {
     }
 
     /**
-     * Fetch the ongoing game by the thread/channel id
-     * @param channelId
+     * Update the request message id that the game is waiting on a response for
+     * @param gameId
+     * @param numberRequestMessagePair
      * @return OngoingGame
      */
-    internal suspend fun fetchGameByThreadId(channelId: String): Game? {
-        val endpointUrl = "$baseUrl/game/discord?channelId=$channelId"
+    internal suspend fun updateRequestMessageId(
+        gameId: Int,
+        numberRequestMessagePair: Pair<Message?, Message?>,
+    ): Boolean? {
+        val firstNumberRequestMessage = numberRequestMessagePair.first
+        val secondNumberRequestMessage = numberRequestMessagePair.second
+
+        val endpointUrl =
+            if (secondNumberRequestMessage == null) {
+                "$baseUrl/game/request_message?gameId=$gameId&requestMessageId=${firstNumberRequestMessage?.id?.value}"
+            } else {
+                "$baseUrl/game/request_message?gameId=$gameId&requestMessageId=${firstNumberRequestMessage?.id?.value}" +
+                    ",${secondNumberRequestMessage.id.value}"
+            }
 
         return try {
-            val response: HttpResponse =
-                httpClient.get(endpointUrl) {
-                    contentType(ContentType.Application.Json)
-                }
-            val jsonResponse: String = response.bodyAsText()
-            val objectMapper = ObjectMapper()
-            objectMapper.readValue(jsonResponse, Game::class.java)
+            val response = httpClient.put(endpointUrl)
+            response.status.value == 200
         } catch (e: Exception) {
             Logger.error(e.message!!)
             null
@@ -114,12 +123,12 @@ class GameClient {
     }
 
     /**
-     * Fetch the ongoing game by the user id
+     * Get the request message that the game is waiting on a response for
      * @param userId
      * @return OngoingGame
      */
-    internal suspend fun fetchGameByUserId(userId: String): Game? {
-        val endpointUrl = "$baseUrl/game/discord?userId=$userId"
+    internal suspend fun getGameByRequestMessageId(userId: String): Game? {
+        val endpointUrl = "$baseUrl/game/request_message?requestMessageId=$userId"
 
         return try {
             val response: HttpResponse =

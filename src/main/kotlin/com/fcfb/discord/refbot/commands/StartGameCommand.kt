@@ -94,8 +94,6 @@ class StartGameCommand {
             return
         }
 
-        val season = command.options["season"]!!.value.toString()
-        val week = command.options["week"]!!.value.toString()
         val subdivisionString = command.options["subdivision"]!!.value.toString()
         val subdivision =
             when (subdivisionString) {
