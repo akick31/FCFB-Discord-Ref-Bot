@@ -11,13 +11,9 @@ import dev.kord.core.Kord
 import dev.kord.core.behavior.channel.asChannelOf
 import dev.kord.core.behavior.channel.threads.edit
 import dev.kord.core.behavior.edit
-import dev.kord.core.cache.data.EmbedData
 import dev.kord.core.entity.Message
 import dev.kord.core.entity.channel.ForumChannel
 import dev.kord.core.entity.channel.thread.TextChannelThread
-import dev.kord.rest.builder.message.EmbedBuilder
-import dev.kord.rest.builder.message.EmbedBuilder.Limits.title
-import dev.kord.rest.json.request.EmbedFieldRequest
 import kotlinx.serialization.json.JsonNull.content
 
 class TextChannelThreadHandler {
