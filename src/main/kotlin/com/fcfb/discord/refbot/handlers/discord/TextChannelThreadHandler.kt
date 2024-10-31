@@ -4,14 +4,17 @@ import com.fcfb.discord.refbot.api.TeamClient
 import com.fcfb.discord.refbot.model.fcfb.game.Game
 import com.fcfb.discord.refbot.model.fcfb.game.GameStatus
 import com.fcfb.discord.refbot.model.fcfb.game.GameType
+import com.fcfb.discord.refbot.model.fcfb.game.TeamSide
 import com.fcfb.discord.refbot.utils.Properties
 import dev.kord.common.entity.Snowflake
 import dev.kord.core.Kord
 import dev.kord.core.behavior.channel.asChannelOf
 import dev.kord.core.behavior.channel.threads.edit
+import dev.kord.core.behavior.edit
 import dev.kord.core.entity.Message
 import dev.kord.core.entity.channel.ForumChannel
 import dev.kord.core.entity.channel.thread.TextChannelThread
+import kotlinx.serialization.json.JsonNull.content
 
 class TextChannelThreadHandler {
     suspend fun getTextChannelThread(message: Message) = message.getChannel().asChannelOf<TextChannelThread>()
@@ -29,6 +32,9 @@ class TextChannelThreadHandler {
             name = getThreadName(game)
             appliedTags = getTagsForThread(thread.kord, game)
         }
+        thread.message?.edit {
+            content = getGameInformation(game)
+        }
     }
 
     /**
@@ -41,11 +47,11 @@ class TextChannelThreadHandler {
         client: Kord,
         game: Game,
     ): TextChannelThread {
+        val threadName = getThreadName(game)
         val gameChannel = getGameForumChannel(client)
 
         // Get the thread content
-        val threadContent = "Please submit bugs here: https://github.com/akick31/FCFB-Discord-Ref-Bot/issues"
-        val threadName = getThreadName(game)
+        val threadContent = getGameInformation(game)
         val tags = getTagsForThread(client, game)
 
         return gameChannel.startPublicThread(threadName) {
@@ -55,6 +61,33 @@ class TextChannelThreadHandler {
                 content = threadContent
             }
         }
+    }
+
+    private fun getGameThreadMessageContent(game: Game): String {
+        return "Please submit bugs here: https://github.com/akick31/FCFB-Discord-Ref-Bot/issues"
+    }
+
+    /**
+     * Get the game information embeds to post in the thread
+     * @param game The game object
+     * @return The game information embed
+     */
+    private fun getGameInformation(game: Game): String {
+        val waitingOn = if (game.waitingOn == TeamSide.HOME) game.homeTeam else game.awayTeam
+        val possession = if (game.possession == TeamSide.HOME) game.homeTeam else game.awayTeam
+        var messageContent = getGameThreadMessageContent(game)
+        messageContent += "\n\n"
+        messageContent += "**Home Team**: ${game.homeTeam}\n"
+        messageContent += "**Away Team**: ${game.awayTeam}\n"
+        messageContent += "**Game Type**: ${game.gameType?.description}\n"
+        messageContent += "**Game Status**: ${game.gameStatus?.description}\n"
+        messageContent += "**Possession**: ${possession}\n"
+        messageContent += "**Waiting On**: ${waitingOn}\n"
+        messageContent += "**${game.homeTeam} Offensive Playbook**: ${game.homeOffensivePlaybook?.description}\n"
+        messageContent += "**${game.homeTeam} Defensive Playbook**: ${game.homeDefensivePlaybook?.description}\n"
+        messageContent += "**${game.awayTeam} Offensive Playbook**: ${game.awayOffensivePlaybook?.description}\n"
+        messageContent += "**${game.awayTeam} Defensive Playbook**: ${game.awayDefensivePlaybook?.description}\n"
+        return messageContent
     }
 
     /**

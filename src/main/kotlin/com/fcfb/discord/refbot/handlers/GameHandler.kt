@@ -90,9 +90,9 @@ class GameHandler {
                 ?: return errorHandler.noGameFoundError(message)
         val scenario = if (playOutcome.actualResult == ActualResult.TOUCHDOWN) Scenario.TOUCHDOWN else playOutcome.result!!
         val submittedMessage = discordMessageHandler.sendGameMessage(client, updatedGame, scenario, playOutcome, message, null, false)
+        textChannelThreadHandler.updateThread(textChannelThreadHandler.getTextChannelThread(message), updatedGame)
         if (updatedGame.gameStatus == GameStatus.FINAL) {
             discordMessageHandler.sendGameMessage(client, updatedGame, Scenario.GAME_OVER, null, message, null, false)
-            textChannelThreadHandler.updateThread(textChannelThreadHandler.getTextChannelThread(message), updatedGame)
         } else {
             val numberRequestMessage =
                 discordMessageHandler.sendRequestForDefensiveNumber(
