@@ -94,7 +94,7 @@ class FCFBDiscordRefBot {
      */
     private fun setupMessageProcessor() {
         client.on<MessageCreateEvent> {
-            MessageProcessor(client, properties).processMessage(message)
+            MessageProcessor(client).processMessage(message)
         }
     }
 }

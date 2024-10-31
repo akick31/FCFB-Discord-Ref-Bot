@@ -7,13 +7,15 @@ import dev.kord.core.entity.Message
 
 class MessageProcessor(
     private val client: Kord,
-    private val properties: Properties,
 ) {
     private val gameHandler = GameHandler()
 
     suspend fun processMessage(message: Message) {
+        val botId = Properties().getDiscordProperties().botId
+        val messageRepliedTo = message.referencedMessage
         if (message.author?.isBot == true) return
-        if (message.referencedMessage == null) return
+        if (messageRepliedTo == null) return
+        if (messageRepliedTo != null && messageRepliedTo?.author?.id?.value.toString() != botId) return
 
         gameHandler.handleGameLogic(client, message)
     }
