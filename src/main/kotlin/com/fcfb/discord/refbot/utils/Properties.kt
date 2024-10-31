@@ -18,7 +18,7 @@ class Properties {
             token,
             guildId,
             gameChannelId,
-            botId
+            botId,
         )
     }
 
