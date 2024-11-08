@@ -15,7 +15,7 @@ class MessageProcessor(
         val messageRepliedTo = message.referencedMessage
         if (message.author?.isBot == true) return
         if (messageRepliedTo == null) return
-        if (messageRepliedTo != null && messageRepliedTo?.author?.id?.value.toString() != botId) return
+        if (messageRepliedTo != null && messageRepliedTo.author?.id?.value.toString() != botId) return
 
         gameHandler.handleGameLogic(client, message)
     }

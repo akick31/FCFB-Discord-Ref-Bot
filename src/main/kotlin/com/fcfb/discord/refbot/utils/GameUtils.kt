@@ -563,12 +563,12 @@ class GameUtils {
      * @return The outcome message
      */
     fun getOutcomeMessage(game: Game): String {
-        if ((game.homeScore ?: 0) > (game.awayScore ?: 0)) {
-            return "${game.homeTeam} wins ${(game.homeScore ?: 0)}-${(game.awayScore ?: 0)}!"
-        } else if ((game.homeScore ?: 0) < (game.awayScore ?: 0)) {
-            return "${game.awayTeam} wins ${(game.awayScore ?: 0)}-${(game.homeScore ?: 0)}!"
+        return if ((game.homeScore) > (game.awayScore)) {
+            "${game.homeTeam} wins ${(game.homeScore)}-${(game.awayScore)}!"
+        } else if ((game.homeScore) < (game.awayScore)) {
+            "${game.awayTeam} wins ${(game.awayScore)}-${(game.homeScore)}!"
         } else {
-            return "The game ends in a tie!"
+            "The game ends in a tie!"
         }
     }
 }
