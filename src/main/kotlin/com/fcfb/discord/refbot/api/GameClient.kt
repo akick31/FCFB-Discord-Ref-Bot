@@ -11,6 +11,7 @@ import com.fcfb.discord.refbot.utils.Logger
 import dev.kord.core.entity.Message
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.client.request.delete
 import io.ktor.client.request.get
 import io.ktor.client.request.post
 import io.ktor.client.request.put
@@ -184,6 +185,41 @@ class GameClient {
 
             val objectMapper = ObjectMapper()
             objectMapper.readValue(jsonResponse, Game::class.java)
+        } catch (e: Exception) {
+            Logger.error(e.message!!)
+            null
+        }
+    }
+
+    /**
+     * End a game in Arceus
+     * @param channelId
+     */
+    internal suspend fun endGame(channelId: ULong): Game? {
+        val endpointUrl = "$baseUrl/game/end?channelId=$channelId"
+
+        return try {
+            val response: HttpResponse = httpClient.post(endpointUrl)
+            val jsonResponse: String = response.bodyAsText()
+
+            val objectMapper = ObjectMapper()
+            objectMapper.readValue(jsonResponse, Game::class.java)
+        } catch (e: Exception) {
+            Logger.error(e.message!!)
+            null
+        }
+    }
+
+    /**
+     * Delete a game in Arceus
+     * @param channelId
+     */
+    internal suspend fun deleteGame(channelId: ULong): Int? {
+        val endpointUrl = "$baseUrl/game?channelId=$channelId"
+
+        return try {
+            val response = httpClient.delete(endpointUrl)
+            return response.status.value
         } catch (e: Exception) {
             Logger.error(e.message!!)
             null

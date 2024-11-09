@@ -1,6 +1,8 @@
 package com.fcfb.discord.refbot.commands.registry
 
 import com.fcfb.discord.refbot.api.UserClient
+import com.fcfb.discord.refbot.commands.DeleteGameCommand
+import com.fcfb.discord.refbot.commands.EndGameCommand
 import com.fcfb.discord.refbot.commands.HelpCommand
 import com.fcfb.discord.refbot.commands.HireCoachCommand
 import com.fcfb.discord.refbot.commands.RegisterCommand
@@ -22,6 +24,8 @@ class CommandRegistry {
         RegisterCommand().register(client)
         RoleCommand().register(client)
         StartGameCommand().register(client)
+        EndGameCommand().register(client)
+        DeleteGameCommand().register(client)
         StartScrimmageCommand().register(client)
         HireCoachCommand().register(client)
         HelpCommand().register(client)
@@ -41,6 +45,8 @@ class CommandRegistry {
             "register" -> RegisterCommand().execute(interaction, interaction.command)
             "role" -> RoleCommand().execute(userRole, interaction, interaction.command)
             "start_game" -> StartGameCommand().execute(userRole, interaction, interaction.command)
+            "end_game" -> EndGameCommand().execute(userRole, interaction, interaction.command)
+            "delete_game" -> DeleteGameCommand().execute(userRole, interaction, interaction.command)
             "start_scrimmage" -> StartScrimmageCommand().execute(interaction, interaction.command)
             "hire_coach" -> HireCoachCommand().execute(userRole, interaction, interaction.command)
         }
