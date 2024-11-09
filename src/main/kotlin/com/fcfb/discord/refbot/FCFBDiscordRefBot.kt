@@ -17,12 +17,10 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.isActive
-import kotlin.time.Duration
-import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import kotlin.time.Duration.Companion.seconds
 
 @KordPreview
 class FCFBDiscordRefBot {
@@ -51,20 +49,21 @@ class FCFBDiscordRefBot {
      * Start a coroutine to send regular heartbeats to Discord
      */
     private fun startHeartbeat() {
-        heartbeatJob?.cancel()  // Cancel any existing heartbeat job
-        heartbeatJob = CoroutineScope(Dispatchers.IO).launch {
-            while (isActive) {
-                delay(15.seconds)
-                try {
-                    // Attempt to fetch the bot's own user info as a "heartbeat" check
-                    client.getSelf()
-                    Logger.info("Heartbeat successful.")
-                } catch (e: Exception) {
-                    Logger.warn("Heartbeat failed: Bot appears disconnected. Attempting to reconnect...")
-                    startDiscordBot()
+        heartbeatJob?.cancel() // Cancel any existing heartbeat job
+        heartbeatJob =
+            CoroutineScope(Dispatchers.IO).launch {
+                while (isActive) {
+                    delay(15.seconds)
+                    try {
+                        // Attempt to fetch the bot's own user info as a "heartbeat" check
+                        client.getSelf()
+                        Logger.info("Heartbeat successful.")
+                    } catch (e: Exception) {
+                        Logger.warn("Heartbeat failed: Bot appears disconnected. Attempting to reconnect...")
+                        startDiscordBot()
+                    }
                 }
             }
-        }
     }
 
     /**
