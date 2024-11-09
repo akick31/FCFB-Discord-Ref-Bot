@@ -92,7 +92,7 @@ class GameHandler {
         val submittedMessage = discordMessageHandler.sendGameMessage(client, updatedGame, scenario, playOutcome, message, null, false)
         textChannelThreadHandler.updateThread(textChannelThreadHandler.getTextChannelThread(message), updatedGame)
         if (updatedGame.gameStatus == GameStatus.FINAL) {
-            discordMessageHandler.sendGameMessage(client, updatedGame, Scenario.GAME_OVER, null, message, null, false)
+            endGame(client, updatedGame, message)
         } else {
             val numberRequestMessage =
                 discordMessageHandler.sendRequestForDefensiveNumber(
@@ -239,5 +239,19 @@ class GameHandler {
             ) ?: return errorHandler.failedToSendNumberRequestMessage(message)
 
         gameClient.updateRequestMessageId(game.gameId, numberRequestMessage)
+    }
+
+    /**
+     * Ends a game
+     * @param client The Discord client
+     * @param message The message object
+     */
+    suspend fun endGame(
+        client: Kord,
+        updatedGame: Game,
+        message: Message,
+    ) {
+        textChannelThreadHandler.updateThread(textChannelThreadHandler.getTextChannelThread(message), updatedGame)
+        discordMessageHandler.sendGameMessage(client, updatedGame, Scenario.GAME_OVER, null, message, null, false)
     }
 }
