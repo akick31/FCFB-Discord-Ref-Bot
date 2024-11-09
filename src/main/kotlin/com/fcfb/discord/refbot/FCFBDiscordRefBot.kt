@@ -7,12 +7,20 @@ import com.fcfb.discord.refbot.utils.Logger
 import com.fcfb.discord.refbot.utils.Properties
 import dev.kord.common.annotation.KordPreview
 import dev.kord.core.Kord
+import dev.kord.core.event.gateway.DisconnectEvent
 import dev.kord.core.event.interaction.ChatInputCommandInteractionCreateEvent
 import dev.kord.core.event.message.MessageCreateEvent
 import dev.kord.core.on
 import dev.kord.gateway.Intent
 import dev.kord.gateway.PrivilegedIntent
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.isActive
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 
@@ -23,6 +31,7 @@ class FCFBDiscordRefBot {
     private val properties = Properties()
     private val commandRegistry = CommandRegistry()
     private val serverConfig = ServerConfig()
+    private var heartbeatJob: Job? = null
 
     /**
      * Start the Discord bot and it's services
@@ -30,12 +39,41 @@ class FCFBDiscordRefBot {
     fun start() =
         runBlocking {
             try {
+                startHeartbeat()
                 initializeBot()
                 startServices(client)
             } catch (e: Exception) {
                 Logger.error("Failed to start bot: ${e.message}", e)
             }
         }
+
+    /**
+     * Start a coroutine to send regular heartbeats to Discord
+     */
+    private fun startHeartbeat() {
+        heartbeatJob?.cancel()  // Cancel any existing heartbeat job
+        heartbeatJob = CoroutineScope(Dispatchers.IO).launch {
+            while (isActive) {
+                delay(15.seconds)
+                try {
+                    // Attempt to fetch the bot's own user info as a "heartbeat" check
+                    client.getSelf()
+                    Logger.info("Heartbeat successful.")
+                } catch (e: Exception) {
+                    Logger.warn("Heartbeat failed: Bot appears disconnected. Attempting to reconnect...")
+                    startDiscordBot()
+                }
+            }
+        }
+    }
+
+    /**
+     * Clean up any resources, including heartbeat job
+     */
+    fun stop() {
+        heartbeatJob?.cancel()
+        Logger.info("FCFB Discord Ref Bot stopped.")
+    }
 
     /**
      * Initialize the Discord bot with Kord
@@ -78,6 +116,7 @@ class FCFBDiscordRefBot {
     private fun setupEventHandlers() {
         setupCommandExecuter()
         setupMessageProcessor()
+        setupDiscordReconnect()
     }
 
     /**
@@ -97,10 +136,19 @@ class FCFBDiscordRefBot {
             MessageProcessor(client).processMessage(message)
         }
     }
+
+    private fun setupDiscordReconnect() {
+        client.on<DisconnectEvent> {
+            Logger.warn("Disconnected from Discord. Attempting to reconnect...")
+            startDiscordBot()
+        }
+    }
 }
 
 @OptIn(KordPreview::class)
 fun main() {
     Logger.info("Starting Discord Ref Bot...")
-    FCFBDiscordRefBot().start()
+    val bot = FCFBDiscordRefBot()
+    bot.start()
+    Runtime.getRuntime().addShutdownHook(Thread { bot.stop() })
 }
