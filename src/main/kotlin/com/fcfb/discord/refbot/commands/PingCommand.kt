@@ -23,7 +23,7 @@ class PingCommand {
         Logger.info(
             "${interaction.user.username} is pinging a game in channel ${interaction.channelId.value}",
         )
-        val response = interaction.deferPublicResponse()
+        val response = interaction.deferEphemeralResponse()
 
         val game = GameClient().getGameByPlatformId(interaction.channelId.value.toString())
 
@@ -48,6 +48,7 @@ class PingCommand {
                 }
             val message = interaction.channel.createMessage("Pinging user...")
             GameHandler().sendGamePing(interaction.kord, game, previousPlay, currentPlay, message)
+            response.respond { this.content = "Ping successful!" }
             Logger.info("${interaction.user.username} successfully pinged a game in channel ${interaction.channelId.value}")
         } else {
             response.respond { this.content = "Ping failed!" }
