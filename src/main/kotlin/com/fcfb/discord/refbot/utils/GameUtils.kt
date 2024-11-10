@@ -287,13 +287,13 @@ class GameUtils {
     ): List<User?>? {
         return when (game.coinTossWinner) {
             TeamSide.HOME ->
-                listOfNotNull(game.homeCoachDiscordId1, game.homeCoachDiscordId2).map {
+                game.homeCoachDiscordIds.map {
                     client.getUser(
                         Snowflake(it),
                     )
                 }
             TeamSide.AWAY ->
-                listOfNotNull(game.awayCoachDiscordId1, game.awayCoachDiscordId2).map {
+                game.awayCoachDiscordIds.map {
                     client.getUser(
                         Snowflake(it),
                     )
@@ -315,8 +315,8 @@ class GameUtils {
         val authorId = message.author?.id?.value.toString()
 
         return when (game.waitingOn) {
-            TeamSide.AWAY -> authorId == game.awayCoachDiscordId1 || authorId == game.awayCoachDiscordId2
-            TeamSide.HOME -> authorId == game.homeCoachDiscordId1 || authorId == game.homeCoachDiscordId2
+            TeamSide.AWAY -> authorId in game.awayCoachDiscordIds
+            TeamSide.HOME -> authorId in game.homeCoachDiscordIds
         }
     }
 
@@ -406,14 +406,12 @@ class GameUtils {
 
     /**
      * Get the offensive team from a game
-     * @param game The game object
      * @return The offensive team
      */
     private fun Game.offensiveTeam() = if (this.possession == TeamSide.HOME) this.homeTeam else this.awayTeam
 
     /**
      * Get the defensive team from a game
-     * @param game The game object
      * @return The defensive team
      */
     private fun Game.defensiveTeam() = if (this.possession == TeamSide.HOME) this.awayTeam else this.homeTeam
@@ -437,12 +435,11 @@ class GameUtils {
     }
 
     /**
-     * Get the location description as [TEAM] [YARD LINE] from a game
-     * @param game The game object
+     * Get the location description as TEAM [YARD LINE] from a game
      * @return The location description
      */
     private fun Game.getLocationDescription(): String {
-        val location = this.ballLocation ?: 0
+        val location = this.ballLocation
         return when {
             location > 50 && this.possession == TeamSide.HOME -> "${this.awayTeam} ${100 - location}"
             location > 50 && this.possession == TeamSide.AWAY -> "${this.homeTeam} ${100 - location}"
@@ -454,12 +451,11 @@ class GameUtils {
 
     /**
      * Get the down and distance description from a game
-     * @param game The game object
      * @return The down and distance description
      */
     private fun Game.getDownAndDistanceDescription(): String {
         val downDescription = toOrdinal(this.down)
-        val yardsToGoDescription = if ((this.yardsToGo?.plus(this.ballLocation ?: 0) ?: 0) >= 100) "goal" else "${this.yardsToGo}"
+        val yardsToGoDescription = if ((this.yardsToGo.plus(this.ballLocation)) >= 100) "goal" else "${this.yardsToGo}"
         val locationDescription = getLocationDescription()
 
         return "It's $downDescription & $yardsToGoDescription on the $locationDescription."
@@ -491,7 +487,7 @@ class GameUtils {
         authorId: String,
         game: Game,
     ): Boolean {
-        return authorId == game.awayCoachDiscordId1 || authorId == game.awayCoachDiscordId2
+        return authorId in game.awayCoachDiscordIds
     }
 
     /**
@@ -546,7 +542,7 @@ class GameUtils {
             game.currentPlayType == PlayType.KICKOFF -> "**normal**, **squib**, or **onside**"
             game.currentPlayType == PlayType.NORMAL && game.down != 4 -> "**run**, **pass**"
             game.currentPlayType == PlayType.NORMAL && game.down == 4 ->
-                if ((game.ballLocation ?: 0) >= 52) {
+                if ((game.ballLocation) >= 52) {
                     "**run**, **pass**, **field goal**, or **punt**"
                 } else {
                     "**run**, **pass**, or **punt**"

@@ -73,8 +73,8 @@ class DiscordMessageHandler {
         }
 
         // Fetch Discord users
-        val homeCoaches = listOfNotNull(game.homeCoachDiscordId1, game.homeCoachDiscordId2).map { client.getUser(Snowflake(it)) }
-        val awayCoaches = listOfNotNull(game.awayCoachDiscordId1, game.awayCoachDiscordId2).map { client.getUser(Snowflake(it)) }
+        val homeCoaches = game.homeCoachDiscordIds.map { client.getUser(Snowflake(it)) }
+        val awayCoaches = game.awayCoachDiscordIds.map { client.getUser(Snowflake(it)) }
 
         // Determine which team has possession and their coaches
         val (offensiveCoaches, defensiveCoaches) =
