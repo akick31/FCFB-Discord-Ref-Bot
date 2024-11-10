@@ -11,6 +11,7 @@ import dev.kord.core.event.gateway.DisconnectEvent
 import dev.kord.core.event.interaction.ChatInputCommandInteractionCreateEvent
 import dev.kord.core.event.message.MessageCreateEvent
 import dev.kord.core.on
+import dev.kord.gateway.Heartbeat
 import dev.kord.gateway.Intent
 import dev.kord.gateway.PrivilegedIntent
 import kotlinx.coroutines.CoroutineScope
@@ -56,7 +57,7 @@ class FCFBDiscordRefBot {
                     delay(15.seconds)
                     try {
                         // Attempt to fetch the bot's own user info as a "heartbeat" check
-                        client.getSelf()
+                        Heartbeat(15)
                         Logger.info("Heartbeat successful.")
                     } catch (e: Exception) {
                         Logger.warn("Heartbeat failed: Bot appears disconnected. Attempting to reconnect...")
@@ -110,6 +111,16 @@ class FCFBDiscordRefBot {
     }
 
     /**
+     * Stop the Discord bot
+     */
+    private suspend fun stopDiscordBot() {
+        try {
+            client.logout()
+        } catch (_: Exception) {
+        }
+    }
+
+    /**
      * Setup the event handlers for the bot
      */
     private fun setupEventHandlers() {
@@ -139,6 +150,7 @@ class FCFBDiscordRefBot {
     private fun setupDiscordReconnect() {
         client.on<DisconnectEvent> {
             Logger.warn("Disconnected from Discord. Attempting to reconnect...")
+            stopDiscordBot()
             startDiscordBot()
         }
     }

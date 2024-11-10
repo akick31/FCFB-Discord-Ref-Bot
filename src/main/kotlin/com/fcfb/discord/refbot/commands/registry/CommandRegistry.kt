@@ -5,6 +5,7 @@ import com.fcfb.discord.refbot.commands.DeleteGameCommand
 import com.fcfb.discord.refbot.commands.EndGameCommand
 import com.fcfb.discord.refbot.commands.HelpCommand
 import com.fcfb.discord.refbot.commands.HireCoachCommand
+import com.fcfb.discord.refbot.commands.PingCommand
 import com.fcfb.discord.refbot.commands.RegisterCommand
 import com.fcfb.discord.refbot.commands.RoleCommand
 import com.fcfb.discord.refbot.commands.StartGameCommand
@@ -23,6 +24,7 @@ class CommandRegistry {
         // Register all commands
         RegisterCommand().register(client)
         RoleCommand().register(client)
+        PingCommand().register(client)
         StartGameCommand().register(client)
         EndGameCommand().register(client)
         DeleteGameCommand().register(client)
@@ -44,6 +46,7 @@ class CommandRegistry {
             "help" -> HelpCommand().execute(userRole, interaction)
             "register" -> RegisterCommand().execute(interaction, interaction.command)
             "role" -> RoleCommand().execute(userRole, interaction, interaction.command)
+            "ping" -> PingCommand().execute(interaction)
             "start_game" -> StartGameCommand().execute(userRole, interaction, interaction.command)
             "end_game" -> EndGameCommand().execute(userRole, interaction, interaction.command)
             "delete_game" -> DeleteGameCommand().execute(userRole, interaction, interaction.command)

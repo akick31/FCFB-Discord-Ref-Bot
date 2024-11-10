@@ -124,12 +124,12 @@ class GameClient {
     }
 
     /**
-     * Get the request message that the game is waiting on a response for
+     * Get the game by request message id
      * @param userId
      * @return OngoingGame
      */
-    internal suspend fun getGameByRequestMessageId(userId: String): Game? {
-        val endpointUrl = "$baseUrl/game/request_message?requestMessageId=$userId"
+    internal suspend fun getGameByRequestMessageId(messageId: String): Game? {
+        val endpointUrl = "$baseUrl/game/request_message?requestMessageId=$messageId"
 
         return try {
             val response: HttpResponse =
@@ -220,6 +220,28 @@ class GameClient {
         return try {
             val response = httpClient.delete(endpointUrl)
             return response.status.value
+        } catch (e: Exception) {
+            Logger.error(e.message!!)
+            null
+        }
+    }
+
+    /**
+     * Get game by platform id
+     * @param userId
+     * @return OngoingGame
+     */
+    internal suspend fun getGameByPlatformId(platformId: String): Game? {
+        val endpointUrl = "$baseUrl/game/platform_id?id=$platformId"
+
+        return try {
+            val response: HttpResponse =
+                httpClient.get(endpointUrl) {
+                    contentType(ContentType.Application.Json)
+                }
+            val jsonResponse: String = response.bodyAsText()
+            val objectMapper = ObjectMapper()
+            objectMapper.readValue(jsonResponse, Game::class.java)
         } catch (e: Exception) {
             Logger.error(e.message!!)
             null

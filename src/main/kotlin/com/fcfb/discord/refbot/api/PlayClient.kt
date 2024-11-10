@@ -7,6 +7,7 @@ import com.fcfb.discord.refbot.model.fcfb.game.RunoffType
 import com.fcfb.discord.refbot.utils.Logger
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.ClientRequestException
+import io.ktor.client.request.get
 import io.ktor.client.request.post
 import io.ktor.client.request.put
 import io.ktor.client.statement.bodyAsText
@@ -103,6 +104,70 @@ class PlayClient {
             val response = httpClient.put(endpointUrl)
             if (response.status.value != 200) {
                 Logger.error("Error submitting offensive number: ${response.status.value} error")
+                return null
+            }
+            val jsonResponse = response.bodyAsText()
+            if (jsonResponse == "{}") {
+                return null
+            }
+
+            val objectMapper = ObjectMapper()
+            objectMapper.readValue(jsonResponse, Play::class.java)
+        } catch (e: ClientRequestException) {
+            // Handle HTTP error responses (4xx)
+            val errorMessage = e.response.headers["Error-Message"]?.firstOrNull() ?: "Unknown error"
+            Logger.error("Error message from header: $errorMessage")
+            null
+        } catch (e: Exception) {
+            // Handle non-HTTP errors
+            Logger.error(e.message ?: "Unknown error")
+            null
+        }
+    }
+
+    /**
+     * Get the previous play in Arceus
+     * @param gameId
+     */
+    internal suspend fun getPreviousPlay(gameId: Int): Play? {
+        val endpointUrl = "$baseUrl/play/previous?gameId=$gameId"
+
+        return try {
+            val response = httpClient.get(endpointUrl)
+            if (response.status.value != 200) {
+                Logger.error("Error getting previous play: ${response.status.value} error")
+                return null
+            }
+            val jsonResponse = response.bodyAsText()
+            if (jsonResponse == "{}") {
+                return null
+            }
+
+            val objectMapper = ObjectMapper()
+            objectMapper.readValue(jsonResponse, Play::class.java)
+        } catch (e: ClientRequestException) {
+            // Handle HTTP error responses (4xx)
+            val errorMessage = e.response.headers["Error-Message"]?.firstOrNull() ?: "Unknown error"
+            Logger.error("Error message from header: $errorMessage")
+            null
+        } catch (e: Exception) {
+            // Handle non-HTTP errors
+            Logger.error(e.message ?: "Unknown error")
+            null
+        }
+    }
+
+    /**
+     * Get the current play in Arceus
+     * @param gameId
+     */
+    internal suspend fun getCurrentPlay(gameId: Int): Play? {
+        val endpointUrl = "$baseUrl/play/current?gameId=$gameId"
+
+        return try {
+            val response = httpClient.get(endpointUrl)
+            if (response.status.value != 200) {
+                Logger.error("Error getting current play: ${response.status.value} error")
                 return null
             }
             val jsonResponse = response.bodyAsText()
