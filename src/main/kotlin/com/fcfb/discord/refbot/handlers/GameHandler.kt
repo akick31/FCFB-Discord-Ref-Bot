@@ -10,6 +10,7 @@ import com.fcfb.discord.refbot.model.fcfb.game.ActualResult
 import com.fcfb.discord.refbot.model.fcfb.game.Game
 import com.fcfb.discord.refbot.model.fcfb.game.GameStatus
 import com.fcfb.discord.refbot.model.fcfb.game.Platform
+import com.fcfb.discord.refbot.model.fcfb.game.Play
 import com.fcfb.discord.refbot.model.fcfb.game.Scenario
 import com.fcfb.discord.refbot.model.fcfb.game.TeamSide
 import com.fcfb.discord.refbot.utils.GameUtils
@@ -49,6 +50,47 @@ class GameHandler {
             gameUtils.isWaitingOnOffensiveNumber(game, message) -> handleOffensiveNumberSubmission(client, game.gameId, message)
             gameUtils.isWaitingOnDefensiveNumber(game, message) -> handleDefensiveNumberSubmission(client, game, message)
             !gameUtils.isGameWaitingOnUser(game, message) -> return errorHandler.notWaitingForUserError(message)
+        }
+    }
+
+    /**
+     * Send a game ping to the user the game is waiting on
+     */
+    suspend fun sendGamePing(
+        client: Kord,
+        game: Game,
+        previousPlay: Play,
+        currentPlay: Play,
+        message: Message,
+    ): Boolean? {
+        if (game.waitingOn != game.possession) {
+            val numberRequestMessage =
+                discordMessageHandler.sendRequestForDefensiveNumber(
+                    client,
+                    game,
+                    Scenario.DM_NUMBER_REQUEST,
+                    previousPlay,
+                    message,
+                ) ?: return null
+
+            if (numberRequestMessage.first == null) {
+                return null
+            }
+
+            return gameClient.updateRequestMessageId(game.gameId, numberRequestMessage)
+        } else {
+            val offensiveNumberRequestMessage =
+                discordMessageHandler.sendGameMessage(
+                    client,
+                    game,
+                    Scenario.NORMAL_NUMBER_REQUEST,
+                    null,
+                    message,
+                    null,
+                    currentPlay.defensiveTimeoutCalled ?: false,
+                ) ?: return null
+
+            return gameClient.updateRequestMessageId(game.gameId, offensiveNumberRequestMessage to null)
         }
     }
 
