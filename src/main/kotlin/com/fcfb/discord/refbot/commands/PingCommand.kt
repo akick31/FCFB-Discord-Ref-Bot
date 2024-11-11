@@ -23,7 +23,7 @@ class PingCommand {
         Logger.info(
             "${interaction.user.username} is pinging a game in channel ${interaction.channelId.value}",
         )
-        val response = interaction.deferEphemeralResponse()
+        val response = interaction.deferPublicResponse()
 
         val game = GameClient().getGameByPlatformId(interaction.channelId.value.toString())
 
