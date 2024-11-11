@@ -5,18 +5,29 @@ import com.fcfb.discord.refbot.model.fcfb.game.Scenario
 import com.fcfb.discord.refbot.utils.Logger
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.cio.CIO
+import io.ktor.client.engine.cio.endpoint
+import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.request.get
 import io.ktor.client.statement.bodyAsText
+import io.ktor.serialization.jackson.jackson
 import java.util.Properties
 
 class GameWriteupClient {
     private val baseUrl: String
-    private val gameWriteupClient =
-        HttpClient(CIO) {
-            engine {
-                requestTimeout = 10000 // 10 seconds for request timeout
+    private val httpClient = HttpClient(CIO) {
+        engine {
+            maxConnectionsCount = 64
+            endpoint {
+                maxConnectionsPerRoute = 8
+                connectTimeout = 10_000
+                requestTimeout = 15_000
             }
         }
+
+        install(ContentNegotiation) {
+            jackson {}  // Configure Jackson for JSON serialization
+        }
+    }
 
     init {
         val stream =
@@ -43,7 +54,7 @@ class GameWriteupClient {
                 } else {
                     "$baseUrl/game_writeup/${scenario.name}/NONE"
                 }
-            val response = gameWriteupClient.get(endpointUrl)
+            val response = httpClient.get(endpointUrl)
             response.bodyAsText()
         } catch (e: Exception) {
             Logger.error(e.message ?: "Unknown error occurred")

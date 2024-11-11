@@ -5,6 +5,8 @@ import com.fcfb.discord.refbot.model.fcfb.FCFBUser
 import com.fcfb.discord.refbot.model.fcfb.Role
 import com.fcfb.discord.refbot.utils.Logger
 import io.ktor.client.HttpClient
+import io.ktor.client.engine.cio.CIO
+import io.ktor.client.engine.cio.endpoint
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.request.get
 import io.ktor.client.request.put
@@ -17,13 +19,20 @@ import java.util.Properties
 
 class UserClient {
     private val baseUrl: String
-    private val httpClient =
-        HttpClient {
-            install(ContentNegotiation) {
-                // Configure Jackson for JSON serialization
-                jackson {}
+    private val httpClient = HttpClient(CIO) {
+        engine {
+            maxConnectionsCount = 64
+            endpoint {
+                maxConnectionsPerRoute = 8
+                connectTimeout = 10_000
+                requestTimeout = 15_000
             }
         }
+
+        install(ContentNegotiation) {
+            jackson {}  // Configure Jackson for JSON serialization
+        }
+    }
 
     init {
         val stream =

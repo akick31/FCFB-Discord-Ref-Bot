@@ -6,16 +6,33 @@ import com.fcfb.discord.refbot.model.fcfb.game.PlayCall
 import com.fcfb.discord.refbot.model.fcfb.game.RunoffType
 import com.fcfb.discord.refbot.utils.Logger
 import io.ktor.client.HttpClient
+import io.ktor.client.engine.cio.CIO
+import io.ktor.client.engine.cio.endpoint
 import io.ktor.client.plugins.ClientRequestException
+import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.request.get
 import io.ktor.client.request.post
 import io.ktor.client.request.put
 import io.ktor.client.statement.bodyAsText
+import io.ktor.serialization.jackson.jackson
 import java.util.Properties
 
 class PlayClient {
     private val baseUrl: String
-    private val httpClient = HttpClient()
+    private val httpClient = HttpClient(CIO) {
+        engine {
+            maxConnectionsCount = 64
+            endpoint {
+                maxConnectionsPerRoute = 8
+                connectTimeout = 10_000
+                requestTimeout = 15_000
+            }
+        }
+
+        install(ContentNegotiation) {
+            jackson {}  // Configure Jackson for JSON serialization
+        }
+    }
 
     init {
         val stream =

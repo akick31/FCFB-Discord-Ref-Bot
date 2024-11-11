@@ -10,6 +10,8 @@ import com.fcfb.discord.refbot.model.request.StartRequest
 import com.fcfb.discord.refbot.utils.Logger
 import dev.kord.core.entity.Message
 import io.ktor.client.HttpClient
+import io.ktor.client.engine.cio.CIO
+import io.ktor.client.engine.cio.endpoint
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.request.delete
 import io.ktor.client.request.get
@@ -25,13 +27,20 @@ import java.util.Properties
 
 class GameClient {
     private val baseUrl: String
-    private val httpClient =
-        HttpClient {
-            install(ContentNegotiation) {
-                // Configure Jackson for JSON serialization
-                jackson {}
+    private val httpClient = HttpClient(CIO) {
+        engine {
+            maxConnectionsCount = 64
+            endpoint {
+                maxConnectionsPerRoute = 8
+                connectTimeout = 10_000
+                requestTimeout = 15_000
             }
         }
+
+        install(ContentNegotiation) {
+            jackson {}  // Configure Jackson for JSON serialization
+        }
+    }
 
     init {
         val stream =
