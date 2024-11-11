@@ -27,10 +27,6 @@ class TeamClient {
                     requestTimeout = 15_000
                 }
             }
-
-            install(ContentNegotiation) {
-                jackson {} // Configure Jackson for JSON serialization
-            }
         }
 
     init {
