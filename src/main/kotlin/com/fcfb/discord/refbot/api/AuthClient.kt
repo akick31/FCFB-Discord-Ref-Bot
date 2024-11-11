@@ -18,20 +18,21 @@ import java.util.Properties
 
 class AuthClient {
     private val baseUrl: String
-    private val httpClient = HttpClient(CIO) {
-        engine {
-            maxConnectionsCount = 64
-            endpoint {
-                maxConnectionsPerRoute = 8
-                connectTimeout = 10_000
-                requestTimeout = 15_000
+    private val httpClient =
+        HttpClient(CIO) {
+            engine {
+                maxConnectionsCount = 64
+                endpoint {
+                    maxConnectionsPerRoute = 8
+                    connectTimeout = 10_000
+                    requestTimeout = 15_000
+                }
+            }
+
+            install(ContentNegotiation) {
+                jackson {} // Configure Jackson for JSON serialization
             }
         }
-
-        install(ContentNegotiation) {
-            jackson {}  // Configure Jackson for JSON serialization
-        }
-    }
 
     init {
         val stream =
