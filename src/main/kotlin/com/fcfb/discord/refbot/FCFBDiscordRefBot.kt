@@ -126,7 +126,7 @@ class FCFBDiscordRefBot {
     private fun setupEventHandlers() {
         setupCommandExecuter()
         setupMessageProcessor()
-        //setupDiscordReconnect()
+        // setupDiscordReconnect()
     }
 
     /**
