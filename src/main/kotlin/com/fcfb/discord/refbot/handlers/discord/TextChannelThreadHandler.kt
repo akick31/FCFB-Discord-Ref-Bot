@@ -160,24 +160,25 @@ class TextChannelThreadHandler {
      * @param game The game object
      */
     private suspend fun getThreadName(game: Game): String {
+        val teamMatchup = "${game.awayTeam} @ ${game.homeTeam}"
         when (game.gameType) {
             GameType.PLAYOFFS -> {
-                return "PLAYOFFS || ${game.homeTeam} vs ${game.awayTeam}"
+                return "PLAYOFFS || $teamMatchup"
             }
             GameType.BOWL -> {
-                return "BOWL || ${game.homeTeam} vs ${game.awayTeam}"
+                return "BOWL || $teamMatchup"
             }
             GameType.CONFERENCE_CHAMPIONSHIP -> {
                 val conference =
                     TeamClient().getTeamByName(game.homeTeam)?.conference?.description?.uppercase()
-                        ?: return "CONFERENCE CHAMPIONSHIP || ${game.homeTeam} vs ${game.awayTeam}"
-                return "$conference CHAMPIONSHIP || ${game.homeTeam} vs ${game.awayTeam}"
+                        ?: return "CONFERENCE CHAMPIONSHIP || $teamMatchup"
+                return "$conference CHAMPIONSHIP || $teamMatchup"
             }
             GameType.NATIONAL_CHAMPIONSHIP -> {
-                return "NATIONAL CHAMPIONSHIP || ${game.homeTeam} vs ${game.awayTeam}"
+                return "NATIONAL CHAMPIONSHIP || $teamMatchup"
             }
             else -> {
-                return "${game.homeTeam} vs ${game.awayTeam}"
+                return teamMatchup
             }
         }
     }
