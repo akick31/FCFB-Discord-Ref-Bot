@@ -7,7 +7,6 @@ import com.fcfb.discord.refbot.utils.Logger
 import com.fcfb.discord.refbot.utils.Properties
 import dev.kord.common.annotation.KordPreview
 import dev.kord.core.Kord
-import dev.kord.core.event.gateway.DisconnectEvent
 import dev.kord.core.event.interaction.ChatInputCommandInteractionCreateEvent
 import dev.kord.core.event.message.MessageCreateEvent
 import dev.kord.core.on
