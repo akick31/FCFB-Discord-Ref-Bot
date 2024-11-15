@@ -146,14 +146,6 @@ class FCFBDiscordRefBot {
             MessageProcessor(client).processMessage(message)
         }
     }
-
-    private fun setupDiscordReconnect() {
-        client.on<DisconnectEvent> {
-            Logger.warn("Disconnected from Discord. Attempting to reconnect...")
-            stopDiscordBot()
-            startDiscordBot()
-        }
-    }
 }
 
 @OptIn(KordPreview::class)

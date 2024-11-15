@@ -34,7 +34,7 @@ class GameClient {
                 endpoint {
                     maxConnectionsPerRoute = 8
                     connectTimeout = 10_000
-                    requestTimeout = 15_000
+                    requestTimeout = 60_000
                 }
             }
 
