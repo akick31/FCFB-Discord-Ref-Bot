@@ -9,6 +9,7 @@ import com.fcfb.discord.refbot.model.discord.MessageConstants.Info
 import com.fcfb.discord.refbot.model.fcfb.game.ActualResult
 import com.fcfb.discord.refbot.model.fcfb.game.Game
 import com.fcfb.discord.refbot.model.fcfb.game.GameStatus
+import com.fcfb.discord.refbot.model.fcfb.game.GameType
 import com.fcfb.discord.refbot.model.fcfb.game.Platform
 import com.fcfb.discord.refbot.model.fcfb.game.Play
 import com.fcfb.discord.refbot.model.fcfb.game.Scenario
@@ -309,7 +310,14 @@ class GameHandler {
         updatedGame: Game,
         message: Message,
     ) {
-        textChannelThreadHandler.updateThread(textChannelThreadHandler.getTextChannelThread(message), updatedGame)
+        val gameThread = textChannelThreadHandler.getTextChannelThread(message)
+        textChannelThreadHandler.updateThread(gameThread, updatedGame)
+        textChannelThreadHandler.createPostgameThread(client, updatedGame, message)
         discordMessageHandler.sendGameMessage(client, updatedGame, Scenario.GAME_OVER, null, message, null, false)
+
+        // No need to post scrimmage scores
+        if (updatedGame.gameType != GameType.SCRIMMAGE) {
+            discordMessageHandler.postGameScore(client, updatedGame, message)
+        }
     }
 }

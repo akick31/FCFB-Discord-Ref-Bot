@@ -13,11 +13,17 @@ class Properties {
         val token = properties.getProperty("discord.bot.token")
         val guildId = properties.getProperty("discord.guild.id")
         val gameChannelId = properties.getProperty("discord.game.forum.id")
+        val postgameChannelId = properties.getProperty("discord.postgame.forum.id")
+        val redzoneChannelId = properties.getProperty("discord.redzone.channel.id")
+        val scoresChannelId = properties.getProperty("discord.scores.channel.id")
         val botId = properties.getProperty("discord.bot.id")
         return DiscordProperties(
             token,
             guildId,
             gameChannelId,
+            postgameChannelId,
+            redzoneChannelId,
+            scoresChannelId,
             botId,
         )
     }
