@@ -1,20 +1,33 @@
 package com.fcfb.discord.refbot.handlers.discord
 
+import com.fcfb.discord.refbot.api.ScorebugClient
 import com.fcfb.discord.refbot.api.TeamClient
 import com.fcfb.discord.refbot.model.fcfb.game.Game
 import com.fcfb.discord.refbot.model.fcfb.game.GameStatus
 import com.fcfb.discord.refbot.model.fcfb.game.GameType
 import com.fcfb.discord.refbot.model.fcfb.game.TeamSide
+import com.fcfb.discord.refbot.utils.Logger
 import com.fcfb.discord.refbot.utils.Properties
+import com.kotlindiscord.kord.extensions.utils.getJumpUrl
 import dev.kord.common.entity.Snowflake
+import dev.kord.common.entity.optional.Optional
 import dev.kord.core.Kord
 import dev.kord.core.behavior.channel.asChannelOf
 import dev.kord.core.behavior.channel.threads.edit
 import dev.kord.core.behavior.edit
+import dev.kord.core.cache.data.EmbedData
+import dev.kord.core.cache.data.EmbedFooterData
+import dev.kord.core.cache.data.EmbedImageData
 import dev.kord.core.entity.Message
 import dev.kord.core.entity.channel.ForumChannel
 import dev.kord.core.entity.channel.thread.TextChannelThread
+import dev.kord.rest.builder.message.EmbedBuilder
+import dev.kord.rest.builder.message.addFile
 import kotlinx.serialization.json.JsonNull.content
+import java.io.File
+import java.nio.file.Files
+import java.nio.file.StandardOpenOption
+import kotlin.io.path.Path
 
 class TextChannelThreadHandler {
     suspend fun getTextChannelThread(message: Message) = message.getChannel().asChannelOf<TextChannelThread>()
@@ -63,6 +76,80 @@ class TextChannelThreadHandler {
         }
     }
 
+    /**
+     * Create a postgame thread
+     * @param client The Discord client
+     * @param game The game object
+     * @return The postgame thread
+     */
+    suspend fun createPostgameThread(
+        client: Kord,
+        game: Game,
+        lastMessage: Message
+    ): TextChannelThread {
+        val threadName = getThreadName(game)
+        val gameChannel = getPostgameForumChannel(client)
+
+        // Get the thread content
+        val threadContent = getPostgameInformation(game, lastMessage)
+        val tags = getTagsForThread(client, game)
+        val embedData = getScorebugEmbed(game, threadContent)
+
+        return gameChannel.startPublicThread(threadName) {
+            name = threadName
+            appliedTags = tags
+            message {
+                content = threadContent
+                embedData?.let { embed ->
+                    val file = addFile(Path(embed.image.value?.url?.value.toString()))
+                    embeds =
+                        mutableListOf(
+                            EmbedBuilder().apply {
+                                title = embed.title.value
+                                description = embed.description.value
+                                image = file.url
+                                footer {
+                                    text = embed.footer.value?.text ?: ""
+                                }
+                            },
+                        )
+                }
+            }
+        }
+    }
+
+    private suspend fun getScorebugEmbed(game: Game, embedContent: String?): EmbedData? {
+        val scorebug = ScorebugClient().getScorebugByGameId(game.gameId)
+
+        val scorebugUrl =
+            scorebug.let {
+                val file = File("images/${game.gameId}_scorebug.png")
+                try {
+                    // Ensure the images directory exists
+                    val imagesDir = File("images")
+                    if (!imagesDir.exists()) {
+                        if (imagesDir.mkdirs()) {
+                            Logger.info("Created images directory: ${imagesDir.absolutePath}")
+                        } else {
+                            Logger.info("Failed to create images directory.")
+                        }
+                    }
+                    Files.write(file.toPath(), it, StandardOpenOption.CREATE)
+                } catch (e: Exception) {
+                    Logger.error("Failed to write scorebug image: ${e.stackTraceToString()}")
+                    return null
+                }
+                file.path
+            }
+
+        return EmbedData(
+                title = Optional("${game.homeTeam} vs ${game.awayTeam}"),
+                description = Optional(embedContent.orEmpty()),
+                image = Optional(EmbedImageData(url = Optional(scorebugUrl))),
+                footer = Optional(EmbedFooterData(text = "Game ID: ${game.gameId}")),
+            )
+    }
+
     private fun getGameThreadMessageContent(game: Game): String {
         return "Please submit bugs here: https://github.com/akick31/FCFB-Discord-Ref-Bot/issues"
     }
@@ -90,6 +177,17 @@ class TextChannelThreadHandler {
         return messageContent
     }
 
+    private fun getPostgameInformation(game: Game, lastMessage: Message): String {
+        var messageContent = ""
+        messageContent += if (game.homeScore > game.awayScore) {
+            "${game.homeTeam} defeats ${game.awayTeam} ${game.homeScore}-${game.awayScore}\n"
+        } else {
+            "${game.awayTeam} defeats ${game.homeTeam} ${game.awayScore}-${game.homeScore}\n"
+        }
+        messageContent += lastMessage.getJumpUrl()
+        return messageContent
+    }
+
     /**
      * Get the game forum channel
      * @param client The Discord client
@@ -99,6 +197,17 @@ class TextChannelThreadHandler {
         val discordProperties = Properties().getDiscordProperties()
         val guild = client.getGuild(Snowflake(discordProperties.guildId))
         return guild.getChannel(Snowflake(discordProperties.gameChannelId)) as ForumChannel
+    }
+
+    /**
+     * Get the postgame game forum channel
+     * @param client The Discord client
+     * @return The game forum channel
+     */
+    private suspend fun getPostgameForumChannel(client: Kord): ForumChannel {
+        val discordProperties = Properties().getDiscordProperties()
+        val guild = client.getGuild(Snowflake(discordProperties.guildId))
+        return guild.getChannel(Snowflake(discordProperties.postgameChannelId)) as ForumChannel
     }
 
     /**

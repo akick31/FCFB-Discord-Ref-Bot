@@ -58,11 +58,21 @@ pipeline {
                 echo 'Creating the properties file...'
                 script {
                     def propertiesContent = """
+                        # Discord configuration
                         discord.bot.token=${env.DISCORD_TOKEN}
-                        discord.game.forum.id=${env.DISCORD_FORUM_CHANNEL_ID}
                         discord.guild.id=${env.DISCORD_GUILD_ID}
                         discord.bot.id=1156052929858502678
+
+                        # Channel IDs
+                        discord.game.forum.id=1181414233766907998
+                        discord.postgame.forum.id=1309024361973551154
+                        discord.redzone.channel.id=1309026273372274739
+                        discord.scores.channel.id=1309026439001280552
+
+                        # Domain configuration
                         api.url=http://51.81.32.234:1212/arceus
+
+                        # Server configuration
                         server.port=1211
                     """.stripIndent()
 
