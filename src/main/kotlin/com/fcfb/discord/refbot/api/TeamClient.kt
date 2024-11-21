@@ -1,6 +1,7 @@
 package com.fcfb.discord.refbot.api
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.fcfb.discord.refbot.config.JacksonConfig
 import com.fcfb.discord.refbot.model.fcfb.CoachPosition
 import com.fcfb.discord.refbot.model.fcfb.Team
 import com.fcfb.discord.refbot.utils.Logger
@@ -51,7 +52,7 @@ class TeamClient {
         return try {
             val response: HttpResponse = httpClient.post(endpointUrl)
             val jsonResponse: String = response.bodyAsText()
-            val objectMapper = ObjectMapper()
+            val objectMapper = JacksonConfig().configureTeamMapping()
             return objectMapper.readValue(jsonResponse, Team::class.java)
         } catch (e: Exception) {
             Logger.error(e.message!!)
@@ -68,7 +69,7 @@ class TeamClient {
         return try {
             val response: HttpResponse = httpClient.get(endpointUrl)
             val jsonResponse: String = response.bodyAsText()
-            val objectMapper = ObjectMapper()
+            val objectMapper = JacksonConfig().configureTeamMapping()
             return objectMapper.readValue(jsonResponse, Team::class.java)
         } catch (e: Exception) {
             Logger.error(e.message!!)
@@ -86,7 +87,7 @@ class TeamClient {
         return try {
             val response: HttpResponse = httpClient.get(endpointUrl)
             val jsonResponse: String = response.bodyAsText()
-            val objectMapper = ObjectMapper()
+            val objectMapper = JacksonConfig().configureTeamMapping()
             return objectMapper.readValue(
                 jsonResponse,
                 objectMapper.typeFactory.constructCollectionType(List::class.java, Team::class.java),

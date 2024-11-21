@@ -46,12 +46,6 @@ enum class CoachPosition(val description: String) {
     DEFENSIVE_COORDINATOR("Defensive Coordinator"),
     RETIRED("Retired"),
     ;
-
-    companion object {
-        fun fromString(description: String): CoachPosition? {
-            return entries.find { it.description == description }
-        }
-    }
 }
 
 enum class Role(val description: String) {
@@ -59,10 +53,4 @@ enum class Role(val description: String) {
     CONFERENCE_COMMISSIONER("Conference Commissioner"),
     ADMIN("Admin"),
     ;
-
-    companion object {
-        fun fromString(description: String): Role? {
-            return entries.find { it.description == description }
-        }
-    }
 }

@@ -2,6 +2,7 @@ package com.fcfb.discord.refbot.model.fcfb.game
 
 import com.fasterxml.jackson.annotation.JsonCreator
 import com.fasterxml.jackson.annotation.JsonProperty
+import com.fasterxml.jackson.annotation.JsonValue
 import com.fasterxml.jackson.databind.PropertyNamingStrategies
 import com.fasterxml.jackson.databind.annotation.JsonNaming
 
@@ -66,14 +67,6 @@ enum class GameStatus(val description: String) {
     END_OF_REGULATION("END OF REGULATION"),
     OVERTIME("OVERTIME"),
     ;
-
-    companion object {
-        @JsonCreator
-        @JvmStatic
-        fun fromString(description: String): GameStatus? {
-            return entries.find { it.description == description }
-        }
-    }
 }
 
 enum class Subdivision(val description: String) {
@@ -81,14 +74,6 @@ enum class Subdivision(val description: String) {
     FBS("FBS"),
     FCS("FCS"),
     ;
-
-    companion object {
-        @JsonCreator
-        @JvmStatic
-        fun fromString(description: String): Subdivision? {
-            return entries.find { it.description == description }
-        }
-    }
 }
 
 enum class OffensivePlaybook(val description: String) {
@@ -98,14 +83,6 @@ enum class OffensivePlaybook(val description: String) {
     SPREAD("SPREAD"),
     WEST_COAST("WEST COAST"),
     ;
-
-    companion object {
-        @JsonCreator
-        @JvmStatic
-        fun fromString(description: String): OffensivePlaybook? {
-            return entries.find { it.description == description }
-        }
-    }
 }
 
 enum class DefensivePlaybook(val description: String) {
@@ -115,14 +92,6 @@ enum class DefensivePlaybook(val description: String) {
     FOUR_FOUR("4-4"),
     THREE_THREE_FIVE("3-3-5"),
     ;
-
-    companion object {
-        @JsonCreator
-        @JvmStatic
-        fun fromString(description: String): DefensivePlaybook? {
-            return entries.find { it.description == description }
-        }
-    }
 }
 
 enum class TVChannel(val description: String) {
@@ -135,28 +104,12 @@ enum class TVChannel(val description: String) {
     FS2("FS2"),
     NBC("NBC"),
     ;
-
-    companion object {
-        @JsonCreator
-        @JvmStatic
-        fun fromString(description: String): TVChannel? {
-            return entries.find { it.description == description }
-        }
-    }
 }
 
 enum class Platform(val description: String) {
     DISCORD("DISCORD"),
     REDDIT("REDDIT"),
     ;
-
-    companion object {
-        @JsonCreator
-        @JvmStatic
-        fun fromString(description: String): Platform? {
-            return entries.find { it.description == description }
-        }
-    }
 }
 
 enum class PlayCall(val description: String) {
@@ -172,14 +125,6 @@ enum class PlayCall(val description: String) {
     KICKOFF_ONSIDE("KICKOFF_ONSIDE"),
     KICKOFF_SQUIB("KICKOFF_SQUIB"),
     ;
-
-    companion object {
-        @JsonCreator
-        @JvmStatic
-        fun fromString(description: String): PlayCall? {
-            return entries.find { it.description == description }
-        }
-    }
 }
 
 enum class PlayType(val description: String) {
@@ -187,14 +132,6 @@ enum class PlayType(val description: String) {
     KICKOFF("KICKOFF"),
     PAT("PAT"),
     ;
-
-    companion object {
-        @JsonCreator
-        @JvmStatic
-        fun fromString(description: String): PlayType? {
-            return entries.find { it.description == description }
-        }
-    }
 }
 
 enum class ActualResult(val description: String) {
@@ -226,14 +163,6 @@ enum class ActualResult(val description: String) {
     PUNT_TEAM_TOUCHDOWN("PUNT TEAM TOUCHDOWN"),
     MUFFED_PUNT("MUFFED PUNT"),
     ;
-
-    companion object {
-        @JsonCreator
-        @JvmStatic
-        fun fromString(description: String): ActualResult? {
-            return entries.find { it.description == description }
-        }
-    }
 }
 
 enum class RunoffType(val description: String) {
@@ -241,14 +170,6 @@ enum class RunoffType(val description: String) {
     HURRY("HURRY"),
     NORMAL("NORMAL"),
     ;
-
-    companion object {
-        @JsonCreator
-        @JvmStatic
-        fun fromString(description: String): RunoffType? {
-            return entries.find { it.description == description }
-        }
-    }
 }
 
 enum class Scenario(val description: String) {
@@ -353,24 +274,12 @@ enum class Scenario(val description: String) {
     SEVENTY_YARD_PUNT("70 YARD PUNT"),
     GAME_OVER("GAME OVER"),
     ;
-
-    companion object {
-        fun fromString(description: String): Scenario? {
-            return entries.find { it.description == description }
-        }
-    }
 }
 
 enum class TeamSide(val description: String) {
     HOME("HOME"),
     AWAY("AWAY"),
     ;
-
-    companion object {
-        fun fromString(description: String): TeamSide? {
-            return entries.find { it.description == description }
-        }
-    }
 }
 
 enum class CoinTossChoice(val description: String) {
@@ -387,10 +296,4 @@ enum class GameType(val description: String) {
     BOWL("Bowl"),
     SCRIMMAGE("Scrimmage"),
     ;
-
-    companion object {
-        fun fromString(description: String): GameType? {
-            return entries.find { it.description == description }
-        }
-    }
 }

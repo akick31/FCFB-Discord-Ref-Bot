@@ -3,6 +3,7 @@ package com.fcfb.discord.refbot.commands.registry
 import com.fcfb.discord.refbot.api.UserClient
 import com.fcfb.discord.refbot.commands.DeleteGameCommand
 import com.fcfb.discord.refbot.commands.EndGameCommand
+import com.fcfb.discord.refbot.commands.GameInfoCommand
 import com.fcfb.discord.refbot.commands.HelpCommand
 import com.fcfb.discord.refbot.commands.HireCoachCommand
 import com.fcfb.discord.refbot.commands.PingCommand
@@ -32,6 +33,7 @@ class CommandRegistry {
         EndGameCommand().register(client)
         DeleteGameCommand().register(client)
         StartScrimmageCommand().register(client)
+        GameInfoCommand().register(client)
         HireCoachCommand().register(client)
         HelpCommand().register(client)
     }
@@ -61,6 +63,7 @@ class CommandRegistry {
             "start_game" -> StartGameCommand().execute(interaction, interaction.command)
             "end_game" -> EndGameCommand().execute(userRole, interaction, interaction.command)
             "delete_game" -> DeleteGameCommand().execute(interaction, interaction.command)
+            "game_info" -> GameInfoCommand().execute(interaction)
             "start_scrimmage" -> StartScrimmageCommand().execute(interaction, interaction.command)
             "hire_coach" -> HireCoachCommand().execute(interaction, interaction.command)
         }
