@@ -6,7 +6,10 @@ import com.fasterxml.jackson.databind.JsonDeserializer
 import com.fcfb.discord.refbot.model.fcfb.game.TeamSide
 
 class TeamSideDeserializer : JsonDeserializer<TeamSide>() {
-    override fun deserialize(parser: JsonParser, ctxt: DeserializationContext): TeamSide {
+    override fun deserialize(
+        parser: JsonParser,
+        ctxt: DeserializationContext,
+    ): TeamSide {
         val value = parser.text.uppercase()
         return TeamSide.entries.find { it.name == value }
             ?: throw IllegalArgumentException("Invalid Team Side value: $value")

@@ -6,7 +6,10 @@ import com.fasterxml.jackson.databind.JsonDeserializer
 import com.fcfb.discord.refbot.model.fcfb.Conference
 
 class ConferenceDeserializer : JsonDeserializer<Conference>() {
-    override fun deserialize(parser: JsonParser, ctxt: DeserializationContext): Conference {
+    override fun deserialize(
+        parser: JsonParser,
+        ctxt: DeserializationContext,
+    ): Conference {
         val value = parser.text.uppercase()
         return Conference.entries.find { it.name == value }
             ?: throw IllegalArgumentException("Invalid Conference value: $value")

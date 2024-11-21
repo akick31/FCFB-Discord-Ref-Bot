@@ -45,12 +45,10 @@ enum class CoachPosition(val description: String) {
     OFFENSIVE_COORDINATOR("Offensive Coordinator"),
     DEFENSIVE_COORDINATOR("Defensive Coordinator"),
     RETIRED("Retired"),
-    ;
 }
 
 enum class Role(val description: String) {
     USER("User"),
     CONFERENCE_COMMISSIONER("Conference Commissioner"),
     ADMIN("Admin"),
-    ;
 }

@@ -6,7 +6,10 @@ import com.fasterxml.jackson.databind.JsonDeserializer
 import com.fcfb.discord.refbot.model.fcfb.game.DefensivePlaybook
 
 class DefensivePlaybookDeserializer : JsonDeserializer<DefensivePlaybook>() {
-    override fun deserialize(parser: JsonParser, ctxt: DeserializationContext): DefensivePlaybook {
+    override fun deserialize(
+        parser: JsonParser,
+        ctxt: DeserializationContext,
+    ): DefensivePlaybook {
         val value = parser.text.uppercase()
         return DefensivePlaybook.entries.find { it.name == value }
             ?: throw IllegalArgumentException("Invalid Defensive Playbook value: $value")

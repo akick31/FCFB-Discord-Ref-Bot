@@ -281,8 +281,8 @@ class TextChannelThreadHandler {
         val homeTeamRank = homeTeam?.playoffCommitteeRanking ?: homeTeam?.coachesPollRanking
         val awayTeamRank = awayTeam?.playoffCommitteeRanking ?: awayTeam?.coachesPollRanking
 
-        val formattedHomeTeam = if (homeTeamRank != null || homeTeamRank == 0) "#$homeTeamRank ${game.homeTeam}" else game.homeTeam
-        val formattedAwayTeam = if (awayTeamRank != null || awayTeamRank == 0) "#$awayTeamRank ${game.awayTeam}" else game.awayTeam
+        val formattedHomeTeam = if (homeTeamRank != null && homeTeamRank != 0) "#$homeTeamRank ${game.homeTeam}" else game.homeTeam
+        val formattedAwayTeam = if (awayTeamRank != null && awayTeamRank != 0) "#$awayTeamRank ${game.awayTeam}" else game.awayTeam
 
         val teamMatchup = "$formattedHomeTeam vs $formattedAwayTeam"
 

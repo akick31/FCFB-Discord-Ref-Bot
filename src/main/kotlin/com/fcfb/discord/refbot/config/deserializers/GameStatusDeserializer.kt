@@ -6,7 +6,10 @@ import com.fasterxml.jackson.databind.JsonDeserializer
 import com.fcfb.discord.refbot.model.fcfb.game.GameStatus
 
 class GameStatusDeserializer : JsonDeserializer<GameStatus>() {
-    override fun deserialize(parser: JsonParser, ctxt: DeserializationContext): GameStatus {
+    override fun deserialize(
+        parser: JsonParser,
+        ctxt: DeserializationContext,
+    ): GameStatus {
         val value = parser.text.uppercase()
         return GameStatus.entries.find { it.name == value }
             ?: throw IllegalArgumentException("Invalid Game Status value: $value")

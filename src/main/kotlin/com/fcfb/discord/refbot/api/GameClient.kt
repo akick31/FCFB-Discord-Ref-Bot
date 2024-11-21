@@ -1,6 +1,5 @@
 package com.fcfb.discord.refbot.api
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import com.fcfb.discord.refbot.config.JacksonConfig
 import com.fcfb.discord.refbot.model.fcfb.game.Game
 import com.fcfb.discord.refbot.model.fcfb.game.GameType

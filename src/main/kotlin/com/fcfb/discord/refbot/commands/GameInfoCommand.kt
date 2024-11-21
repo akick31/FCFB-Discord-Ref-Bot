@@ -1,8 +1,6 @@
 package com.fcfb.discord.refbot.commands
 
 import com.fcfb.discord.refbot.api.GameClient
-import com.fcfb.discord.refbot.api.PlayClient
-import com.fcfb.discord.refbot.handlers.GameHandler
 import com.fcfb.discord.refbot.model.fcfb.game.Game
 import com.fcfb.discord.refbot.model.fcfb.game.TeamSide
 import com.fcfb.discord.refbot.utils.Logger
@@ -32,7 +30,9 @@ class GameInfoCommand {
         if (game != null) {
             val messageContent = getGameInformation(game)
             response.respond { this.content = messageContent }
-            Logger.info("${interaction.user.username} successfully grabbed game information for a game in channel ${interaction.channelId.value}")
+            Logger.info(
+                "${interaction.user.username} successfully grabbed game information for a game in channel ${interaction.channelId.value}",
+            )
         } else {
             response.respond { this.content = "Game information command failed!" }
             Logger.error("${interaction.user.username} failed to get game information for a game in channel ${interaction.channelId.value}")

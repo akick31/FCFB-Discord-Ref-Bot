@@ -1,8 +1,6 @@
 package com.fcfb.discord.refbot.model.fcfb.game
 
-import com.fasterxml.jackson.annotation.JsonCreator
 import com.fasterxml.jackson.annotation.JsonProperty
-import com.fasterxml.jackson.annotation.JsonValue
 import com.fasterxml.jackson.databind.PropertyNamingStrategies
 import com.fasterxml.jackson.databind.annotation.JsonNaming
 
@@ -66,14 +64,12 @@ enum class GameStatus(val description: String) {
     FINAL("FINAL"),
     END_OF_REGULATION("END OF REGULATION"),
     OVERTIME("OVERTIME"),
-    ;
 }
 
 enum class Subdivision(val description: String) {
     FCFB("FCFB"),
     FBS("FBS"),
     FCS("FCS"),
-    ;
 }
 
 enum class OffensivePlaybook(val description: String) {
@@ -82,7 +78,6 @@ enum class OffensivePlaybook(val description: String) {
     PRO("PRO"),
     SPREAD("SPREAD"),
     WEST_COAST("WEST COAST"),
-    ;
 }
 
 enum class DefensivePlaybook(val description: String) {
@@ -91,7 +86,6 @@ enum class DefensivePlaybook(val description: String) {
     FIVE_TWO("5-2"),
     FOUR_FOUR("4-4"),
     THREE_THREE_FIVE("3-3-5"),
-    ;
 }
 
 enum class TVChannel(val description: String) {
@@ -103,13 +97,11 @@ enum class TVChannel(val description: String) {
     FS1("FS1"),
     FS2("FS2"),
     NBC("NBC"),
-    ;
 }
 
 enum class Platform(val description: String) {
     DISCORD("DISCORD"),
     REDDIT("REDDIT"),
-    ;
 }
 
 enum class PlayCall(val description: String) {
@@ -124,14 +116,12 @@ enum class PlayCall(val description: String) {
     KICKOFF_NORMAL("KICKOFF_NORMAL"),
     KICKOFF_ONSIDE("KICKOFF_ONSIDE"),
     KICKOFF_SQUIB("KICKOFF_SQUIB"),
-    ;
 }
 
 enum class PlayType(val description: String) {
     NORMAL("NORMAL"),
     KICKOFF("KICKOFF"),
     PAT("PAT"),
-    ;
 }
 
 enum class ActualResult(val description: String) {
@@ -162,14 +152,12 @@ enum class ActualResult(val description: String) {
     PUNT_RETURN_TOUCHDOWN("PUNT RETURN TOUCHDOWN"),
     PUNT_TEAM_TOUCHDOWN("PUNT TEAM TOUCHDOWN"),
     MUFFED_PUNT("MUFFED PUNT"),
-    ;
 }
 
 enum class RunoffType(val description: String) {
     CHEW("CHEW"),
     HURRY("HURRY"),
     NORMAL("NORMAL"),
-    ;
 }
 
 enum class Scenario(val description: String) {
@@ -273,13 +261,11 @@ enum class Scenario(val description: String) {
     SIXTY_FIVE_YARD_PUNT("65 YARD PUNT"),
     SEVENTY_YARD_PUNT("70 YARD PUNT"),
     GAME_OVER("GAME OVER"),
-    ;
 }
 
 enum class TeamSide(val description: String) {
     HOME("HOME"),
     AWAY("AWAY"),
-    ;
 }
 
 enum class CoinTossChoice(val description: String) {
@@ -295,5 +281,4 @@ enum class GameType(val description: String) {
     NATIONAL_CHAMPIONSHIP("National Championship"),
     BOWL("Bowl"),
     SCRIMMAGE("Scrimmage"),
-    ;
 }

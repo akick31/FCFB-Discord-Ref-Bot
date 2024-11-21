@@ -6,7 +6,10 @@ import com.fasterxml.jackson.databind.JsonDeserializer
 import com.fcfb.discord.refbot.model.fcfb.game.GameType
 
 class GameTypeDeserializer : JsonDeserializer<GameType>() {
-    override fun deserialize(parser: JsonParser, ctxt: DeserializationContext): GameType {
+    override fun deserialize(
+        parser: JsonParser,
+        ctxt: DeserializationContext,
+    ): GameType {
         val value = parser.text.uppercase()
         return GameType.entries.find { it.name == value }
             ?: throw IllegalArgumentException("Invalid Game Type value: $value")

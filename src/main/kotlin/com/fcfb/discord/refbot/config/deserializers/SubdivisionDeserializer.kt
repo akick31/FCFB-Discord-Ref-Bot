@@ -6,7 +6,10 @@ import com.fasterxml.jackson.databind.JsonDeserializer
 import com.fcfb.discord.refbot.model.fcfb.game.Subdivision
 
 class SubdivisionDeserializer : JsonDeserializer<Subdivision>() {
-    override fun deserialize(parser: JsonParser, ctxt: DeserializationContext): Subdivision {
+    override fun deserialize(
+        parser: JsonParser,
+        ctxt: DeserializationContext,
+    ): Subdivision {
         val value = parser.text.uppercase()
         return Subdivision.entries.find { it.name == value }
             ?: throw IllegalArgumentException("Invalid Subdivision value: $value")
