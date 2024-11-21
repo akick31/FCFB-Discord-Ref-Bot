@@ -10,9 +10,16 @@ import com.fcfb.discord.refbot.model.fcfb.game.PlayType
 import com.fcfb.discord.refbot.model.fcfb.game.RunoffType
 import com.fcfb.discord.refbot.model.fcfb.game.TeamSide
 import dev.kord.common.entity.Snowflake
+import dev.kord.common.entity.optional.Optional
 import dev.kord.core.Kord
+import dev.kord.core.cache.data.EmbedData
+import dev.kord.core.cache.data.EmbedFooterData
+import dev.kord.core.cache.data.EmbedImageData
 import dev.kord.core.entity.Message
 import dev.kord.core.entity.User
+import java.io.File
+import java.nio.file.Files
+import java.nio.file.StandardOpenOption
 
 class GameUtils {
     /**
@@ -566,5 +573,48 @@ class GameUtils {
         } else {
             "The game ends in a tie!"
         }
+    }
+
+    /**
+     * Get the scorebug embed for a game
+     * @param game The game object
+     * @param embedContent The embed content
+     */
+    fun getScorebugEmbed(
+        scorebug: ByteArray?,
+        game: Game,
+        embedContent: String?,
+    ): EmbedData? {
+        if (scorebug == null) {
+            return null
+        }
+
+        val scorebugUrl =
+            scorebug.let {
+                val file = File("images/${game.gameId}_scorebug.png")
+                try {
+                    // Ensure the images directory exists
+                    val imagesDir = File("images")
+                    if (!imagesDir.exists()) {
+                        if (imagesDir.mkdirs()) {
+                            Logger.info("Created images directory: ${imagesDir.absolutePath}")
+                        } else {
+                            Logger.info("Failed to create images directory.")
+                        }
+                    }
+                    Files.write(file.toPath(), it, StandardOpenOption.CREATE)
+                } catch (e: Exception) {
+                    Logger.error("Failed to write scorebug image: ${e.stackTraceToString()}")
+                    return null
+                }
+                file.path
+            }
+
+        return EmbedData(
+            title = Optional("${game.homeTeam} vs ${game.awayTeam}"),
+            description = Optional(embedContent.orEmpty()),
+            image = Optional(EmbedImageData(url = Optional(scorebugUrl))),
+            footer = Optional(EmbedFooterData(text = "Game ID: ${game.gameId}")),
+        )
     }
 }

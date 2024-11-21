@@ -21,16 +21,12 @@ import dev.kord.core.Kord
 import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.cache.data.EmbedData
 import dev.kord.core.cache.data.EmbedFooterData
-import dev.kord.core.cache.data.EmbedImageData
 import dev.kord.core.entity.Message
 import dev.kord.core.entity.User
 import dev.kord.core.entity.channel.MessageChannel
 import dev.kord.core.entity.channel.thread.TextChannelThread
 import dev.kord.rest.builder.message.EmbedBuilder
 import dev.kord.rest.builder.message.addFile
-import java.io.File
-import java.nio.file.Files
-import java.nio.file.StandardOpenOption
 import kotlin.io.path.Path
 
 class DiscordMessageHandler {
@@ -273,7 +269,7 @@ class DiscordMessageHandler {
         scorebug: ByteArray,
     ): Pair<Pair<String, EmbedData?>, List<User?>> {
         val embedData =
-            getScorebugEmbed(scorebug, game, messageContent)
+            GameUtils().getScorebugEmbed(scorebug, game, messageContent)
                 ?: return createGameMessageWithoutScorebug(
                     game,
                     scenario,
@@ -419,7 +415,7 @@ class DiscordMessageHandler {
             scorebugClient.getScorebugByGameId(game.gameId)
                 ?: return postGameScoreWithoutScorebug(scoreChannel, messageContent + embedContent)
         val embedData =
-            getScorebugEmbed(scorebug, game, embedContent)
+            GameUtils().getScorebugEmbed(scorebug, game, embedContent)
                 ?: return postGameScoreWithoutScorebug(scoreChannel, messageContent + embedContent)
 
         sendMessageFromChannelObject(scoreChannel, messageContent, embedData)
@@ -566,7 +562,7 @@ class DiscordMessageHandler {
      * @param messageContent The message content
      * @param embedData The embed data
      */
-    private suspend fun sendMessageFromChannelObject(
+    suspend fun sendMessageFromChannelObject(
         channel: MessageChannel,
         messageContent: String,
         embedData: EmbedData?,
@@ -663,45 +659,6 @@ class DiscordMessageHandler {
         }
 
         return submittedMessage
-    }
-
-    /**
-     * Get the embed data for a scorebug image
-     * @param game The game object
-     * @param embedContent The embed content
-     */
-    private fun getScorebugEmbed(
-        scorebug: ByteArray,
-        game: Game,
-        embedContent: String?,
-    ): EmbedData? {
-        val scorebugUrl =
-            scorebug.let {
-                val file = File("images/${game.gameId}_scorebug.png")
-                try {
-                    // Ensure the images directory exists
-                    val imagesDir = File("images")
-                    if (!imagesDir.exists()) {
-                        if (imagesDir.mkdirs()) {
-                            Logger.info("Created images directory: ${imagesDir.absolutePath}")
-                        } else {
-                            Logger.info("Failed to create images directory.")
-                        }
-                    }
-                    Files.write(file.toPath(), it, StandardOpenOption.CREATE)
-                } catch (e: Exception) {
-                    Logger.error("Failed to write scorebug image: ${e.stackTraceToString()}")
-                    return null
-                }
-                file.path
-            }
-
-        return EmbedData(
-            title = Optional("${game.homeTeam} vs ${game.awayTeam}"),
-            description = Optional(embedContent.orEmpty()),
-            image = Optional(EmbedImageData(url = Optional(scorebugUrl))),
-            footer = Optional(EmbedFooterData(text = "Game ID: ${game.gameId}")),
-        )
     }
 
     /**
