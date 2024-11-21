@@ -23,7 +23,7 @@ class MessageConstants {
         NO_WRITEUP_FOUND("There was an issue getting the writeup message"),
         GAME_THREAD_MESSAGE_EXCEPTION("Could not send message to game thread via message object or text channel object"),
         PRIVATE_MESSAGE_EXCEPTION("Could not send private message to the user"),
-        FAILED_TO_SEND_NUMBER_REQUEST_MESSAGE("Failed to send the number request message"),
+        FAILED_TO_SEND_NUMBER_REQUEST_MESSAGE("Failed to send the number request message, please use `/ping` to resend the game message"),
         GAME_OVER("This game is already over"),
         ;
 

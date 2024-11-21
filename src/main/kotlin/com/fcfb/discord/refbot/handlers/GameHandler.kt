@@ -149,7 +149,11 @@ class GameHandler {
                 return errorHandler.failedToSendNumberRequestMessage(message)
             }
 
-            gameClient.updateRequestMessageId(updatedGame.gameId, numberRequestMessage)
+            try {
+                gameClient.updateRequestMessageId(updatedGame.gameId, numberRequestMessage)
+            } catch (e: Exception) {
+                errorHandler.failedToSendNumberRequestMessage(message)
+            }
         }
     }
 
@@ -212,7 +216,11 @@ class GameHandler {
                 timeoutCalled,
             ) ?: return errorHandler.failedToSendNumberRequestMessage(message)
 
-        gameClient.updateRequestMessageId(game.gameId, numberRequestMessage to null)
+        try {
+            gameClient.updateRequestMessageId(game.gameId, numberRequestMessage to null)
+        } catch (e: Exception) {
+            errorHandler.failedToSendNumberRequestMessage(message)
+        }
     }
 
     /**
@@ -247,7 +255,11 @@ class GameHandler {
                 null,
             ) ?: return errorHandler.failedToSendNumberRequestMessage(message)
 
-        gameClient.updateRequestMessageId(game.gameId, coinTossRequestMessage to null)
+        try {
+            gameClient.updateRequestMessageId(game.gameId, coinTossRequestMessage to null)
+        } catch (e: Exception) {
+            errorHandler.failedToSendNumberRequestMessage(message)
+        }
     }
 
     /**
@@ -280,7 +292,11 @@ class GameHandler {
                 null,
             ) ?: return errorHandler.failedToSendNumberRequestMessage(message)
 
-        gameClient.updateRequestMessageId(game.gameId, numberRequestMessage)
+        try {
+            gameClient.updateRequestMessageId(game.gameId, numberRequestMessage)
+        } catch (e: Exception) {
+            errorHandler.failedToSendNumberRequestMessage(message)
+        }
     }
 
     /**
