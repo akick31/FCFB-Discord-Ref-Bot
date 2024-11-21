@@ -3,6 +3,7 @@ package com.fcfb.discord.refbot.handlers
 import com.fcfb.discord.refbot.api.GameClient
 import com.fcfb.discord.refbot.api.PlayClient
 import com.fcfb.discord.refbot.handlers.discord.DiscordMessageHandler
+import com.fcfb.discord.refbot.handlers.discord.RedZoneHandler
 import com.fcfb.discord.refbot.handlers.discord.TextChannelThreadHandler
 import com.fcfb.discord.refbot.model.discord.MessageConstants.Error
 import com.fcfb.discord.refbot.model.discord.MessageConstants.Info
@@ -134,6 +135,9 @@ class GameHandler {
         val scenario = if (playOutcome.actualResult == ActualResult.TOUCHDOWN) Scenario.TOUCHDOWN else playOutcome.result!!
         val submittedMessage = discordMessageHandler.sendGameMessage(client, updatedGame, scenario, playOutcome, message, null, false)
         textChannelThreadHandler.updateThread(textChannelThreadHandler.getTextChannelThread(message), updatedGame)
+
+        RedZoneHandler().handleRedZone(client, playOutcome, updatedGame, submittedMessage)
+
         if (updatedGame.gameStatus == GameStatus.FINAL) {
             endGame(client, updatedGame, message)
         } else {
