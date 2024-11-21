@@ -3,11 +3,14 @@ package com.fcfb.discord.refbot.commands.permissions
 import com.fcfb.discord.refbot.model.fcfb.Role
 
 object Permissions {
+    private val generalCommands = setOf("help", "register", "ping", "game_info")
+    private val adminCommands = setOf("start_game", "end_game", "delete_game", "hire_coach")
+
     private val rolePermissions =
         mapOf(
-            Role.ADMIN to setOf("help", "register", "ping", "start_game", "end_game", "delete_game", "hire_coach"),
-            Role.CONFERENCE_COMMISSIONER to setOf("help", "register", "ping", "start_game", "end_game", "delete_game", "hire_coach"),
-            Role.USER to setOf("help", "register", "ping"),
+            Role.ADMIN to generalCommands + adminCommands,
+            Role.CONFERENCE_COMMISSIONER to generalCommands + adminCommands,
+            Role.USER to generalCommands,
         )
 
     fun isAllowed(

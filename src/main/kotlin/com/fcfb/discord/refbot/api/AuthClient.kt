@@ -1,6 +1,7 @@
 package com.fcfb.discord.refbot.api
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.fcfb.discord.refbot.config.JacksonConfig
 import com.fcfb.discord.refbot.model.fcfb.FCFBUser
 import com.fcfb.discord.refbot.utils.Logger
 import io.ktor.client.HttpClient
@@ -58,7 +59,7 @@ class AuthClient {
                     setBody(user)
                 }
             val jsonResponse: String = response.bodyAsText()
-            val objectMapper = ObjectMapper()
+            val objectMapper = JacksonConfig().configureFCFBUserMapping()
             return objectMapper.readValue(jsonResponse, FCFBUser::class.java)
         } catch (e: Exception) {
             Logger.error(e.message!!)

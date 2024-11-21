@@ -1,6 +1,7 @@
 package com.fcfb.discord.refbot.api
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.fcfb.discord.refbot.config.JacksonConfig
 import com.fcfb.discord.refbot.model.fcfb.game.Game
 import com.fcfb.discord.refbot.model.fcfb.game.GameType
 import com.fcfb.discord.refbot.model.fcfb.game.Platform
@@ -95,7 +96,7 @@ class GameClient {
                     setBody(startRequest)
                 }
             val jsonResponse: String = response.bodyAsText()
-            val objectMapper = ObjectMapper()
+            val objectMapper = JacksonConfig().configureGameMapping()
             return objectMapper.readValue(jsonResponse, Game::class.java)
         } catch (e: Exception) {
             Logger.error(e.message!!)
@@ -147,7 +148,7 @@ class GameClient {
                     contentType(ContentType.Application.Json)
                 }
             val jsonResponse: String = response.bodyAsText()
-            val objectMapper = ObjectMapper()
+            val objectMapper = JacksonConfig().configureGameMapping()
             objectMapper.readValue(jsonResponse, Game::class.java)
         } catch (e: Exception) {
             Logger.error(e.message!!)
@@ -170,7 +171,7 @@ class GameClient {
             val response: HttpResponse = httpClient.put(endpointUrl)
             val jsonResponse: String = response.bodyAsText()
 
-            val objectMapper = ObjectMapper()
+            val objectMapper = JacksonConfig().configureGameMapping()
             objectMapper.readValue(jsonResponse, Game::class.java)
         } catch (e: Exception) {
             Logger.error(e.message!!)
@@ -193,7 +194,7 @@ class GameClient {
             val response: HttpResponse = httpClient.put(endpointUrl)
             val jsonResponse: String = response.bodyAsText()
 
-            val objectMapper = ObjectMapper()
+            val objectMapper = JacksonConfig().configureGameMapping()
             objectMapper.readValue(jsonResponse, Game::class.java)
         } catch (e: Exception) {
             Logger.error(e.message!!)
@@ -212,7 +213,7 @@ class GameClient {
             val response: HttpResponse = httpClient.post(endpointUrl)
             val jsonResponse: String = response.bodyAsText()
 
-            val objectMapper = ObjectMapper()
+            val objectMapper = JacksonConfig().configureGameMapping()
             objectMapper.readValue(jsonResponse, Game::class.java)
         } catch (e: Exception) {
             Logger.error(e.message!!)
@@ -250,7 +251,7 @@ class GameClient {
                     contentType(ContentType.Application.Json)
                 }
             val jsonResponse: String = response.bodyAsText()
-            val objectMapper = ObjectMapper()
+            val objectMapper = JacksonConfig().configureGameMapping()
             objectMapper.readValue(jsonResponse, Game::class.java)
         } catch (e: Exception) {
             Logger.error(e.message!!)
