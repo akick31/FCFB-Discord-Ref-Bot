@@ -276,24 +276,34 @@ class TextChannelThreadHandler {
      * @param game The game object
      */
     private suspend fun getThreadName(game: Game): String {
+        val homeTeam = TeamClient().getTeamByName(game.homeTeam)
+        val awayTeam = TeamClient().getTeamByName(game.awayTeam)
+        val homeTeamRank = homeTeam?.playoffCommitteeRanking ?: homeTeam?.coachesPollRanking
+        val awayTeamRank = awayTeam?.playoffCommitteeRanking ?: awayTeam?.coachesPollRanking
+
+        val formattedHomeTeam = if (homeTeamRank != null || homeTeamRank == 0) "#$homeTeamRank ${game.homeTeam}" else game.homeTeam
+        val formattedAwayTeam = if (awayTeamRank != null || awayTeamRank == 0) "#$awayTeamRank ${game.awayTeam}" else game.awayTeam
+
+        val teamMatchup = "$formattedHomeTeam vs $formattedAwayTeam"
+
         when (game.gameType) {
             GameType.PLAYOFFS -> {
-                return "PLAYOFFS || ${game.homeTeam} vs ${game.awayTeam}"
+                return "PLAYOFFS || $teamMatchup"
             }
             GameType.BOWL -> {
-                return "BOWL || ${game.homeTeam} vs ${game.awayTeam}"
+                return "BOWL || $teamMatchup"
             }
             GameType.CONFERENCE_CHAMPIONSHIP -> {
                 val conference =
                     TeamClient().getTeamByName(game.homeTeam)?.conference?.description?.uppercase()
-                        ?: return "CONFERENCE CHAMPIONSHIP || ${game.homeTeam} vs ${game.awayTeam}"
-                return "$conference CHAMPIONSHIP || ${game.homeTeam} vs ${game.awayTeam}"
+                        ?: return "CONFERENCE CHAMPIONSHIP || $teamMatchup"
+                return "$conference CHAMPIONSHIP || $teamMatchup"
             }
             GameType.NATIONAL_CHAMPIONSHIP -> {
-                return "NATIONAL CHAMPIONSHIP || ${game.homeTeam} vs ${game.awayTeam}"
+                return "NATIONAL CHAMPIONSHIP || $teamMatchup"
             }
             else -> {
-                return "${game.homeTeam} vs ${game.awayTeam}"
+                return "$teamMatchup"
             }
         }
     }

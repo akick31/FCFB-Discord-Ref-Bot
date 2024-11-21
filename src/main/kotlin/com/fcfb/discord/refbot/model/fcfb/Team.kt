@@ -67,10 +67,4 @@ enum class Conference(val description: String) {
     OHIO_VALLEY("Ohio Valley"),
     SWAC("SWAC"),
     ;
-
-    companion object {
-        fun fromString(description: String): Conference? {
-            return entries.find { it.description == description }
-        }
-    }
 }
