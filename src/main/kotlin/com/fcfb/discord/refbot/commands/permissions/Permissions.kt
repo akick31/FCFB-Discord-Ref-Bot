@@ -6,7 +6,11 @@ object Permissions {
     private val rolePermissions =
         mapOf(
             Role.ADMIN to setOf("help", "register", "ping", "start_scrimmage", "start_game", "end_game", "delete_game", "hire_coach"),
-            Role.CONFERENCE_COMMISSIONER to setOf("help", "register", "ping", "start_scrimmage", "start_game", "end_game", "delete_game", "hire_coach"),
+            Role.CONFERENCE_COMMISSIONER to
+                setOf(
+                    "help", "register", "ping", "start_scrimmage", "start_game", "end_game",
+                    "delete_game", "hire_coach",
+                ),
             Role.USER to setOf("help", "register", "ping", "start_scrimmage"),
         )
 

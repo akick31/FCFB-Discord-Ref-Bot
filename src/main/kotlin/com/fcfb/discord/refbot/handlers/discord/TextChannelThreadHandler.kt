@@ -85,7 +85,7 @@ class TextChannelThreadHandler {
     suspend fun createPostgameThread(
         client: Kord,
         game: Game,
-        lastMessage: Message
+        lastMessage: Message,
     ): TextChannelThread {
         val threadName = getThreadName(game)
         val gameChannel = getPostgameForumChannel(client)
@@ -118,7 +118,10 @@ class TextChannelThreadHandler {
         }
     }
 
-    private suspend fun getScorebugEmbed(game: Game, embedContent: String?): EmbedData? {
+    private suspend fun getScorebugEmbed(
+        game: Game,
+        embedContent: String?,
+    ): EmbedData? {
         val scorebug = ScorebugClient().getScorebugByGameId(game.gameId)
 
         val scorebugUrl =
@@ -143,11 +146,11 @@ class TextChannelThreadHandler {
             }
 
         return EmbedData(
-                title = Optional("${game.homeTeam} vs ${game.awayTeam}"),
-                description = Optional(embedContent.orEmpty()),
-                image = Optional(EmbedImageData(url = Optional(scorebugUrl))),
-                footer = Optional(EmbedFooterData(text = "Game ID: ${game.gameId}")),
-            )
+            title = Optional("${game.homeTeam} vs ${game.awayTeam}"),
+            description = Optional(embedContent.orEmpty()),
+            image = Optional(EmbedImageData(url = Optional(scorebugUrl))),
+            footer = Optional(EmbedFooterData(text = "Game ID: ${game.gameId}")),
+        )
     }
 
     private fun getGameThreadMessageContent(game: Game): String {
@@ -177,13 +180,17 @@ class TextChannelThreadHandler {
         return messageContent
     }
 
-    private fun getPostgameInformation(game: Game, lastMessage: Message): String {
+    private fun getPostgameInformation(
+        game: Game,
+        lastMessage: Message,
+    ): String {
         var messageContent = ""
-        messageContent += if (game.homeScore > game.awayScore) {
-            "${game.homeTeam} defeats ${game.awayTeam} ${game.homeScore}-${game.awayScore}\n"
-        } else {
-            "${game.awayTeam} defeats ${game.homeTeam} ${game.awayScore}-${game.homeScore}\n"
-        }
+        messageContent +=
+            if (game.homeScore > game.awayScore) {
+                "${game.homeTeam} defeats ${game.awayTeam} ${game.homeScore}-${game.awayScore}\n"
+            } else {
+                "${game.awayTeam} defeats ${game.homeTeam} ${game.awayScore}-${game.homeScore}\n"
+            }
         messageContent += lastMessage.getJumpUrl()
         return messageContent
     }

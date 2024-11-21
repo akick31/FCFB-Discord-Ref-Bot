@@ -24,9 +24,7 @@ import dev.kord.core.cache.data.EmbedFooterData
 import dev.kord.core.cache.data.EmbedImageData
 import dev.kord.core.entity.Message
 import dev.kord.core.entity.User
-import dev.kord.core.entity.channel.Channel
 import dev.kord.core.entity.channel.MessageChannel
-import dev.kord.core.entity.channel.TextChannel
 import dev.kord.core.entity.channel.thread.TextChannelThread
 import dev.kord.rest.builder.message.EmbedBuilder
 import dev.kord.rest.builder.message.addFile
@@ -274,16 +272,17 @@ class DiscordMessageHandler {
         defensiveCoaches: List<User?>,
         scorebug: ByteArray,
     ): Pair<Pair<String, EmbedData?>, List<User?>> {
-        val embedData = getScorebugEmbed(scorebug, game, messageContent)
-            ?: return createGameMessageWithoutScorebug(
-                game,
-                scenario,
-                messageContent,
-                homeCoaches,
-                awayCoaches,
-                offensiveCoaches,
-                defensiveCoaches,
-            )
+        val embedData =
+            getScorebugEmbed(scorebug, game, messageContent)
+                ?: return createGameMessageWithoutScorebug(
+                    game,
+                    scenario,
+                    messageContent,
+                    homeCoaches,
+                    awayCoaches,
+                    offensiveCoaches,
+                    defensiveCoaches,
+                )
 
         val messageToSend = appendUserPings(scenario, game, homeCoaches, awayCoaches, offensiveCoaches)
 
@@ -397,7 +396,7 @@ class DiscordMessageHandler {
     suspend fun postGameScore(
         client: Kord,
         game: Game,
-        message: Message?
+        message: Message?,
     ) {
         val homeTeam = TeamClient().getTeamByName(game.homeTeam)
         val awayTeam = TeamClient().getTeamByName(game.awayTeam)
@@ -407,23 +406,28 @@ class DiscordMessageHandler {
         val formattedHomeTeam = if (homeTeamRank != null && homeTeamRank != 0) "#$homeTeamRank ${game.homeTeam}" else game.homeTeam
         val formattedAwayTeam = if (awayTeamRank != null && awayTeamRank != 0) "#$awayTeamRank ${game.awayTeam}" else game.awayTeam
 
-        val messageContent = if (game.homeScore > game.awayScore) {
-            "$formattedHomeTeam defeats $formattedAwayTeam ${game.homeScore}-${game.awayScore}\n"
-        } else {
-            "$formattedAwayTeam defeats $formattedHomeTeam ${game.awayScore}-${game.homeScore}\n"
-        }
+        val messageContent =
+            if (game.homeScore > game.awayScore) {
+                "$formattedHomeTeam defeats $formattedAwayTeam ${game.homeScore}-${game.awayScore}\n"
+            } else {
+                "$formattedAwayTeam defeats $formattedHomeTeam ${game.awayScore}-${game.homeScore}\n"
+            }
         val embedContent = message?.getJumpUrl()
 
         val scoreChannel = client.getChannel(Snowflake(Properties().getDiscordProperties().scoresChannelId)) as MessageChannel
-        val scorebug = scorebugClient.getScorebugByGameId(game.gameId) ?: return postGameScoreWithoutScorebug(scoreChannel, messageContent + embedContent)
-        val embedData = getScorebugEmbed(scorebug, game, embedContent) ?: return postGameScoreWithoutScorebug(scoreChannel, messageContent + embedContent)
+        val scorebug =
+            scorebugClient.getScorebugByGameId(game.gameId)
+                ?: return postGameScoreWithoutScorebug(scoreChannel, messageContent + embedContent)
+        val embedData =
+            getScorebugEmbed(scorebug, game, embedContent)
+                ?: return postGameScoreWithoutScorebug(scoreChannel, messageContent + embedContent)
 
         sendMessageFromChannelObject(scoreChannel, messageContent, embedData)
     }
 
     private suspend fun postGameScoreWithoutScorebug(
         scoreChannel: MessageChannel,
-        messageContent: String
+        messageContent: String,
     ) {
         sendMessageFromChannelObject(scoreChannel, messageContent, null)
     }
@@ -666,7 +670,11 @@ class DiscordMessageHandler {
      * @param game The game object
      * @param embedContent The embed content
      */
-    private fun getScorebugEmbed(scorebug: ByteArray, game: Game, embedContent: String?): EmbedData? {
+    private fun getScorebugEmbed(
+        scorebug: ByteArray,
+        game: Game,
+        embedContent: String?,
+    ): EmbedData? {
         val scorebugUrl =
             scorebug.let {
                 val file = File("images/${game.gameId}_scorebug.png")
