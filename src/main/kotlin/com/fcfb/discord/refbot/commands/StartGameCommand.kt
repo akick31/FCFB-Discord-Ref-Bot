@@ -1,7 +1,6 @@
 package com.fcfb.discord.refbot.commands
 
 import com.fcfb.discord.refbot.api.GameClient
-import com.fcfb.discord.refbot.model.fcfb.Role
 import com.fcfb.discord.refbot.model.fcfb.game.GameType
 import com.fcfb.discord.refbot.model.fcfb.game.Subdivision
 import com.fcfb.discord.refbot.model.fcfb.game.TVChannel
@@ -78,7 +77,6 @@ class StartGameCommand {
      * Start a new game
      */
     suspend fun execute(
-        userRole: Role,
         interaction: ChatInputCommandInteraction,
         command: InteractionCommand,
     ) {
@@ -87,12 +85,6 @@ class StartGameCommand {
                 " and ${command.options["away_team"]!!.value}",
         )
         val response = interaction.deferPublicResponse()
-
-        if (userRole == Role.USER) {
-            response.respond { this.content = "You do not have permission to start a game" }
-            Logger.error("${interaction.user.username} does not have permission to start a game")
-            return
-        }
 
         val subdivisionString = command.options["subdivision"]!!.value.toString()
         val subdivision =

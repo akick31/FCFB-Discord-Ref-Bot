@@ -2,7 +2,6 @@ package com.fcfb.discord.refbot.commands
 
 import com.fcfb.discord.refbot.api.TeamClient
 import com.fcfb.discord.refbot.model.fcfb.CoachPosition
-import com.fcfb.discord.refbot.model.fcfb.Role
 import com.fcfb.discord.refbot.utils.Logger
 import dev.kord.core.Kord
 import dev.kord.core.behavior.interaction.response.respond
@@ -36,23 +35,15 @@ class HireCoachCommand {
 
     /**
      * Hire a new coach for a team
-     * @param userRole The role of the user
      * @param interaction The interaction object
      * @param command The command object
      */
     suspend fun execute(
-        userRole: Role,
         interaction: ChatInputCommandInteraction,
         command: InteractionCommand,
     ) {
         Logger.info("${interaction.user.username} is hiring a new coach for ${command.options["team"]!!.value}")
         val response = interaction.deferPublicResponse()
-
-        if (userRole == Role.USER) {
-            response.respond { this.content = "You do not have permission to hire a coach" }
-            Logger.error("${interaction.user.username} does not have permission to hire a coach")
-            return
-        }
 
         val coach = command.users["coach"]!!
         val team = command.options["team"]!!.value.toString()

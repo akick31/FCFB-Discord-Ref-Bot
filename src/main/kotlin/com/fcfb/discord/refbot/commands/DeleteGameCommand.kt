@@ -1,7 +1,6 @@
 package com.fcfb.discord.refbot.commands
 
 import com.fcfb.discord.refbot.api.GameClient
-import com.fcfb.discord.refbot.model.fcfb.Role
 import com.fcfb.discord.refbot.utils.Logger
 import dev.kord.core.Kord
 import dev.kord.core.behavior.interaction.response.respond
@@ -25,7 +24,6 @@ class DeleteGameCommand {
      * Start a new game
      */
     suspend fun execute(
-        userRole: Role,
         interaction: ChatInputCommandInteraction,
         command: InteractionCommand,
     ) {
@@ -33,12 +31,6 @@ class DeleteGameCommand {
             "${interaction.user.username} is deleting a game at channel ${interaction.channelId.value}",
         )
         val response = interaction.deferPublicResponse()
-
-        if (userRole == Role.USER) {
-            response.respond { this.content = "You do not have permission to delete a game" }
-            Logger.error("${interaction.user.username} does not have permission to delete a game")
-            return
-        }
 
         val deletedGame = gameClient.deleteGame(interaction.channelId.value)
         if (deletedGame == 200 || deletedGame == 201) {

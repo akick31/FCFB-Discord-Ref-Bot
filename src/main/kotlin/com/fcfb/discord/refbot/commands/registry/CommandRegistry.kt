@@ -10,8 +10,11 @@ import com.fcfb.discord.refbot.commands.RegisterCommand
 import com.fcfb.discord.refbot.commands.RoleCommand
 import com.fcfb.discord.refbot.commands.StartGameCommand
 import com.fcfb.discord.refbot.commands.StartScrimmageCommand
+import com.fcfb.discord.refbot.commands.permissions.hasPermission
 import com.fcfb.discord.refbot.model.fcfb.Role
+import com.fcfb.discord.refbot.utils.Logger
 import dev.kord.core.Kord
+import dev.kord.core.behavior.interaction.response.respond
 import dev.kord.core.entity.interaction.ChatInputCommandInteraction
 
 class CommandRegistry {
@@ -42,16 +45,24 @@ class CommandRegistry {
             }
         val commandName = interaction.command.data.name.value
 
+        if (!hasPermission(userRole, commandName ?: "")) {
+            interaction.deferPublicResponse().respond {
+                content = "You do not have permission to execute the command `$commandName`."
+            }
+            Logger.error("${interaction.user.username} tried to execute `$commandName` without permission")
+            return
+        }
+
         when (commandName) {
             "help" -> HelpCommand().execute(userRole, interaction)
             "register" -> RegisterCommand().execute(interaction, interaction.command)
             "role" -> RoleCommand().execute(userRole, interaction, interaction.command)
             "ping" -> PingCommand().execute(interaction)
-            "start_game" -> StartGameCommand().execute(userRole, interaction, interaction.command)
+            "start_game" -> StartGameCommand().execute(interaction, interaction.command)
             "end_game" -> EndGameCommand().execute(userRole, interaction, interaction.command)
-            "delete_game" -> DeleteGameCommand().execute(userRole, interaction, interaction.command)
+            "delete_game" -> DeleteGameCommand().execute(interaction, interaction.command)
             "start_scrimmage" -> StartScrimmageCommand().execute(interaction, interaction.command)
-            "hire_coach" -> HireCoachCommand().execute(userRole, interaction, interaction.command)
+            "hire_coach" -> HireCoachCommand().execute(interaction, interaction.command)
         }
     }
 }

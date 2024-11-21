@@ -44,12 +44,6 @@ class RoleCommand {
         Logger.info("${interaction.user.username} is assigning a role for ${command.users["user"]!!.username}")
         val response = interaction.deferPublicResponse()
 
-        if (userRole == Role.USER) {
-            response.respond { this.content = "You do not have permission to assign roles" }
-            Logger.error("${interaction.user.username} does not have permission to assign roles")
-            return
-        }
-
         val user = command.users["user"]!!
         val roleString = command.options["role"]!!.value.toString()
 
