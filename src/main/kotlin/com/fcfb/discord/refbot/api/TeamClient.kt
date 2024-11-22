@@ -64,9 +64,7 @@ class TeamClient {
      * @param teamName
      * @return User
      */
-    internal suspend fun fireCoach(
-        teamName: String,
-    ): Team? {
+    internal suspend fun fireCoach(teamName: String): Team? {
         val endpointUrl = "$baseUrl/team/fire?team=${teamName.replace(" ", "_")}"
 
         return try {
