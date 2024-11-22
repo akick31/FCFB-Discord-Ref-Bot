@@ -37,7 +37,7 @@ class TeamClient {
     }
 
     /**
-     * Update a team
+     * Hire a coach
      * @param userId
      * @return User
      */
@@ -47,6 +47,27 @@ class TeamClient {
         coachPosition: CoachPosition,
     ): Team? {
         val endpointUrl = "$baseUrl/team/${teamName.replace(" ", "_")}/hire?discordId=$discordId&coachPosition=$coachPosition"
+
+        return try {
+            val response: HttpResponse = httpClient.post(endpointUrl)
+            val jsonResponse: String = response.bodyAsText()
+            val objectMapper = JacksonConfig().configureTeamMapping()
+            return objectMapper.readValue(jsonResponse, Team::class.java)
+        } catch (e: Exception) {
+            Logger.error(e.message!!)
+            null
+        }
+    }
+
+    /**
+     * Fire all coaches
+     * @param teamName
+     * @return User
+     */
+    internal suspend fun fireCoach(
+        teamName: String,
+    ): Team? {
+        val endpointUrl = "$baseUrl/team/fire?team=${teamName.replace(" ", "_")}"
 
         return try {
             val response: HttpResponse = httpClient.post(endpointUrl)
