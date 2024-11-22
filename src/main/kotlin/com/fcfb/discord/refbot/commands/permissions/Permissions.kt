@@ -4,7 +4,7 @@ import com.fcfb.discord.refbot.model.fcfb.Role
 
 object Permissions {
     private val generalCommands = setOf("help", "register", "ping", "game_info", "start_scrimmage")
-    private val adminCommands = setOf("start_game", "end_game", "delete_game", "hire_coach")
+    private val adminCommands = setOf("start_game", "end_game", "delete_game", "hire_coach", "fire_coach", "sub_coach")
 
     private val rolePermissions =
         mapOf(
