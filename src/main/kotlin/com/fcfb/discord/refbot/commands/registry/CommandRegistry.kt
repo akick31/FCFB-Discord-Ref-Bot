@@ -11,6 +11,7 @@ import com.fcfb.discord.refbot.commands.RegisterCommand
 import com.fcfb.discord.refbot.commands.RoleCommand
 import com.fcfb.discord.refbot.commands.StartGameCommand
 import com.fcfb.discord.refbot.commands.StartScrimmageCommand
+import com.fcfb.discord.refbot.commands.SubCoachCommand
 import com.fcfb.discord.refbot.commands.permissions.hasPermission
 import com.fcfb.discord.refbot.model.fcfb.Role
 import com.fcfb.discord.refbot.utils.Logger
@@ -35,6 +36,7 @@ class CommandRegistry {
         StartScrimmageCommand().register(client)
         GameInfoCommand().register(client)
         HireCoachCommand().register(client)
+        SubCoachCommand().register(client)
         HelpCommand().register(client)
     }
 
@@ -66,6 +68,7 @@ class CommandRegistry {
             "game_info" -> GameInfoCommand().execute(interaction)
             "start_scrimmage" -> StartScrimmageCommand().execute(interaction, interaction.command)
             "hire_coach" -> HireCoachCommand().execute(interaction, interaction.command)
+            "sub_coach" -> SubCoachCommand().execute(interaction, interaction.command)
         }
     }
 }

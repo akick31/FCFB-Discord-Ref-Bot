@@ -94,7 +94,7 @@ class GameClient {
                     contentType(ContentType.Application.Json)
                     setBody(startRequest)
                 }
-            val jsonResponse: String = response.bodyAsText()
+            val jsonResponse = response.bodyAsText()
             val objectMapper = JacksonConfig().configureGameMapping()
             return objectMapper.readValue(jsonResponse, Game::class.java)
         } catch (e: Exception) {
@@ -146,7 +146,7 @@ class GameClient {
                 httpClient.get(endpointUrl) {
                     contentType(ContentType.Application.Json)
                 }
-            val jsonResponse: String = response.bodyAsText()
+            val jsonResponse = response.bodyAsText()
             val objectMapper = JacksonConfig().configureGameMapping()
             objectMapper.readValue(jsonResponse, Game::class.java)
         } catch (e: Exception) {
@@ -168,7 +168,7 @@ class GameClient {
 
         return try {
             val response: HttpResponse = httpClient.put(endpointUrl)
-            val jsonResponse: String = response.bodyAsText()
+            val jsonResponse = response.bodyAsText()
 
             val objectMapper = JacksonConfig().configureGameMapping()
             objectMapper.readValue(jsonResponse, Game::class.java)
@@ -191,7 +191,7 @@ class GameClient {
 
         return try {
             val response: HttpResponse = httpClient.put(endpointUrl)
-            val jsonResponse: String = response.bodyAsText()
+            val jsonResponse = response.bodyAsText()
 
             val objectMapper = JacksonConfig().configureGameMapping()
             objectMapper.readValue(jsonResponse, Game::class.java)
@@ -210,7 +210,7 @@ class GameClient {
 
         return try {
             val response: HttpResponse = httpClient.post(endpointUrl)
-            val jsonResponse: String = response.bodyAsText()
+            val jsonResponse = response.bodyAsText()
 
             val objectMapper = JacksonConfig().configureGameMapping()
             objectMapper.readValue(jsonResponse, Game::class.java)
@@ -249,7 +249,7 @@ class GameClient {
                 httpClient.get(endpointUrl) {
                     contentType(ContentType.Application.Json)
                 }
-            val jsonResponse: String = response.bodyAsText()
+            val jsonResponse = response.bodyAsText()
             val objectMapper = JacksonConfig().configureGameMapping()
             objectMapper.readValue(jsonResponse, Game::class.java)
         } catch (e: Exception) {
@@ -257,4 +257,28 @@ class GameClient {
             null
         }
     }
+
+    /**
+     * Sub a coach in a game in Arceus
+     * @param channelId
+     */
+    internal suspend fun subCoach(
+        team: String,
+        coachId: String,
+        gameId: Int,
+    ): Game? {
+        val endpointUrl = "$baseUrl/game/sub?gameId=$gameId&team=${team.replace(" ", "_")}&coachId=$coachId"
+
+        return try {
+            val response: HttpResponse = httpClient.put(endpointUrl)
+            val jsonResponse = response.bodyAsText()
+
+            val objectMapper = JacksonConfig().configureGameMapping()
+            objectMapper.readValue(jsonResponse, Game::class.java)
+        } catch (e: Exception) {
+            Logger.error(e.message!!)
+            null
+        }
+    }
+
 }
