@@ -3,6 +3,7 @@ package com.fcfb.discord.refbot.commands.registry
 import com.fcfb.discord.refbot.api.UserClient
 import com.fcfb.discord.refbot.commands.DeleteGameCommand
 import com.fcfb.discord.refbot.commands.EndGameCommand
+import com.fcfb.discord.refbot.commands.FireCoachCommand
 import com.fcfb.discord.refbot.commands.GameInfoCommand
 import com.fcfb.discord.refbot.commands.HelpCommand
 import com.fcfb.discord.refbot.commands.HireCoachCommand
@@ -37,6 +38,7 @@ class CommandRegistry {
         GameInfoCommand().register(client)
         HireCoachCommand().register(client)
         SubCoachCommand().register(client)
+        FireCoachCommand().register(client)
         HelpCommand().register(client)
     }
 
@@ -68,6 +70,7 @@ class CommandRegistry {
             "game_info" -> GameInfoCommand().execute(interaction)
             "start_scrimmage" -> StartScrimmageCommand().execute(interaction, interaction.command)
             "hire_coach" -> HireCoachCommand().execute(interaction, interaction.command)
+            "fire_coach" -> FireCoachCommand().execute(interaction, interaction.command)
             "sub_coach" -> SubCoachCommand().execute(interaction, interaction.command)
         }
     }
