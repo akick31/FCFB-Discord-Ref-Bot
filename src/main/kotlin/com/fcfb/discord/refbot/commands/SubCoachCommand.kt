@@ -2,9 +2,7 @@ package com.fcfb.discord.refbot.commands
 
 import com.fcfb.discord.refbot.api.GameClient
 import com.fcfb.discord.refbot.api.PlayClient
-import com.fcfb.discord.refbot.api.TeamClient
 import com.fcfb.discord.refbot.handlers.GameHandler
-import com.fcfb.discord.refbot.model.fcfb.CoachPosition
 import com.fcfb.discord.refbot.utils.Logger
 import dev.kord.core.Kord
 import dev.kord.core.behavior.interaction.response.respond
@@ -42,11 +40,12 @@ class SubCoachCommand {
 
         val coach = command.users["coach"]!!
         val team = command.options["team"]!!.value.toString()
-        val game = GameClient().getGameByPlatformId(interaction.channelId.value.toString()) ?: run {
-            response.respond { this.content = "No game found. Sub coach failed!" }
-            Logger.error("${interaction.user.username} failed to sub a new coach for ${command.options["team"]!!.value}")
-            return
-        }
+        val game =
+            GameClient().getGameByPlatformId(interaction.channelId.value.toString()) ?: run {
+                response.respond { this.content = "No game found. Sub coach failed!" }
+                Logger.error("${interaction.user.username} failed to sub a new coach for ${command.options["team"]!!.value}")
+                return
+            }
 
         val updatedGame = GameClient().subCoach(team, coach.id.value.toString(), game.gameId)
         if (updatedGame == null) {
@@ -58,7 +57,7 @@ class SubCoachCommand {
                     response.respond { this.content = "No previous play found. Ping failed!" }
                     Logger.error(
                         "${interaction.user.username} failed to ping a game in channel ${interaction.channelId.value}" +
-                                " because no previous play was found",
+                            " because no previous play was found",
                     )
                     return
                 }
@@ -67,7 +66,7 @@ class SubCoachCommand {
                     response.respond { this.content = "No current play found. Ping failed!" }
                     Logger.error(
                         "${interaction.user.username} failed to ping a game in channel ${interaction.channelId.value}" +
-                                " because no current play was found",
+                            " because no current play was found",
                     )
                     return
                 }

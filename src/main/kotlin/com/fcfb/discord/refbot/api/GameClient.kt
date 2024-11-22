@@ -280,5 +280,4 @@ class GameClient {
             null
         }
     }
-
 }
