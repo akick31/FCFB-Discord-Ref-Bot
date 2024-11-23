@@ -152,7 +152,6 @@ enum class ActualResult(val description: String) {
     PUNT_RETURN_TOUCHDOWN("PUNT RETURN TOUCHDOWN"),
     PUNT_TEAM_TOUCHDOWN("PUNT TEAM TOUCHDOWN"),
     MUFFED_PUNT("MUFFED PUNT"),
-    DELAY_OF_GAME("DELAY OF GAME"),
 }
 
 enum class RunoffType(val description: String) {
@@ -261,7 +260,6 @@ enum class Scenario(val description: String) {
     SIXTY_YARD_PUNT("60 YARD PUNT"),
     SIXTY_FIVE_YARD_PUNT("65 YARD PUNT"),
     SEVENTY_YARD_PUNT("70 YARD PUNT"),
-    DELAY_OF_GAME("DELAY OF GAME"),
     GAME_OVER("GAME OVER"),
 }
 

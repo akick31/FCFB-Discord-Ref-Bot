@@ -24,7 +24,6 @@ class MessageConstants {
         GAME_THREAD_MESSAGE_EXCEPTION("Could not send message to game thread via message object or text channel object"),
         PRIVATE_MESSAGE_EXCEPTION("Could not send private message to the user"),
         FAILED_TO_SEND_NUMBER_REQUEST_MESSAGE("Failed to send the number request message, please use `/ping` to resend the game message"),
-        CHANNEL_NOT_FOUND("Could not find the channel associated with this message"),
         GAME_OVER("This game is already over"),
         ;
 

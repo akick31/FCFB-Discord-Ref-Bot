@@ -3,7 +3,6 @@ package com.fcfb.discord.refbot.handlers.discord
 import com.fcfb.discord.refbot.api.GameWriteupClient
 import com.fcfb.discord.refbot.api.ScorebugClient
 import com.fcfb.discord.refbot.api.TeamClient
-import com.fcfb.discord.refbot.handlers.ErrorHandler
 import com.fcfb.discord.refbot.handlers.FileHandler
 import com.fcfb.discord.refbot.model.discord.MessageConstants.Error
 import com.fcfb.discord.refbot.model.fcfb.game.Game
@@ -656,41 +655,6 @@ class DiscordMessageHandler {
         }
 
         return submittedMessage
-    }
-
-    /**
-     * Send a message notifying the game of a delay of game
-     * @param client
-     * @param game
-     */
-    suspend fun sendDelayOfGameMessage(
-        client: Kord,
-        game: Game,
-    ) : Message? {
-        val homeCoaches = game.homeCoachDiscordIds.map { client.getUser(Snowflake(it)) }
-        val awayCoaches = game.awayCoachDiscordIds.map { client.getUser(Snowflake(it)) }
-
-        val offensiveCoaches = if (game.possession == TeamSide.HOME) {
-            homeCoaches
-        } else {
-            awayCoaches
-        }
-
-        val offendingTeam = if (game.waitingOn == TeamSide.HOME) {
-            game.homeTeam
-        } else {
-            game.awayTeam
-        }
-
-        var messageContent = appendUserPings(Scenario.DELAY_OF_GAME, homeCoaches, awayCoaches, offensiveCoaches)
-        messageContent += "\n\n$offendingTeam has not sent in their number in over 18 hours, delay of game. " +
-                "Automatic touchdown and two point conversion.\n" +
-                "$offendingTeam will receive the kickoff and has been messaged for their number."
-
-
-        val gameThread = client.getChannel(Snowflake(game.homePlatformId ?: game.awayPlatformId ?: return null)) as TextChannelThread
-
-        return sendMessageFromTextChannelObject(gameThread, messageContent, null)
     }
 
     /**

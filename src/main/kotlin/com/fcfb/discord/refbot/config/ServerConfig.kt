@@ -1,9 +1,7 @@
 package com.fcfb.discord.refbot.config
 
 import com.fcfb.discord.refbot.model.fcfb.game.Game
-import com.fcfb.discord.refbot.requests.DelayOfGameRequest
 import com.fcfb.discord.refbot.requests.StartGameRequest
-import com.fcfb.discord.refbot.utils.Logger
 import com.fcfb.discord.refbot.utils.Properties
 import com.google.gson.FieldNamingPolicy
 import dev.kord.core.Kord
@@ -23,19 +21,14 @@ import io.ktor.server.routing.routing
 import java.text.DateFormat
 
 class ServerConfig {
+    private val startGameRequest = StartGameRequest()
 
-    /**
-     * Start the Ktor server
-     */
     fun startKtorServer(client: Kord) {
         embeddedServer(Netty, port = Properties().getServerPort()) {
             configureServer(client)
         }.start(wait = true)
     }
 
-    /**
-     * Configure the Ktor server
-     */
     private fun Application.configureServer(client: Kord) {
         install(ContentNegotiation) {
             gson {
@@ -52,22 +45,10 @@ class ServerConfig {
             post("$serverUrl/start_game") {
                 try {
                     val game = call.receive<Game>()
-                    val gameThread = StartGameRequest().startGameThread(client, game)
+                    val gameThread = startGameRequest.startGameThread(client, game)
                     call.respondText(gameThread.toString())
                 } catch (e: Exception) {
                     call.respond(HttpStatusCode.BadRequest, "Error processing request: ${e.message}")
-                }
-            }
-
-            post("$serverUrl/delay_of_game") {
-                try {
-                    val game = call.receive<Game>()
-                    DelayOfGameRequest().notifyDelayOfGame(client, game)
-                    call.respondText("Delay of game notification sent for game ${game.gameId}")
-                    Logger.info("Delay of game notification sent for game ${game.gameId}")
-                } catch (e: Exception) {
-                    call.respond(HttpStatusCode.BadRequest, "Error processing request: ${e.message}")
-                    Logger.error("Error processing delay of game: ${e.message}")
                 }
             }
         }
