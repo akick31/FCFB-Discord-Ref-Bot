@@ -21,6 +21,7 @@ data class FCFBUser(
     @JsonProperty("role") var role: Role = USER,
     @JsonProperty("salt") var salt: String?,
     @JsonProperty("team") var team: String? = null,
+    @JsonProperty("delay_of_game_instances") var delayOfGameInstances: Int = 0,
     @JsonProperty("wins") var wins: Int = 0,
     @JsonProperty("losses") var losses: Int = 0,
     @JsonProperty("win_percentage") var winPercentage: Double = 0.0,
