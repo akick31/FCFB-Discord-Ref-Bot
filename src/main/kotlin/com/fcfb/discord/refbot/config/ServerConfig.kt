@@ -23,7 +23,6 @@ import io.ktor.server.routing.routing
 import java.text.DateFormat
 
 class ServerConfig {
-
     /**
      * Start the Ktor server
      */
