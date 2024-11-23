@@ -80,7 +80,7 @@ class TextChannelThreadHandler {
         game: Game,
         lastMessage: Message,
     ): TextChannelThread {
-        val threadName = getThreadName(game)
+        val threadName = getPostgameThreadName(game)
         val gameChannel = getPostgameForumChannel(client)
 
         // Get the thread content
@@ -262,7 +262,49 @@ class TextChannelThreadHandler {
                 return "NATIONAL CHAMPIONSHIP || $teamMatchup"
             }
             else -> {
-                return "$teamMatchup"
+                return teamMatchup
+            }
+        }
+    }
+
+    /**
+     * Get the postgame thread name based on the game type
+     * @param game The game object
+     */
+    private suspend fun getPostgameThreadName(game: Game): String {
+        val homeTeam = TeamClient().getTeamByName(game.homeTeam)
+        val awayTeam = TeamClient().getTeamByName(game.awayTeam)
+        val homeTeamRank = homeTeam?.playoffCommitteeRanking ?: homeTeam?.coachesPollRanking
+        val awayTeamRank = awayTeam?.playoffCommitteeRanking ?: awayTeam?.coachesPollRanking
+
+        val formattedHomeTeam = if (homeTeamRank != null && homeTeamRank != 0) "#$homeTeamRank ${game.homeTeam}" else game.homeTeam
+        val formattedAwayTeam = if (awayTeamRank != null && awayTeamRank != 0) "#$awayTeamRank ${game.awayTeam}" else game.awayTeam
+
+        val teamMatchup =
+            if (game.homeScore > game.awayScore) {
+                "$formattedHomeTeam defeats $formattedAwayTeam ${game.homeScore}-${game.awayScore}"
+            } else {
+                "$formattedAwayTeam defeats $formattedHomeTeam ${game.awayScore}-${game.homeScore}"
+            }
+
+        when (game.gameType) {
+            GameType.PLAYOFFS -> {
+                return "PLAYOFFS || $teamMatchup"
+            }
+            GameType.BOWL -> {
+                return "BOWL || $teamMatchup"
+            }
+            GameType.CONFERENCE_CHAMPIONSHIP -> {
+                val conference =
+                    TeamClient().getTeamByName(game.homeTeam)?.conference?.description?.uppercase()
+                        ?: return "CONFERENCE CHAMPIONSHIP || $teamMatchup"
+                return "$conference CHAMPIONSHIP || $teamMatchup"
+            }
+            GameType.NATIONAL_CHAMPIONSHIP -> {
+                return "NATIONAL CHAMPIONSHIP || $teamMatchup"
+            }
+            else -> {
+                return teamMatchup
             }
         }
     }
