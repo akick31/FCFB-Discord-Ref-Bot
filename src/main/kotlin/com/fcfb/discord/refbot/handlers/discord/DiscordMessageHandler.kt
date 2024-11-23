@@ -202,7 +202,7 @@ class DiscordMessageHandler {
                 footer = Optional(EmbedFooterData(text = "Game ID: ${game.gameId}")),
             )
 
-        val messageToSend = appendUserPings(scenario, game, homeCoaches, awayCoaches, offensiveCoaches)
+        val messageToSend = appendUserPings(scenario, homeCoaches, awayCoaches, offensiveCoaches)
 
         return (messageToSend to embedData) to defensiveCoaches
     }
@@ -241,7 +241,7 @@ class DiscordMessageHandler {
                 footer = Optional(EmbedFooterData(text = "Game ID: ${game.gameId}")),
             )
 
-        val messageToSend = appendUserPings(scenario, game, homeCoaches, awayCoaches, offensiveCoaches)
+        val messageToSend = appendUserPings(scenario, homeCoaches, awayCoaches, offensiveCoaches)
 
         return (messageToSend to embedData) to defensiveCoaches
     }
@@ -280,7 +280,7 @@ class DiscordMessageHandler {
                     defensiveCoaches,
                 )
 
-        val messageToSend = appendUserPings(scenario, game, homeCoaches, awayCoaches, offensiveCoaches)
+        val messageToSend = appendUserPings(scenario, homeCoaches, awayCoaches, offensiveCoaches)
 
         return (messageToSend to embedData) to defensiveCoaches
     }
@@ -288,30 +288,26 @@ class DiscordMessageHandler {
     /**
      * Append user pings to a message based on the scenario
      * @param scenario The scenario
-     * @param game The game object
      * @param homeCoaches The home team coaches
      * @param awayCoaches The away team coaches
      * @param offensiveCoaches The offensive team coaches
      */
     private fun appendUserPings(
         scenario: Scenario,
-        game: Game,
         homeCoaches: List<User?>,
         awayCoaches: List<User?>,
         offensiveCoaches: List<User?>,
     ): String {
         return buildString {
             when (scenario) {
-                Scenario.GAME_START, Scenario.COIN_TOSS_CHOICE, Scenario.GAME_OVER -> {
+                Scenario.GAME_START, Scenario.COIN_TOSS_CHOICE, Scenario.GAME_OVER,
+                !in listOf(Scenario.DM_NUMBER_REQUEST, Scenario.NORMAL_NUMBER_REQUEST),
+                -> {
                     append("\n\n").append(joinMentions(homeCoaches))
                     append(" ").append(joinMentions(awayCoaches))
                 }
                 Scenario.NORMAL_NUMBER_REQUEST -> {
                     append("\n\n").append(joinMentions(offensiveCoaches))
-                }
-                !in listOf(Scenario.DM_NUMBER_REQUEST, Scenario.NORMAL_NUMBER_REQUEST) -> {
-                    val coachesToMention = if (game.possession == TeamSide.HOME) awayCoaches else homeCoaches
-                    append("\n\n").append(joinMentions(coachesToMention))
                 }
                 else -> {}
             }
@@ -558,7 +554,7 @@ class DiscordMessageHandler {
 
     /**
      * Send a message to a game thread via a text channel object
-     * @param textChannel The text channel object
+     * @param channel The text channel object
      * @param messageContent The message content
      * @param embedData The embed data
      */
@@ -566,7 +562,7 @@ class DiscordMessageHandler {
         channel: MessageChannel,
         messageContent: String,
         embedData: EmbedData?,
-    ): Message? {
+    ): Message {
         val submittedMessage =
             channel.createMessage {
                 embedData?.let { embed ->

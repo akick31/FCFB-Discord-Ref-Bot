@@ -182,7 +182,7 @@ class GameHandler {
         val timeoutCalled = gameUtils.parseTimeoutFromMessage(message)
         val defensiveSubmitter = message.author?.username ?: return errorHandler.invalidDefensiveSubmitter(message)
 
-        // Submit the offensive number and get the play outcome
+        // Submit the defensive number and get the play outcome
         playClient.submitDefensiveNumber(game.gameId, defensiveSubmitter, number, timeoutCalled)
             ?: return errorHandler.invalidDefensiveNumberSubmission(message)
 
