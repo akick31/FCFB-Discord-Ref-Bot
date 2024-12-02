@@ -685,7 +685,7 @@ class DiscordMessageHandler {
 
         var messageContent = appendUserPings(Scenario.DELAY_OF_GAME, homeCoaches, awayCoaches, offensiveCoaches)
         messageContent += "\n\n$offendingTeam has not sent in their number in over 18 hours, delay of game. " +
-            "Automatic touchdown and two point conversion.\n" +
+            "Automatic touchdown and two point conversion.\n\n" +
             "$offendingTeam will receive the kickoff and has been messaged for their number."
 
         val gameThread = client.getChannel(Snowflake(game.homePlatformId ?: game.awayPlatformId ?: return null)) as TextChannelThread
