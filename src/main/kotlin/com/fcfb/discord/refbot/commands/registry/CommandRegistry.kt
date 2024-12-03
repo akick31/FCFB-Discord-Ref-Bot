@@ -25,8 +25,8 @@ class CommandRegistry {
     private val userClient = UserClient()
 
     suspend fun registerCommands(client: Kord) {
-//        // Delete old commands just in case of changes
-//        client.getGlobalApplicationCommands().collect { it.delete() }
+        // Delete old commands just in case of changes
+        client.getGlobalApplicationCommands().collect { it.delete() }
 
         // Register all commands
         RegisterCommand().register(client)

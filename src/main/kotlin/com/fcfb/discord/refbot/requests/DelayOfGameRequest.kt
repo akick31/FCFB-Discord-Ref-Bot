@@ -24,4 +24,11 @@ class DelayOfGameRequest {
 
         GameClient().updateRequestMessageId(game.gameId, numberRequestMessage)
     }
+
+    suspend fun notifyWarning(
+        client: Kord,
+        game: Game,
+    ) {
+        val message = DiscordMessageHandler().sendWarningMessage(client, game) ?: return
+    }
 }
