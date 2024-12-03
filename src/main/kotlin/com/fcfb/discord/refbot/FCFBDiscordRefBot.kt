@@ -25,7 +25,6 @@ import kotlin.time.Duration.Companion.seconds
 @KordPreview
 class FCFBDiscordRefBot {
     private lateinit var client: Kord
-
     private val properties = Properties()
     private val commandRegistry = CommandRegistry()
     private val serverConfig = ServerConfig()

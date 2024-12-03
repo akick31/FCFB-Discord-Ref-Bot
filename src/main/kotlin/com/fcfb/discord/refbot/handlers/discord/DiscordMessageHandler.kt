@@ -685,8 +685,44 @@ class DiscordMessageHandler {
 
         var messageContent = appendUserPings(Scenario.DELAY_OF_GAME, homeCoaches, awayCoaches, offensiveCoaches)
         messageContent += "\n\n$offendingTeam has not sent in their number in over 18 hours, delay of game. " +
-            "Automatic touchdown and two point conversion.\n" +
+            "Automatic touchdown and two point conversion.\n\n" +
             "$offendingTeam will receive the kickoff and has been messaged for their number."
+
+        val gameThread = client.getChannel(Snowflake(game.homePlatformId ?: game.awayPlatformId ?: return null)) as TextChannelThread
+
+        return sendMessageFromTextChannelObject(gameThread, messageContent, null)
+    }
+
+    /**
+     * Send a message notifying the game of a delay of game warning
+     * @param client
+     * @param game
+     */
+    suspend fun sendWarningMessage(
+        client: Kord,
+        game: Game,
+    ): Message? {
+        val homeCoaches = game.homeCoachDiscordIds.map { client.getUser(Snowflake(it)) }
+        val awayCoaches = game.awayCoachDiscordIds.map { client.getUser(Snowflake(it)) }
+
+        val offensiveCoaches =
+            if (game.possession == TeamSide.HOME) {
+                homeCoaches
+            } else {
+                awayCoaches
+            }
+
+        val offendingTeam =
+            if (game.waitingOn == TeamSide.HOME) {
+                game.homeTeam
+            } else {
+                game.awayTeam
+            }
+
+        var messageContent = appendUserPings(Scenario.DELAY_OF_GAME, homeCoaches, awayCoaches, offensiveCoaches)
+        messageContent += "\n\n$offendingTeam has not sent in their number in over 12 hours, they have 6 hours remaining " +
+            "before a delay of game will be assessed. If you cannot find the message to respond to, please use `/ping` " +
+            "to regenerate the message. If that does not work, please contact an admin."
 
         val gameThread = client.getChannel(Snowflake(game.homePlatformId ?: game.awayPlatformId ?: return null)) as TextChannelThread
 

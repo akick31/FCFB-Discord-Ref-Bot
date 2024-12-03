@@ -69,6 +69,18 @@ class ServerConfig {
                     Logger.error("Error processing delay of game: ${e.message}")
                 }
             }
+
+            post("$serverUrl/delay_of_game_warning") {
+                try {
+                    val game = call.receive<Game>()
+                    DelayOfGameRequest().notifyWarning(client, game)
+                    call.respondText("Delay of game warning notification sent for game ${game.gameId}")
+                    Logger.info("Delay of game warning notification sent for game ${game.gameId}")
+                } catch (e: Exception) {
+                    call.respond(HttpStatusCode.BadRequest, "Error processing request: ${e.message}")
+                    Logger.error("Error processing delay of game: ${e.message}")
+                }
+            }
         }
     }
 }
