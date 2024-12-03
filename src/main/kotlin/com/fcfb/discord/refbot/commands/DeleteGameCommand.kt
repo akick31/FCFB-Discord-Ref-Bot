@@ -5,7 +5,6 @@ import com.fcfb.discord.refbot.utils.Logger
 import dev.kord.core.Kord
 import dev.kord.core.behavior.interaction.response.respond
 import dev.kord.core.entity.interaction.ChatInputCommandInteraction
-import dev.kord.core.entity.interaction.InteractionCommand
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.lang.Thread.sleep
@@ -23,10 +22,7 @@ class DeleteGameCommand {
     /**
      * Start a new game
      */
-    suspend fun execute(
-        interaction: ChatInputCommandInteraction,
-        command: InteractionCommand,
-    ) {
+    suspend fun execute(interaction: ChatInputCommandInteraction) {
         Logger.info(
             "${interaction.user.username} is deleting a game at channel ${interaction.channelId.value}",
         )

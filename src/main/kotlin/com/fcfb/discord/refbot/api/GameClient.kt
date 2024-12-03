@@ -280,4 +280,23 @@ class GameClient {
             null
         }
     }
+
+    /**
+     * Chew a game
+     * @param channelId
+     */
+    internal suspend fun chewGame(channelId: ULong): Game? {
+        val endpointUrl = "$baseUrl/game/chew?channelId=$channelId"
+
+        return try {
+            val response: HttpResponse = httpClient.post(endpointUrl)
+            val jsonResponse = response.bodyAsText()
+
+            val objectMapper = JacksonConfig().configureGameMapping()
+            objectMapper.readValue(jsonResponse, Game::class.java)
+        } catch (e: Exception) {
+            Logger.error(e.message!!)
+            null
+        }
+    }
 }

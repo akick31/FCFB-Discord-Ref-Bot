@@ -5,7 +5,6 @@ import com.fcfb.discord.refbot.utils.Logger
 import dev.kord.core.Kord
 import dev.kord.core.behavior.interaction.response.respond
 import dev.kord.core.entity.interaction.ChatInputCommandInteraction
-import dev.kord.core.entity.interaction.InteractionCommand
 import dev.kord.rest.builder.interaction.string
 import dev.kord.rest.builder.interaction.user
 
@@ -26,10 +25,8 @@ class FireCoachCommand {
      * @param interaction The interaction object
      * @param command The command object
      */
-    suspend fun execute(
-        interaction: ChatInputCommandInteraction,
-        command: InteractionCommand,
-    ) {
+    suspend fun execute(interaction: ChatInputCommandInteraction) {
+        val command = interaction.command
         Logger.info("${interaction.user.username} is fire the coach for ${command.options["team"]!!.value}")
         val response = interaction.deferPublicResponse()
 

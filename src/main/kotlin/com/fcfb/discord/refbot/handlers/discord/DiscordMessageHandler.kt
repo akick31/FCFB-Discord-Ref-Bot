@@ -692,7 +692,7 @@ class DiscordMessageHandler {
 
         return sendMessageFromTextChannelObject(gameThread, messageContent, null)
     }
-
+    
     /**
      * Send a message notifying the game of a delay of game warning
      * @param client
@@ -727,6 +727,33 @@ class DiscordMessageHandler {
         val gameThread = client.getChannel(Snowflake(game.homePlatformId ?: game.awayPlatformId ?: return null)) as TextChannelThread
 
         return sendMessageFromTextChannelObject(gameThread, messageContent, null)
+    }
+
+    /**
+     * Send a message notifying the game of a delay of game
+     * @param client
+     * @param game
+     */
+    suspend fun sendChewMessage(
+        client: Kord,
+        channel: TextChannelThread,
+        game: Game,
+    ): Message? {
+        val homeCoaches = game.homeCoachDiscordIds.map { client.getUser(Snowflake(it)) }
+        val awayCoaches = game.awayCoachDiscordIds.map { client.getUser(Snowflake(it)) }
+
+        val offensiveCoaches =
+            if (game.possession == TeamSide.HOME) {
+                homeCoaches
+            } else {
+                awayCoaches
+            }
+
+        var messageContent = appendUserPings(Scenario.CHEW_MODE_ENABLED, homeCoaches, awayCoaches, offensiveCoaches)
+        messageContent += "\nYour game has been placed in chew mode, plays will automatically use the `CHEW` runoff unless " +
+            "specified."
+
+        return sendMessageFromTextChannelObject(channel, messageContent, null)
     }
 
     /**

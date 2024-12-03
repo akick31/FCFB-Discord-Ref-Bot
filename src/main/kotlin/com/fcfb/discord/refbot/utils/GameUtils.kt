@@ -3,6 +3,7 @@ package com.fcfb.discord.refbot.utils
 import com.fcfb.discord.refbot.model.discord.MessageConstants.Info
 import com.fcfb.discord.refbot.model.fcfb.game.ActualResult
 import com.fcfb.discord.refbot.model.fcfb.game.Game
+import com.fcfb.discord.refbot.model.fcfb.game.GameMode
 import com.fcfb.discord.refbot.model.fcfb.game.GameStatus
 import com.fcfb.discord.refbot.model.fcfb.game.Play
 import com.fcfb.discord.refbot.model.fcfb.game.PlayCall
@@ -267,7 +268,10 @@ class GameUtils {
      * Parse the runoff type from a message
      * @param message The message object
      */
-    fun parseRunoffTypeFromMessage(message: Message): RunoffType {
+    fun parseRunoffTypeFromMessage(
+        game: Game,
+        message: Message,
+    ): RunoffType {
         // Check if "runoff" (case-insensitive) is present in the message content
         val containsHurry = message.content.contains("hurry", ignoreCase = true)
         val containsChew = message.content.contains("chew", ignoreCase = true)
@@ -279,6 +283,11 @@ class GameUtils {
             Info.MESSAGE_CONTAINS_CHEW.logInfo()
             RunoffType.CHEW
         } else {
+            if (game.gameMode == GameMode.CHEW) {
+                RunoffType.CHEW
+            } else {
+                RunoffType.NORMAL
+            }
             RunoffType.NORMAL
         }
     }
