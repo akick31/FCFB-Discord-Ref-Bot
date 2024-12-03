@@ -2,12 +2,10 @@ package com.fcfb.discord.refbot.commands
 
 import com.fcfb.discord.refbot.api.GameClient
 import com.fcfb.discord.refbot.handlers.GameHandler
-import com.fcfb.discord.refbot.model.fcfb.Role
 import com.fcfb.discord.refbot.utils.Logger
 import dev.kord.core.Kord
 import dev.kord.core.behavior.interaction.response.respond
 import dev.kord.core.entity.interaction.ChatInputCommandInteraction
-import dev.kord.core.entity.interaction.InteractionCommand
 
 class EndGameCommand {
     private val gameClient = GameClient()
@@ -22,21 +20,11 @@ class EndGameCommand {
     /**
      * Start a new game
      */
-    suspend fun execute(
-        userRole: Role,
-        interaction: ChatInputCommandInteraction,
-        command: InteractionCommand,
-    ) {
+    suspend fun execute(interaction: ChatInputCommandInteraction) {
         Logger.info(
             "${interaction.user.username} is ending a game at channel ${interaction.channelId.value}",
         )
         val response = interaction.deferPublicResponse()
-
-        if (userRole == Role.USER) {
-            response.respond { this.content = "You do not have permission to end a game" }
-            Logger.error("${interaction.user.username} does not have permission to end a game")
-            return
-        }
 
         val endedGame = gameClient.endGame(interaction.channelId.value)
         if (endedGame != null) {

@@ -17,7 +17,7 @@ class GameInfoCommand {
     }
 
     /**
-     * Start a new game
+     * Get general game information
      */
     suspend fun execute(interaction: ChatInputCommandInteraction) {
         Logger.info(

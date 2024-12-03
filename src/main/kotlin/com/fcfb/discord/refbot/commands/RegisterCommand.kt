@@ -9,7 +9,6 @@ import com.fcfb.discord.refbot.utils.Logger
 import dev.kord.core.Kord
 import dev.kord.core.behavior.interaction.response.respond
 import dev.kord.core.entity.interaction.ChatInputCommandInteraction
-import dev.kord.core.entity.interaction.InteractionCommand
 import dev.kord.rest.builder.interaction.string
 
 class RegisterCommand {
@@ -69,11 +68,9 @@ class RegisterCommand {
      * @param interaction The interaction object
      * @param command The command object
      */
-    suspend fun execute(
-        interaction: ChatInputCommandInteraction,
-        command: InteractionCommand,
-    ) {
+    suspend fun execute(interaction: ChatInputCommandInteraction) {
         Logger.info("${interaction.user.username} is registering a new user")
+        val command = interaction.command
         val response = interaction.deferEphemeralResponse()
         val username = command.options["username"]!!.value.toString()
         val coachName = command.options["coach_name"]!!.value.toString()

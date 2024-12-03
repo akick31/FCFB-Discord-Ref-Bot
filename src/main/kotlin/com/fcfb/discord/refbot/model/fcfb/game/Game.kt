@@ -54,6 +54,7 @@ data class Game(
     @JsonProperty("request_message_id") val requestMessageId: List<String>?,
     @JsonProperty("game_status") val gameStatus: GameStatus?,
     @JsonProperty("game_type") val gameType: GameType?,
+    @JsonProperty("game_mode") val gameMode: GameMode?,
 )
 
 enum class GameStatus(val description: String) {
@@ -262,6 +263,7 @@ enum class Scenario(val description: String) {
     SIXTY_FIVE_YARD_PUNT("65 YARD PUNT"),
     SEVENTY_YARD_PUNT("70 YARD PUNT"),
     DELAY_OF_GAME("DELAY OF GAME"),
+    CHEW_MODE_ENABLED("CHEW MODE ENABLED"),
     GAME_OVER("GAME OVER"),
 }
 
@@ -283,4 +285,9 @@ enum class GameType(val description: String) {
     NATIONAL_CHAMPIONSHIP("National Championship"),
     BOWL("Bowl"),
     SCRIMMAGE("Scrimmage"),
+}
+
+enum class GameMode(val description: String) {
+    NORMAL("Normal"),
+    CHEW("Chew"),
 }

@@ -6,7 +6,6 @@ import com.fcfb.discord.refbot.utils.Logger
 import dev.kord.core.Kord
 import dev.kord.core.behavior.interaction.response.respond
 import dev.kord.core.entity.interaction.ChatInputCommandInteraction
-import dev.kord.core.entity.interaction.InteractionCommand
 import dev.kord.rest.builder.interaction.string
 import dev.kord.rest.builder.interaction.user
 
@@ -39,8 +38,8 @@ class RoleCommand {
     suspend fun execute(
         userRole: Role,
         interaction: ChatInputCommandInteraction,
-        command: InteractionCommand,
     ) {
+        val command = interaction.command
         Logger.info("${interaction.user.username} is assigning a role for ${command.users["user"]!!.username}")
         val response = interaction.deferPublicResponse()
 

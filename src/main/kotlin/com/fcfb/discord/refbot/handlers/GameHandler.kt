@@ -49,7 +49,7 @@ class GameHandler {
         when {
             gameUtils.isPreGameBeforeCoinToss(game) -> handleCoinToss(client, game, message)
             gameUtils.isPreGameAfterCoinToss(game) -> handleCoinTossChoice(client, game, message)
-            gameUtils.isWaitingOnOffensiveNumber(game, message) -> handleOffensiveNumberSubmission(client, game.gameId, message)
+            gameUtils.isWaitingOnOffensiveNumber(game, message) -> handleOffensiveNumberSubmission(client, game, message)
             gameUtils.isWaitingOnDefensiveNumber(game, message) -> handleDefensiveNumberSubmission(client, game, message)
             !gameUtils.isGameWaitingOnUser(game, message) -> return errorHandler.notWaitingForUserError(message)
         }
@@ -104,7 +104,7 @@ class GameHandler {
      */
     private suspend fun handleOffensiveNumberSubmission(
         client: Kord,
-        gameId: Int,
+        game: Game,
         message: Message,
     ) {
         val number =
@@ -114,14 +114,14 @@ class GameHandler {
                 else -> messageNumber
             }
         val playCall = gameUtils.parsePlayCallFromMessage(message) ?: return errorHandler.invalidPlayCall(message)
-        val runoffType = gameUtils.parseRunoffTypeFromMessage(message)
+        val runoffType = gameUtils.parseRunoffTypeFromMessage(game, message)
         val timeoutCalled = gameUtils.parseTimeoutFromMessage(message)
         val offensiveSubmitter = message.author?.username ?: return errorHandler.invalidOffensiveSubmitter(message)
 
         // Submit the offensive number and get the play outcome
         val playOutcome =
             playClient.submitOffensiveNumber(
-                gameId,
+                game.gameId,
                 offensiveSubmitter,
                 number,
                 playCall,

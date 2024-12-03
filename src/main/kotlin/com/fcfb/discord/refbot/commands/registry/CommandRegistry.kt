@@ -1,6 +1,7 @@
 package com.fcfb.discord.refbot.commands.registry
 
 import com.fcfb.discord.refbot.api.UserClient
+import com.fcfb.discord.refbot.commands.ChewGameCommand
 import com.fcfb.discord.refbot.commands.DeleteGameCommand
 import com.fcfb.discord.refbot.commands.EndGameCommand
 import com.fcfb.discord.refbot.commands.FireCoachCommand
@@ -40,6 +41,7 @@ class CommandRegistry {
         SubCoachCommand().register(client)
         FireCoachCommand().register(client)
         HelpCommand().register(client)
+        ChewGameCommand().register(client)
     }
 
     suspend fun executeCommand(interaction: ChatInputCommandInteraction) {
@@ -61,17 +63,18 @@ class CommandRegistry {
 
         when (commandName) {
             "help" -> HelpCommand().execute(userRole, interaction)
-            "register" -> RegisterCommand().execute(interaction, interaction.command)
-            "role" -> RoleCommand().execute(userRole, interaction, interaction.command)
+            "register" -> RegisterCommand().execute(interaction)
+            "role" -> RoleCommand().execute(userRole, interaction)
             "ping" -> PingCommand().execute(interaction)
-            "start_game" -> StartGameCommand().execute(interaction, interaction.command)
-            "end_game" -> EndGameCommand().execute(userRole, interaction, interaction.command)
-            "delete_game" -> DeleteGameCommand().execute(interaction, interaction.command)
+            "start_game" -> StartGameCommand().execute(interaction)
+            "end_game" -> EndGameCommand().execute(interaction)
+            "delete_game" -> DeleteGameCommand().execute(interaction)
             "game_info" -> GameInfoCommand().execute(interaction)
-            "start_scrimmage" -> StartScrimmageCommand().execute(interaction, interaction.command)
-            "hire_coach" -> HireCoachCommand().execute(interaction, interaction.command)
-            "fire_coach" -> FireCoachCommand().execute(interaction, interaction.command)
-            "sub_coach" -> SubCoachCommand().execute(interaction, interaction.command)
+            "start_scrimmage" -> StartScrimmageCommand().execute(interaction)
+            "hire_coach" -> HireCoachCommand().execute(interaction)
+            "fire_coach" -> FireCoachCommand().execute(interaction)
+            "sub_coach" -> SubCoachCommand().execute(interaction)
+            "chew_game" -> ChewGameCommand().execute(interaction)
         }
     }
 }
