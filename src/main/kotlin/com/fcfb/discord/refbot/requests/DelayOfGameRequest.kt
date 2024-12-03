@@ -27,7 +27,7 @@ class DelayOfGameRequest {
 
     suspend fun notifyWarning(
         client: Kord,
-        game: Game
+        game: Game,
     ) {
         val message = DiscordMessageHandler().sendWarningMessage(client, game) ?: return
     }

@@ -721,8 +721,8 @@ class DiscordMessageHandler {
 
         var messageContent = appendUserPings(Scenario.DELAY_OF_GAME, homeCoaches, awayCoaches, offensiveCoaches)
         messageContent += "\n\n$offendingTeam has not sent in their number in over 12 hours, they have 6 hours remaining " +
-                "before a delay of game will be assessed. If you cannot find the message to respond to, please use `/ping` " +
-                "to regenerate the message. If that does not work, please contact an admin."
+            "before a delay of game will be assessed. If you cannot find the message to respond to, please use `/ping` " +
+            "to regenerate the message. If that does not work, please contact an admin."
 
         val gameThread = client.getChannel(Snowflake(game.homePlatformId ?: game.awayPlatformId ?: return null)) as TextChannelThread
 
