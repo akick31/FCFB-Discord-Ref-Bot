@@ -3,6 +3,7 @@ package com.fcfb.discord.refbot.commands
 import com.fcfb.discord.refbot.api.GameClient
 import com.fcfb.discord.refbot.handlers.discord.DiscordMessageHandler
 import com.fcfb.discord.refbot.handlers.discord.TextChannelThreadHandler
+import com.fcfb.discord.refbot.model.fcfb.game.Scenario
 import com.fcfb.discord.refbot.utils.Logger
 import dev.kord.core.Kord
 import dev.kord.core.behavior.interaction.response.respond
@@ -32,7 +33,7 @@ class ChewGameCommand {
             response.respond { this.content = "Success" }
             val message = interaction.channel.createMessage("Chew game successful")
             val channel = TextChannelThreadHandler().getTextChannelThread(message)
-            DiscordMessageHandler().sendChewMessage(interaction.kord, channel, chewedGame)
+            DiscordMessageHandler().sendGameMessage(interaction.kord, chewedGame, Scenario.CHEW_MODE_ENABLED, null, null, channel)
             Logger.info("${interaction.user.username} successfully chewed a game at channel ${interaction.channelId.value}")
         } else {
             response.respond { this.content = "Chew game failed!" }

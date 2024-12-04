@@ -626,4 +626,12 @@ class GameUtils {
             footer = Optional(EmbedFooterData(text = "Game ID: ${game.gameId}")),
         )
     }
+
+    fun getOffendingTeam(game: Game): String {
+        return if (game.possession == TeamSide.HOME) {
+            game.homeTeam
+        } else {
+            game.awayTeam
+        }
+    }
 }
