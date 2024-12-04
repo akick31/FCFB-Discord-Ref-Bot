@@ -692,7 +692,7 @@ class DiscordMessageHandler {
 
         return sendMessageFromTextChannelObject(gameThread, messageContent, null)
     }
-    
+
     /**
      * Send a message notifying the game of a delay of game warning
      * @param client
