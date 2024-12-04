@@ -82,7 +82,7 @@ class TeamClient {
      * Get a team by name
      */
     internal suspend fun getTeamByName(teamName: String): Team? {
-        val endpointUrl = "$baseUrl/team/name?name=$teamName"
+        val endpointUrl = "$baseUrl/team/name?name=${teamName.replace(" ", "_")}"
 
         return try {
             val response: HttpResponse = httpClient.get(endpointUrl)
