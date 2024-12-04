@@ -202,6 +202,29 @@ class GameClient {
     }
 
     /**
+     * Make the overtime coin toss choice in Arceus
+     * @param gameId
+     * @param coinTossChoice
+     */
+    internal suspend fun makeOvertimeCoinTossChoice(
+        gameId: Int,
+        coinTossChoice: String,
+    ): Game? {
+        val endpointUrl = "$baseUrl/game/make_overtime_coin_toss_choice?gameId=$gameId&coinTossChoice=$coinTossChoice"
+
+        return try {
+            val response: HttpResponse = httpClient.put(endpointUrl)
+            val jsonResponse = response.bodyAsText()
+
+            val objectMapper = JacksonConfig().configureGameMapping()
+            objectMapper.readValue(jsonResponse, Game::class.java)
+        } catch (e: Exception) {
+            Logger.error(e.message!!)
+            null
+        }
+    }
+
+    /**
      * End a game in Arceus
      * @param channelId
      */

@@ -12,6 +12,10 @@ class MessageConstants {
         MULTIPLE_NUMBERS_FOUND("Please only include one number in your message, multiple were found."),
         INVALID_NUMBER("Could not find a valid number in the message. Please include a valid number between 1 and 1500."),
         INVALID_PLAY("Could not find a valid play in the message"),
+        INVALID_POINT_AFTER_PLAY(
+            "Could not find a valid point after play in the message, in the third overtime and " +
+                "later you must call **two point**",
+        ),
         INVALID_OFFENSIVE_SUBMITTER("Could not find the offensive user's info"),
         INVALID_OFFENSIVE_SUBMISSION("There was an issue submitting the offensive number"),
         INVALID_DEFENSIVE_SUBMITTER("Could not find the defensive user's info"),
@@ -26,6 +30,7 @@ class MessageConstants {
         FAILED_TO_SEND_NUMBER_REQUEST_MESSAGE("Failed to send the number request message, please use `/ping` to resend the game message"),
         CHANNEL_NOT_FOUND("Could not find the channel associated with this message"),
         GAME_OVER("This game is already over"),
+        INVALID_GAME_STATUS("Invalid game status"),
         ;
 
         fun logError() {
@@ -35,6 +40,7 @@ class MessageConstants {
 
     enum class Info(val message: String) {
         COIN_TOSS_OUTCOME("%s won the coin toss! Please reply to this message with **receive** or **defer**."),
+        OVERTIME_COIN_TOSS_OUTCOME("%s won the coin toss! Please reply to this message with **offense** or **defense**."),
         SUCCESSFUL_NUMBER_SUBMISSION("I've got %s as your number"),
         MESSAGE_CONTAINS_TIMEOUT("The message contains 'timeout'"),
         MESSAGE_DOES_NOT_CONTAIN_TIMEOUT("The message does not contain 'timeout'"),

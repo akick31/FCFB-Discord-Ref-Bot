@@ -59,6 +59,12 @@ class ErrorHandler {
         discordMessageHandler.sendErrorMessage(message, Error.INVALID_DEFENSIVE_SUBMITTER)
 
     /**
+     * Handle invalid point after play call
+     */
+    internal suspend fun invalidPointAfterPlayCall(message: Message) =
+        discordMessageHandler.sendErrorMessage(message, Error.INVALID_POINT_AFTER_PLAY)
+
+    /**
      * Handle invalid play call
      */
     internal suspend fun invalidPlayCall(message: Message) = discordMessageHandler.sendErrorMessage(message, Error.INVALID_PLAY)
@@ -108,4 +114,9 @@ class ErrorHandler {
      */
     internal suspend fun failedToSendNumberRequestMessage(message: Message) =
         discordMessageHandler.sendErrorMessage(message, Error.FAILED_TO_SEND_NUMBER_REQUEST_MESSAGE)
+
+    /**
+     * Handle the invalid game status error
+     */
+    internal suspend fun invalidGameStatus(message: Message) = discordMessageHandler.sendErrorMessage(message, Error.INVALID_GAME_STATUS)
 }
