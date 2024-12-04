@@ -8,6 +8,7 @@ import com.fcfb.discord.refbot.config.deserializers.ActualResultDeserializer
 import com.fcfb.discord.refbot.config.deserializers.CoachPositionDeserializer
 import com.fcfb.discord.refbot.config.deserializers.ConferenceDeserializer
 import com.fcfb.discord.refbot.config.deserializers.DefensivePlaybookDeserializer
+import com.fcfb.discord.refbot.config.deserializers.GameModeDeserializer
 import com.fcfb.discord.refbot.config.deserializers.GameStatusDeserializer
 import com.fcfb.discord.refbot.config.deserializers.GameTypeDeserializer
 import com.fcfb.discord.refbot.config.deserializers.OffensivePlaybookDeserializer
@@ -25,6 +26,7 @@ import com.fcfb.discord.refbot.model.fcfb.Conference
 import com.fcfb.discord.refbot.model.fcfb.Role
 import com.fcfb.discord.refbot.model.fcfb.game.ActualResult
 import com.fcfb.discord.refbot.model.fcfb.game.DefensivePlaybook
+import com.fcfb.discord.refbot.model.fcfb.game.GameMode
 import com.fcfb.discord.refbot.model.fcfb.game.GameStatus
 import com.fcfb.discord.refbot.model.fcfb.game.GameType
 import com.fcfb.discord.refbot.model.fcfb.game.OffensivePlaybook
@@ -41,13 +43,17 @@ class JacksonConfig {
     fun customGameModule(): SimpleModule {
         return SimpleModule().apply {
             addDeserializer(ActualResult::class.java, ActualResultDeserializer())
+            addDeserializer(CoachPosition::class.java, CoachPositionDeserializer())
+            addDeserializer(Conference::class.java, ConferenceDeserializer())
             addDeserializer(DefensivePlaybook::class.java, DefensivePlaybookDeserializer())
+            addDeserializer(GameMode::class.java, GameModeDeserializer())
             addDeserializer(GameStatus::class.java, GameStatusDeserializer())
             addDeserializer(GameType::class.java, GameTypeDeserializer())
             addDeserializer(OffensivePlaybook::class.java, OffensivePlaybookDeserializer())
             addDeserializer(Platform::class.java, PlatformDeserializer())
             addDeserializer(PlayCall::class.java, PlayCallDeserializer())
             addDeserializer(PlayType::class.java, PlayTypeDeserializer())
+            addDeserializer(Role::class.java, RoleDeserializer())
             addDeserializer(RunoffType::class.java, RunoffTypeDeserializer())
             addDeserializer(Scenario::class.java, ScenarioDeserializer())
             addDeserializer(Subdivision::class.java, SubdivisionDeserializer())

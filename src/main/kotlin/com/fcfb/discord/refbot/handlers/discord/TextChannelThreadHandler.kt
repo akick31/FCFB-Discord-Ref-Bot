@@ -34,9 +34,10 @@ class TextChannelThreadHandler {
         thread: TextChannelThread,
         game: Game,
     ) {
+        val gameChannel = getGameForumChannel(thread.kord)
         thread.edit {
             name = getThreadName(game)
-            appliedTags = getTagsForThread(thread.kord, game)
+            appliedTags = getTagsForThread(game, gameChannel)
         }
         thread.message?.edit {
             content = getGameInformation(game)
@@ -58,7 +59,7 @@ class TextChannelThreadHandler {
 
         // Get the thread content
         val threadContent = getGameInformation(game)
-        val tags = getTagsForThread(client, game)
+        val tags = getTagsForThread(game, gameChannel)
 
         return gameChannel.startPublicThread(threadName) {
             name = threadName
@@ -85,7 +86,7 @@ class TextChannelThreadHandler {
 
         // Get the thread content
         val threadContent = getPostgameInformation(game, lastMessage)
-        val tags = getTagsForThread(client, game)
+        val tags = getTagsForThread(game, gameChannel)
         val scorebug = ScorebugClient().getScorebugByGameId(game.gameId)
         val embedData = GameUtils().getScorebugEmbed(scorebug, game, threadContent)
 
@@ -181,16 +182,12 @@ class TextChannelThreadHandler {
      * @param client The Discord client
      * @param game The game object
      */
-    private suspend fun getTagsForThread(
-        client: Kord,
+    private fun getTagsForThread(
         game: Game,
+        channel: ForumChannel,
     ): MutableList<Snowflake> {
-        val discordProperties = Properties().getDiscordProperties()
-        val guild = client.getGuild(Snowflake(discordProperties.guildId))
-        val gameChannel = guild.getChannel(Snowflake(discordProperties.gameChannelId)) as ForumChannel
-
         // Get the available tags in the game channel
-        val availableTags = gameChannel.availableTags
+        val availableTags = channel.availableTags
         val tagsToApply = mutableListOf<Snowflake>()
         for (tag in availableTags) {
             if (tag.name == game.subdivision?.description) {
@@ -214,6 +211,9 @@ class TextChannelThreadHandler {
                 tagsToApply.add(tag.id)
             }
             if (tag.name == "Season " + game.season) {
+                tagsToApply.add(tag.id)
+            }
+            if (tag.name == "Ongoing Game" && game.gameStatus != GameStatus.FINAL) {
                 tagsToApply.add(tag.id)
             }
             if (tag.name == "Final" && game.gameStatus == GameStatus.FINAL) {
