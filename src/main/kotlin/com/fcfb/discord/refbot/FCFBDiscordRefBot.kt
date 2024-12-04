@@ -20,6 +20,9 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import java.time.ZoneId
+import java.time.ZonedDateTime
+import java.time.temporal.ChronoUnit
 import kotlin.time.Duration.Companion.seconds
 
 @KordPreview
@@ -29,6 +32,7 @@ class FCFBDiscordRefBot {
     private val commandRegistry = CommandRegistry()
     private val serverConfig = ServerConfig()
     private var heartbeatJob: Job? = null
+    private var restartJob: Job? = null
 
     /**
      * Start the Discord bot and it's services
@@ -37,6 +41,7 @@ class FCFBDiscordRefBot {
         runBlocking {
             try {
                 startHeartbeat()
+                scheduleRestart()
                 initializeBot()
                 startServices(client)
             } catch (e: Exception) {
@@ -59,10 +64,48 @@ class FCFBDiscordRefBot {
                         Logger.info("Heartbeat successful.")
                     } catch (e: Exception) {
                         Logger.warn("Heartbeat failed: Bot appears disconnected. Attempting to reconnect...")
-                        startDiscordBot()
+                        restartDiscordBot()
                     }
                 }
             }
+    }
+
+    /**
+     * Schedule a restart for 4 AM EST every day
+     */
+    private fun scheduleRestart() {
+        restartJob?.cancel() // Cancel any existing restart job
+        restartJob =
+            CoroutineScope(Dispatchers.IO).launch {
+                while (isActive) {
+                    val now = ZonedDateTime.now(ZoneId.of("America/New_York"))
+                    val nextRestart = now.withHour(1).withMinute(51).withSecond(0).withNano(0)
+                    val delay =
+                        if (now.isAfter(nextRestart)) {
+                            ChronoUnit.MILLIS.between(now, nextRestart.plusDays(1))
+                        } else {
+                            ChronoUnit.MILLIS.between(now, nextRestart)
+                        }
+                    Logger.info("Next restart scheduled in ${delay / 1000 / 60} minutes.")
+                    delay(delay)
+                    Logger.info("Restarting bot for daily maintenance...")
+                    restartDiscordBot()
+                }
+            }
+    }
+
+    /**
+     * Restart the Discord bot
+     */
+    private suspend fun restartDiscordBot() {
+        try {
+            stopDiscordBot()
+            initializeBot()
+            startServices(client)
+            Logger.info("Bot restarted successfully.")
+        } catch (e: Exception) {
+            Logger.error("Failed to restart bot: ${e.message}", e)
+        }
     }
 
     /**
@@ -70,6 +113,7 @@ class FCFBDiscordRefBot {
      */
     fun stop() {
         heartbeatJob?.cancel()
+        restartJob?.cancel()
         Logger.info("FCFB Discord Ref Bot stopped.")
     }
 
@@ -102,20 +146,29 @@ class FCFBDiscordRefBot {
      * Start the Discord bot
      */
     private suspend fun startDiscordBot() {
+        Logger.info("Logging into the Discord Ref Bot...")
         client.login {
             @OptIn(PrivilegedIntent::class)
             intents += Intent.MessageContent
         }
+        Logger.info("Discord Ref Bot logged in successfully!")
     }
 
     /**
      * Stop the Discord bot
      */
     private suspend fun stopDiscordBot() {
+        Logger.info("Shutting down the Discord Ref Bot...")
+        runBlocking {
+            serverConfig.stopKtorServer()
+        }
         try {
             client.logout()
-        } catch (_: Exception) {
+            client.shutdown()
+        } catch (e: Exception) {
+            Logger.warn("Failed to logout of Discord: ${e.message}")
         }
+        Logger.info("Discord Ref Bot shut down successfully!")
     }
 
     /**

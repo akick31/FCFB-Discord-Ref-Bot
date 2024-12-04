@@ -14,6 +14,7 @@ import io.ktor.server.application.call
 import io.ktor.server.application.install
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
+import io.ktor.server.netty.NettyApplicationEngine
 import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.server.request.receive
 import io.ktor.server.response.respond
@@ -23,13 +24,27 @@ import io.ktor.server.routing.routing
 import java.text.DateFormat
 
 class ServerConfig {
+    private var server: NettyApplicationEngine? = null
+
     /**
      * Start the Ktor server
      */
     fun startKtorServer(client: Kord) {
-        embeddedServer(Netty, port = Properties().getServerPort()) {
-            configureServer(client)
-        }.start(wait = true)
+        Logger.info("Starting Ktor server...")
+        server =
+            embeddedServer(Netty, port = Properties().getServerPort()) {
+                configureServer(client)
+            }.start(wait = false)
+        Logger.info("Ktor server started!")
+    }
+
+    /**
+     * Stop the Ktor server
+     */
+    fun stopKtorServer() {
+        Logger.info("Stopping Ktor server...")
+        server?.stop(gracePeriodMillis = 1000, timeoutMillis = 5000)
+        Logger.info("Ktor server stopped!")
     }
 
     /**
