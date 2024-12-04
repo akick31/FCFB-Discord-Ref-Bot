@@ -79,7 +79,7 @@ class FCFBDiscordRefBot {
             CoroutineScope(Dispatchers.IO).launch {
                 while (isActive) {
                     val now = ZonedDateTime.now(ZoneId.of("America/New_York"))
-                    val nextRestart = now.withHour(1).withMinute(51).withSecond(0).withNano(0)
+                    val nextRestart = now.withHour(4).withMinute(0).withSecond(0).withNano(0)
                     val delay =
                         if (now.isAfter(nextRestart)) {
                             ChronoUnit.MILLIS.between(now, nextRestart.plusDays(1))

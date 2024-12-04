@@ -27,11 +27,10 @@ class EndGameCommand {
         val response = interaction.deferPublicResponse()
 
         val endedGame = gameClient.endGame(interaction.channelId.value)
-        val updatedGame = gameClient.getGameByPlatformId(interaction.channelId.value.toString()) ?: return
         if (endedGame != null) {
             response.respond { this.content = "End game successful" }
             val message = interaction.channel.createMessage("Game ended")
-            GameHandler().endGame(interaction.kord, updatedGame, message)
+            GameHandler().endGame(interaction.kord, endedGame, message)
             Logger.info("${interaction.user.username} successfully ended a game at channel ${interaction.channelId.value}")
         } else {
             response.respond { this.content = "End game failed!" }
