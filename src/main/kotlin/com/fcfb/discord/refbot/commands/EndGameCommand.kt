@@ -1,6 +1,7 @@
 package com.fcfb.discord.refbot.commands
 
 import com.fcfb.discord.refbot.api.GameClient
+import com.fcfb.discord.refbot.api.ScorebugClient
 import com.fcfb.discord.refbot.handlers.GameHandler
 import com.fcfb.discord.refbot.utils.Logger
 import dev.kord.core.Kord
@@ -30,6 +31,7 @@ class EndGameCommand {
         if (endedGame != null) {
             response.respond { this.content = "End game successful" }
             val message = interaction.channel.createMessage("Game ended")
+            ScorebugClient().generateScorebug(endedGame.gameId)
             GameHandler().endGame(interaction.kord, endedGame, message)
             Logger.info("${interaction.user.username} successfully ended a game at channel ${interaction.channelId.value}")
         } else {
