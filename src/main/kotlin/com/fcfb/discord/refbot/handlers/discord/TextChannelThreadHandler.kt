@@ -280,12 +280,19 @@ class TextChannelThreadHandler {
         val formattedHomeTeam = if (homeTeamRank != null && homeTeamRank != 0) "#$homeTeamRank ${game.homeTeam}" else game.homeTeam
         val formattedAwayTeam = if (awayTeamRank != null && awayTeamRank != 0) "#$awayTeamRank ${game.awayTeam}" else game.awayTeam
 
-        val teamMatchup =
+        var teamMatchup =
             if (game.homeScore > game.awayScore) {
                 "$formattedHomeTeam defeats $formattedAwayTeam ${game.homeScore}-${game.awayScore}"
             } else {
                 "$formattedAwayTeam defeats $formattedHomeTeam ${game.awayScore}-${game.homeScore}"
             }
+
+        if (game.quarter == 5) {
+            teamMatchup += " in OT"
+        }
+        if (game.quarter >= 6) {
+            teamMatchup += " in ${game.quarter - 4}OT"
+        }
 
         when (game.gameType) {
             GameType.PLAYOFFS -> {

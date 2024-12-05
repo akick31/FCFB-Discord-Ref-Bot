@@ -415,7 +415,7 @@ class GameUtils {
 
     fun getClockInfo(game: Game): String {
         return if (game.gameStatus != GameStatus.OVERTIME) {
-            " ${game.clock} left in the ${toOrdinal(game.quarter)}"
+            " ${game.clock} left in the ${toOrdinal(game.quarter)}."
         } else {
             ""
         }

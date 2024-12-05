@@ -66,10 +66,10 @@ class GameHandler {
         client: Kord,
         game: Game,
         previousPlay: Play,
-        currentPlay: Play,
+        currentPlay: Play?,
         message: Message,
     ): Boolean? {
-        if (game.waitingOn != game.possession) {
+        if (game.waitingOn != game.possession || currentPlay == null) {
             val numberRequestMessage =
                 discordMessageHandler.sendRequestForDefensiveNumber(
                     client,
