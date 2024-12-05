@@ -42,7 +42,7 @@ jobs:
         run: ./gradlew ktlintFormat
 
       # Commit and push formatted changes
-      - name: Commit and push changes
+      - name: Commit and push ktlint changes
         run: |
           git config user.name "GitHub Actions Bot"
           git config user.email "actions@github.com"
