@@ -57,7 +57,8 @@ class DiscordMessageHandler {
         // Get message content but not play result for number requests, game start, and coin toss
         if (scenario == Scenario.DM_NUMBER_REQUEST || scenario == Scenario.KICKOFF_NUMBER_REQUEST ||
             scenario == Scenario.NORMAL_NUMBER_REQUEST || scenario == Scenario.GAME_START ||
-            scenario == Scenario.COIN_TOSS_CHOICE || scenario == Scenario.GAME_OVER
+            scenario == Scenario.COIN_TOSS_CHOICE || scenario == Scenario.OVERTIME_COIN_TOSS_CHOICE ||
+            scenario == Scenario.OVERTIME_START || scenario == Scenario.GAME_OVER
         ) {
             messageContent = gameWriteupClient.getGameMessageByScenario(scenario, null) ?: return null
         } else if (play?.playCall == PlayCall.PASS || play?.playCall == PlayCall.RUN) {
@@ -107,6 +108,7 @@ class DiscordMessageHandler {
                 "{offensive_team}" to offensiveTeam,
                 "{defensive_team}" to defensiveTeam,
                 "{play_writeup}" to playWriteup,
+                "{clock_info}" to gameUtils.getClockInfo(game),
                 "{clock}" to game.clock,
                 "{quarter}" to gameUtils.toOrdinal(game.quarter),
                 "{offensive_number}" to play?.offensiveNumber.toString(),
@@ -115,7 +117,7 @@ class DiscordMessageHandler {
                 "{actual_result}" to play?.actualResult?.description,
                 "{result}" to play?.result?.name,
                 "{timeout_called}" to gameUtils.getTimeoutMessage(game, play, timeoutCalled),
-                "{clock_status}" to if (game.clockStopped) "The clock is stopped" else "The clock is running",
+                "{clock_status}" to if (game.clockStopped) "" else "The clock is running.",
                 "{ball_location_scenario}" to gameUtils.getBallLocationScenarioMessage(game, play),
                 "{dog_deadline}" to game.gameTimer.toString(),
                 "{play_options}" to gameUtils.getPlayOptions(game),

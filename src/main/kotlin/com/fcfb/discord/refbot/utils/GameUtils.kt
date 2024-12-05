@@ -355,6 +355,24 @@ class GameUtils {
     }
 
     /**
+     * Check if the game is in the overtime state before the coin toss
+     * @param game The game object
+     * @return True if the game is in the pregame state without a coin toss, false otherwise
+     */
+    internal fun isOvertimeBeforeCoinToss(game: Game): Boolean {
+        return game.gameStatus == GameStatus.END_OF_REGULATION && game.overtimeCoinTossWinner == null
+    }
+
+    /**
+     * Check if the game is in the overtime state after the coin toss
+     * @param game The game object
+     * @return True if the game is in the pregame state after the coin toss, false otherwise
+     */
+    internal fun isOvertimeAfterCoinToss(game: Game): Boolean {
+        return game.gameStatus == GameStatus.END_OF_REGULATION && game.overtimeCoinTossWinner != null
+    }
+
+    /**
      * Check if the game is waiting for an offensive number
      * @param game The game object
      */
@@ -394,6 +412,14 @@ class GameUtils {
             4 -> "4th"
             else -> number.toString()
         }
+
+    fun getClockInfo(game: Game): String {
+        return if (game.gameStatus != GameStatus.OVERTIME) {
+            " ${game.clock} left in the ${toOrdinal(game.quarter)}."
+        } else {
+            ""
+        }
+    }
 
     /**
      * Check if the play call is a kickoff
@@ -491,6 +517,14 @@ class GameUtils {
      */
     fun isValidCoinTossChoice(content: String): Boolean {
         return content.lowercase() == "receive" || content.lowercase() == "defer"
+    }
+
+    /**
+     * Check if the message content is a valid overtime coin toss choice
+     * @param content The message content
+     */
+    fun isValidOvertimeCoinTossChoice(content: String): Boolean {
+        return content.lowercase() == "offense" || content.lowercase() == "defense"
     }
 
     /**

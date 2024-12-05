@@ -13,6 +13,8 @@ import com.fcfb.discord.refbot.model.fcfb.game.GameStatus
 import com.fcfb.discord.refbot.model.fcfb.game.GameType
 import com.fcfb.discord.refbot.model.fcfb.game.Platform
 import com.fcfb.discord.refbot.model.fcfb.game.Play
+import com.fcfb.discord.refbot.model.fcfb.game.PlayCall
+import com.fcfb.discord.refbot.model.fcfb.game.PlayType
 import com.fcfb.discord.refbot.model.fcfb.game.Scenario
 import com.fcfb.discord.refbot.model.fcfb.game.TeamSide
 import com.fcfb.discord.refbot.utils.GameUtils
@@ -49,6 +51,8 @@ class GameHandler {
         when {
             gameUtils.isPreGameBeforeCoinToss(game) -> handleCoinToss(client, game, message)
             gameUtils.isPreGameAfterCoinToss(game) -> handleCoinTossChoice(client, game, message)
+            gameUtils.isOvertimeBeforeCoinToss(game) -> handleCoinToss(client, game, message)
+            gameUtils.isOvertimeAfterCoinToss(game) -> handleOvertimeCoinTossChoice(client, game, message)
             gameUtils.isWaitingOnOffensiveNumber(game, message) -> handleOffensiveNumberSubmission(client, game, message)
             gameUtils.isWaitingOnDefensiveNumber(game, message) -> handleDefensiveNumberSubmission(client, game, message)
             !gameUtils.isGameWaitingOnUser(game, message) -> return errorHandler.notWaitingForUserError(message)
@@ -62,10 +66,10 @@ class GameHandler {
         client: Kord,
         game: Game,
         previousPlay: Play,
-        currentPlay: Play,
+        currentPlay: Play?,
         message: Message,
     ): Boolean? {
-        if (game.waitingOn != game.possession) {
+        if (game.waitingOn != game.possession || currentPlay == null) {
             val numberRequestMessage =
                 discordMessageHandler.sendRequestForDefensiveNumber(
                     client,
@@ -118,6 +122,18 @@ class GameHandler {
         val timeoutCalled = gameUtils.parseTimeoutFromMessage(message)
         val offensiveSubmitter = message.author?.username ?: return errorHandler.invalidOffensiveSubmitter(message)
 
+        // Handle overtime specifics
+        if (game.gameStatus == GameStatus.OVERTIME) {
+            // Ensure you must go for two in the third overtime and beyond
+            if (
+                game.currentPlayType == PlayType.PAT &&
+                game.quarter >= 7 &&
+                playCall != PlayCall.TWO_POINT
+            ) {
+                return errorHandler.invalidPointAfterPlayCall(message)
+            }
+        }
+
         // Submit the offensive number and get the play outcome
         val playOutcome =
             playClient.submitOffensiveNumber(
@@ -140,6 +156,8 @@ class GameHandler {
 
         if (updatedGame.gameStatus == GameStatus.FINAL) {
             endGame(client, updatedGame, message)
+        } else if (updatedGame.gameStatus == GameStatus.END_OF_REGULATION) {
+            startOvertime(client, updatedGame, message)
         } else {
             val numberRequestMessage =
                 discordMessageHandler.sendRequestForDefensiveNumber(
@@ -254,11 +272,21 @@ class GameHandler {
                 ?: return errorHandler.invalidCoinTossWinner(message)
 
         val coinTossRequestMessage =
-            discordMessageHandler.sendMessageFromMessageObject(
-                message,
-                Info.COIN_TOSS_OUTCOME.message.format(discordMessageHandler.joinMentions(coinTossWinningCoachList)),
-                null,
-            ) ?: return errorHandler.failedToSendNumberRequestMessage(message)
+            if (game.gameStatus == GameStatus.PREGAME) {
+                discordMessageHandler.sendMessageFromMessageObject(
+                    message,
+                    Info.COIN_TOSS_OUTCOME.message.format(discordMessageHandler.joinMentions(coinTossWinningCoachList)),
+                    null,
+                ) ?: return errorHandler.failedToSendNumberRequestMessage(message)
+            } else if (game.gameStatus == GameStatus.END_OF_REGULATION) {
+                discordMessageHandler.sendMessageFromMessageObject(
+                    message,
+                    Info.OVERTIME_COIN_TOSS_OUTCOME.message.format(discordMessageHandler.joinMentions(coinTossWinningCoachList)),
+                    null,
+                ) ?: return errorHandler.failedToSendNumberRequestMessage(message)
+            } else {
+                return errorHandler.invalidGameStatus(message)
+            }
 
         try {
             gameClient.updateRequestMessageId(game.gameId, coinTossRequestMessage to null)
@@ -299,6 +327,68 @@ class GameHandler {
 
         try {
             gameClient.updateRequestMessageId(game.gameId, numberRequestMessage)
+        } catch (e: Exception) {
+            errorHandler.failedToSendNumberRequestMessage(message)
+        }
+    }
+
+    /**
+     * Handles the coin toss choice for a game
+     * @param client The Discord client
+     * @param game The game object
+     * @param message The message object
+     */
+    private suspend fun handleOvertimeCoinTossChoice(
+        client: Kord,
+        game: Game,
+        message: Message,
+    ) {
+        val coinTossWinningCoachList = gameUtils.getCoinTossWinners(client, game) ?: return errorHandler.invalidCoinTossWinner(message)
+        val coinTossChoice = message.content
+        if (message.author !in coinTossWinningCoachList && !gameUtils.isValidOvertimeCoinTossChoice(coinTossChoice)) {
+            return errorHandler.waitingOnCoinTossChoiceError(message)
+        }
+
+        val updatedGame =
+            gameClient.makeOvertimeCoinTossChoice(game.gameId, coinTossChoice.uppercase())
+                ?: return errorHandler.invalidCoinTossChoice(message)
+
+        discordMessageHandler.sendGameMessage(client, updatedGame, Scenario.OVERTIME_COIN_TOSS_CHOICE, null, message, null, false)
+        val numberRequestMessage =
+            discordMessageHandler.sendRequestForDefensiveNumber(
+                client,
+                updatedGame,
+                Scenario.DM_NUMBER_REQUEST,
+                null,
+            ) ?: return errorHandler.failedToSendNumberRequestMessage(message)
+
+        try {
+            gameClient.updateRequestMessageId(game.gameId, numberRequestMessage)
+        } catch (e: Exception) {
+            errorHandler.failedToSendNumberRequestMessage(message)
+        }
+    }
+
+    /**
+     * Starts overtime for a game
+     */
+    suspend fun startOvertime(
+        client: Kord,
+        game: Game,
+        message: Message,
+    ) {
+        val coinTossRequestMessage =
+            discordMessageHandler.sendGameMessage(
+                client,
+                game,
+                Scenario.OVERTIME_START,
+                null,
+                message,
+                null,
+                false,
+            )
+        try {
+            gameClient.updateRequestMessageId(game.gameId, coinTossRequestMessage to null)
         } catch (e: Exception) {
             errorHandler.failedToSendNumberRequestMessage(message)
         }

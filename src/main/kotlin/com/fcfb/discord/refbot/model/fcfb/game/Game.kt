@@ -43,6 +43,8 @@ data class Game(
     @JsonProperty("away_timeouts") val awayTimeouts: Int,
     @JsonProperty("coin_toss_winner") val coinTossWinner: TeamSide?,
     @JsonProperty("coin_toss_choice") val coinTossChoice: CoinTossChoice?,
+    @JsonProperty("overtime_coin_toss_winner") val overtimeCoinTossWinner: TeamSide?,
+    @JsonProperty("overtime_coin_toss_choice") val overtimeCoinTossChoice: OvertimeCoinTossChoice?,
     @JsonProperty("home_platform") val homePlatform: Platform,
     @JsonProperty("home_platform_id") val homePlatformId: String?,
     @JsonProperty("away_platform") val awayPlatform: Platform,
@@ -56,6 +58,7 @@ data class Game(
     @JsonProperty("game_status") val gameStatus: GameStatus?,
     @JsonProperty("game_type") val gameType: GameType?,
     @JsonProperty("game_mode") val gameMode: GameMode?,
+    @JsonProperty("overtime_half") val overtimeHalf: Int?,
 )
 
 enum class GameStatus(val description: String) {
@@ -168,6 +171,9 @@ enum class Scenario(val description: String) {
     PLAY_RESULT("PLAY RESULT"),
     COIN_TOSS("COIN_TOSS"),
     COIN_TOSS_CHOICE("COIN TOSS CHOICE"),
+    OVERTIME_START("OVERTIME START"),
+    OVERTIME_COIN_TOSS("OVERTIME COIN TOSS"),
+    OVERTIME_COIN_TOSS_CHOICE("OVERTIME COIN TOSS CHOICE"),
     KICKOFF_NUMBER_REQUEST("KICKOFF NUMBER REQUEST"),
     NORMAL_NUMBER_REQUEST("NORMAL NUMBER REQUEST"),
     DM_NUMBER_REQUEST("DM NUMBER REQUEST"),
@@ -278,6 +284,11 @@ enum class TeamSide(val description: String) {
 enum class CoinTossChoice(val description: String) {
     RECEIVE("RECEIVE"),
     DEFER("DEFER"),
+}
+
+enum class OvertimeCoinTossChoice(val description: String) {
+    OFFENSE("offense"),
+    DEFENSE("defense"),
 }
 
 enum class GameType(val description: String) {

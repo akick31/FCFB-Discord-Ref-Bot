@@ -37,15 +37,7 @@ class PingCommand {
                     )
                     return
                 }
-            val currentPlay =
-                PlayClient().getCurrentPlay(game.gameId) ?: run {
-                    response.respond { this.content = "No current play found. Ping failed!" }
-                    Logger.error(
-                        "${interaction.user.username} failed to ping a game in channel ${interaction.channelId.value}" +
-                            " because no current play was found",
-                    )
-                    return
-                }
+            val currentPlay = PlayClient().getCurrentPlay(game.gameId)
             val message = interaction.channel.createMessage("Pinging user...")
             GameHandler().sendGamePing(interaction.kord, game, previousPlay, currentPlay, message)
             response.respond { this.content = "Ping successful!" }
