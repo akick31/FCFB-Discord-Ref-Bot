@@ -57,6 +57,7 @@ class MessageConstants {
         MESSAGE_CONTAINS_ONSIDE("The message contains 'onside'"),
         MESSAGE_CONTAINS_HURRY("The message contains 'hurry'"),
         MESSAGE_CONTAINS_CHEW("The message contains 'chew'"),
+        MESSAGE_CONTAINS_FINAL("The message contains 'final'"),
         ;
 
         fun logInfo() {
