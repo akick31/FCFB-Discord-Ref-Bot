@@ -275,17 +275,13 @@ class GameUtils {
         // Check if "runoff" (case-insensitive) is present in the message content
         val containsHurry = message.content.contains("hurry", ignoreCase = true)
         val containsChew = message.content.contains("chew", ignoreCase = true)
-        val containsFinal = message.content.contains("final", ignoreCase = true)
 
-        return if (containsHurry && !containsChew && !containsFinal) {
+        return if (containsHurry && !containsChew) {
             Info.MESSAGE_CONTAINS_HURRY.logInfo()
             RunoffType.HURRY
-        } else if (!containsHurry && containsChew && !containsFinal) {
+        } else if (!containsHurry && containsChew) {
             Info.MESSAGE_CONTAINS_CHEW.logInfo()
             RunoffType.CHEW
-        } else if (!containsHurry && !containsChew && containsFinal) {
-            Info.MESSAGE_CONTAINS_FINAL.logInfo()
-            RunoffType.FINAL
         } else {
             if (game.gameMode == GameMode.CHEW) {
                 RunoffType.CHEW
