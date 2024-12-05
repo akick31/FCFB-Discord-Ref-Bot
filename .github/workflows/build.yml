@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - main
+  pull_request:
+    branches:
+      - '**'
 
 permissions:
   contents: write
@@ -33,6 +36,25 @@ jobs:
           key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
           restore-keys: |
             ${{ runner.os }}-gradle-
+
+      # Run ktlintFormat to auto-format code
+      - name: Run ktlintFormat
+        run: ./gradlew ktlintFormat
+
+      # Commit and push formatted changes
+      - name: Commit and push ktlint changes
+        run: |
+          git config user.name "GitHub Actions Bot"
+          git config user.email "actions@github.com"
+
+          # Check if there are changes
+          if [ -n "$(git status --porcelain)" ]; then
+            git add .
+            git commit -m "chore: apply ktlint format via CI"
+            git push origin ${{ github.ref }}
+          else
+            echo "No formatting changes to commit."
+          fi
 
       # Run Gradle build
       - name: Build with Gradle

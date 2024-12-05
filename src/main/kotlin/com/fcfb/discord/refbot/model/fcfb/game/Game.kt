@@ -161,6 +161,7 @@ enum class ActualResult(val description: String) {
 }
 
 enum class RunoffType(val description: String) {
+    FINAL("FINAL"),
     CHEW("CHEW"),
     HURRY("HURRY"),
     NORMAL("NORMAL"),
