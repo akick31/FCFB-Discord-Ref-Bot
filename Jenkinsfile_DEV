@@ -9,27 +9,9 @@ pipeline {
         DISCORD_TOKEN = credentials('DEV_REFBOT_DISCORD_TOKEN')
         DISCORD_GUILD_ID = credentials('DEV_DISCORD_GUILD_ID')
         DISCORD_FORUM_CHANNEL_ID = credentials('DEV_DISCORD_FORUM_CHANNEL_ID')
-        GITHUB_EVENT = readJSON text: env.GITHUB_EVENT_PATH
-    }
-
-    triggers {
-        githubPush()
     }
 
     stages {
-        stage('Filter for merged PR') {
-            when {
-                expression {
-                    GITHUB_EVENT.action == 'closed' &&
-                    GITHUB_EVENT.pull_request.merged == true &&
-                    GITHUB_EVENT.pull_request.base.ref == 'main'
-                }
-            }
-            steps {
-                echo 'Processing merged PR into main...'
-            }
-        }
-
         stage('Checkout') {
             steps {
                 echo 'Checking out the Ref Bot project...'

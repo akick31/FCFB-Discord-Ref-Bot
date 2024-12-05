@@ -110,3 +110,19 @@ jobs:
           # Create and push the new tag
           git tag $NEW_TAG
           git push origin $NEW_TAG
+      - name: Get Jenkins crumb
+        if: github.event_name == 'push' && startsWith(github.ref, 'refs/heads/main')
+        id: get_crumb
+        run: |
+          CRUMB=$(curl -u "${{ secrets.JENKINS_USER }}:${{ secrets.JENKINS_API_TOKEN }}" -X GET "http://51.81.32.234:8080/crumbIssuer/api/json" | jq -r .crumb)
+          echo "::set-output name=crumb::$CRUMB"
+
+      - name: Trigger Jenkins build
+        if: github.event_name == 'push' && startsWith(github.ref, 'refs/heads/main')
+        run: |
+          curl -X POST "http://51.81.32.234:8080/job/FCFB-Arceus_PRD/build?token=${{ secrets.JENKINS_TOKEN }}" \
+            -u "${{ secrets.JENKINS_USER }}:${{ secrets.JENKINS_API_TOKEN }}" \
+            -H "Jenkins-Crumb: ${{ steps.get_crumb.outputs.crumb }}"
+        env:
+          JENKINS_USER: ${{ secrets.JENKINS_USER }}
+          JENKINS_TOKEN: ${{ secrets.JENKINS_API_TOKEN }}
