@@ -32,6 +32,7 @@ import com.fcfb.discord.refbot.handlers.discord.TextChannelThreadHandler
 import com.fcfb.discord.refbot.requests.DelayOfGameRequest
 import com.fcfb.discord.refbot.requests.StartGameRequest
 import com.fcfb.discord.refbot.utils.GameUtils
+import com.fcfb.discord.refbot.utils.Health
 import com.fcfb.discord.refbot.utils.Properties
 import dev.kord.common.annotation.KordPreview
 import dev.kord.rest.builder.message.EmbedBuilder
@@ -53,13 +54,14 @@ val appModule =
         single { HelpCommand() }
         single { RoleCommand() }
         single { GameUtils() }
+        single { Health() }
         single { Properties() }
 
         // Classes with dependencies
         single { ErrorHandler(get()) }
         single { DelayOfGameRequest(get()) }
         single { StartGameRequest(get(), get()) }
-        single { ServerConfig(get(), get()) }
+        single { ServerConfig(get(), get(), get()) }
         single { GameHandler(get(), get(), get(), get(), get(), get(), get()) }
         single { RedZoneHandler(get(), get(), get(), get()) }
         single { ChewGameCommand(get(), get(), get()) }

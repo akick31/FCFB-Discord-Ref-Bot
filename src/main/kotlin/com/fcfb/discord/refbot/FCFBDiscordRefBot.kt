@@ -47,7 +47,7 @@ class FCFBDiscordRefBot(
                 startHeartbeat()
                 scheduleRestart()
                 initializeBot()
-                startServices(client)
+                startServices(client, heartbeatJob, restartJob)
             } catch (e: Exception) {
                 Logger.error("Failed to start bot: ${e.message}", e)
             }
@@ -105,7 +105,7 @@ class FCFBDiscordRefBot(
         try {
             stopDiscordBot()
             initializeBot()
-            startServices(client)
+            startServices(client, heartbeatJob, restartJob)
             Logger.info("Bot restarted successfully.")
         } catch (e: Exception) {
             Logger.error("Failed to restart bot: ${e.message}", e)
@@ -134,17 +134,22 @@ class FCFBDiscordRefBot(
     /**
      * Start the Ktor server and Discord bot
      * @param client The Discord client
+     * @param heartbeatJob The heartbeat job
+     * @param restartJob The restart job
      */
-    private fun startServices(client: Kord) =
-        runBlocking {
-            launch(Dispatchers.IO) {
-                serverConfig.startKtorServer(client)
-            }
-
-            launch {
-                startDiscordBot()
-            }
+    private fun startServices(
+        client: Kord,
+        heartbeatJob: Job?,
+        restartJob: Job?,
+    ) = runBlocking {
+        launch(Dispatchers.IO) {
+            serverConfig.startKtorServer(client, heartbeatJob, restartJob)
         }
+
+        launch {
+            startDiscordBot()
+        }
+    }
 
     /**
      * Start the Discord bot
