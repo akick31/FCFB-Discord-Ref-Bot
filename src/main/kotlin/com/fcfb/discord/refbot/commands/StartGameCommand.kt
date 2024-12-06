@@ -10,9 +10,9 @@ import dev.kord.core.behavior.interaction.response.respond
 import dev.kord.core.entity.interaction.ChatInputCommandInteraction
 import dev.kord.rest.builder.interaction.string
 
-class StartGameCommand {
-    private val gameClient = GameClient()
-
+class StartGameCommand(
+    private val gameClient: GameClient,
+) {
     suspend fun register(client: Kord) {
         client.createGlobalChatInputCommand(
             "start_game",

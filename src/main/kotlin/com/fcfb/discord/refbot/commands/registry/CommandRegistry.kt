@@ -21,27 +21,40 @@ import dev.kord.core.Kord
 import dev.kord.core.behavior.interaction.response.respond
 import dev.kord.core.entity.interaction.ChatInputCommandInteraction
 
-class CommandRegistry {
-    private val userClient = UserClient()
-
+class CommandRegistry(
+    private val userClient: UserClient,
+    private val chewGameCommand: ChewGameCommand,
+    private val deleteGameCommand: DeleteGameCommand,
+    private val endGameCommand: EndGameCommand,
+    private val fireCoachCommand: FireCoachCommand,
+    private val gameInfoCommand: GameInfoCommand,
+    private val helpCommand: HelpCommand,
+    private val hireCoachCommand: HireCoachCommand,
+    private val pingCommand: PingCommand,
+    private val registerCommand: RegisterCommand,
+    private val roleCommand: RoleCommand,
+    private val startGameCommand: StartGameCommand,
+    private val startScrimmageCommand: StartScrimmageCommand,
+    private val subCoachCommand: SubCoachCommand,
+) {
     suspend fun registerCommands(client: Kord) {
 //        // Delete old commands just in case of changes
 //        client.getGlobalApplicationCommands().collect { it.delete() }
 
         // Register all commands
-        RegisterCommand().register(client)
-        RoleCommand().register(client)
-        PingCommand().register(client)
-        StartGameCommand().register(client)
-        EndGameCommand().register(client)
-        DeleteGameCommand().register(client)
-        StartScrimmageCommand().register(client)
-        GameInfoCommand().register(client)
-        HireCoachCommand().register(client)
-        SubCoachCommand().register(client)
-        FireCoachCommand().register(client)
-        HelpCommand().register(client)
-        ChewGameCommand().register(client)
+        chewGameCommand.register(client)
+        deleteGameCommand.register(client)
+        endGameCommand.register(client)
+        fireCoachCommand.register(client)
+        gameInfoCommand.register(client)
+        helpCommand.register(client)
+        hireCoachCommand.register(client)
+        pingCommand.register(client)
+        registerCommand.register(client)
+        roleCommand.register(client)
+        startGameCommand.register(client)
+        startScrimmageCommand.register(client)
+        subCoachCommand.register(client)
     }
 
     suspend fun executeCommand(interaction: ChatInputCommandInteraction) {
@@ -62,19 +75,19 @@ class CommandRegistry {
         }
 
         when (commandName) {
-            "help" -> HelpCommand().execute(userRole, interaction)
-            "register" -> RegisterCommand().execute(interaction)
-            "role" -> RoleCommand().execute(userRole, interaction)
-            "ping" -> PingCommand().execute(interaction)
-            "start_game" -> StartGameCommand().execute(interaction)
-            "end_game" -> EndGameCommand().execute(interaction)
-            "delete_game" -> DeleteGameCommand().execute(interaction)
-            "game_info" -> GameInfoCommand().execute(interaction)
-            "start_scrimmage" -> StartScrimmageCommand().execute(interaction)
-            "hire_coach" -> HireCoachCommand().execute(interaction)
-            "fire_coach" -> FireCoachCommand().execute(interaction)
-            "sub_coach" -> SubCoachCommand().execute(interaction)
-            "chew_game" -> ChewGameCommand().execute(interaction)
+            "chew_game" -> chewGameCommand.execute(interaction)
+            "delete_game" -> deleteGameCommand.execute(interaction)
+            "end_game" -> endGameCommand.execute(interaction)
+            "fire_coach" -> fireCoachCommand.execute(interaction)
+            "game_info" -> gameInfoCommand.execute(interaction)
+            "help" -> helpCommand.execute(userRole, interaction)
+            "hire_coach" -> hireCoachCommand.execute(interaction)
+            "ping" -> pingCommand.execute(interaction)
+            "register" -> registerCommand.execute(interaction)
+            "role" -> roleCommand.execute(userRole, interaction)
+            "start_game" -> startGameCommand.execute(interaction)
+            "start_scrimmage" -> startScrimmageCommand.execute(interaction)
+            "sub_coach" -> subCoachCommand.execute(interaction)
         }
     }
 }

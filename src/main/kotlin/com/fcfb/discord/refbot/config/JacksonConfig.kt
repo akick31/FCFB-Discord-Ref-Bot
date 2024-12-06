@@ -40,7 +40,7 @@ import com.fcfb.discord.refbot.model.fcfb.game.TVChannel
 import com.fcfb.discord.refbot.model.fcfb.game.TeamSide
 
 class JacksonConfig {
-    fun customGameModule(): SimpleModule {
+    private fun customGameModule(): SimpleModule {
         return SimpleModule().apply {
             addDeserializer(ActualResult::class.java, ActualResultDeserializer())
             addDeserializer(CoachPosition::class.java, CoachPositionDeserializer())

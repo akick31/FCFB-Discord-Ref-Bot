@@ -8,9 +8,9 @@ import dev.kord.core.entity.interaction.ChatInputCommandInteraction
 import dev.kord.rest.builder.interaction.string
 import dev.kord.rest.builder.interaction.user
 
-class FireCoachCommand {
-    private val teamClient = TeamClient()
-
+class FireCoachCommand(
+    private val teamClient: TeamClient,
+) {
     suspend fun register(client: Kord) {
         client.createGlobalChatInputCommand(
             "fire_coach",

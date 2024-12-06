@@ -8,10 +8,10 @@ import com.fcfb.discord.refbot.utils.Logger
 import dev.kord.core.Kord
 import dev.kord.core.entity.channel.thread.TextChannelThread
 
-class StartGameRequest {
-    private val textChannelThreadHandler = TextChannelThreadHandler()
-    private val discordMessageHandler = DiscordMessageHandler()
-
+class StartGameRequest(
+    private val textChannelThreadHandler: TextChannelThreadHandler,
+    private val discordMessageHandler: DiscordMessageHandler,
+) {
     /**
      * Start a new Discord game thread
      * @param client The Discord client

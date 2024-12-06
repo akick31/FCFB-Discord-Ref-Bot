@@ -4,9 +4,9 @@ import com.fcfb.discord.refbot.handlers.discord.DiscordMessageHandler
 import com.fcfb.discord.refbot.model.discord.MessageConstants.Error
 import dev.kord.core.entity.Message
 
-class ErrorHandler {
-    private val discordMessageHandler = DiscordMessageHandler()
-
+class ErrorHandler(
+    private val discordMessageHandler: DiscordMessageHandler,
+) {
     /**
      * Handle the waiting on user error
      * @param message The message object
@@ -108,20 +108,4 @@ class ErrorHandler {
      * Handle invalid number error
      */
     internal suspend fun invalidNumberError(message: Message) = discordMessageHandler.sendErrorMessage(message, Error.INVALID_NUMBER)
-
-    /**
-     * Handle failed to send number request message
-     */
-    internal suspend fun failedToSendNumberRequestMessage(message: Message) =
-        discordMessageHandler.sendErrorMessage(message, Error.FAILED_TO_SEND_NUMBER_REQUEST_MESSAGE)
-
-    /**
-     * Handle the invalid game status error
-     */
-    internal suspend fun invalidGameStatus(message: Message) = discordMessageHandler.sendErrorMessage(message, Error.INVALID_GAME_STATUS)
-
-    /**
-     * Handle the team not found error
-     */
-    internal suspend fun teamNotFoundError(message: Message) = discordMessageHandler.sendErrorMessage(message, Error.TEAM_NOT_FOUND)
 }

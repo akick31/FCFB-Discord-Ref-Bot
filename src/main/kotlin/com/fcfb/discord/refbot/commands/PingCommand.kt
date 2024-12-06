@@ -8,11 +8,11 @@ import dev.kord.core.Kord
 import dev.kord.core.behavior.interaction.response.respond
 import dev.kord.core.entity.interaction.ChatInputCommandInteraction
 
-class PingCommand {
-    private val gameClient = GameClient()
-    private val playClient = PlayClient()
-    private val gameHandler = GameHandler()
-
+class PingCommand(
+    private val gameClient: GameClient,
+    private val playClient: PlayClient,
+    private val gameHandler: GameHandler,
+) {
     suspend fun register(client: Kord) {
         client.createGlobalChatInputCommand(
             "ping",

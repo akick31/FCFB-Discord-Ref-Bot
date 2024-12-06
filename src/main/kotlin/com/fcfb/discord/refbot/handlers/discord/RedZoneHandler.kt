@@ -9,17 +9,17 @@ import com.fcfb.discord.refbot.model.fcfb.game.PlayCall.PASS
 import com.fcfb.discord.refbot.model.fcfb.game.TeamSide
 import com.fcfb.discord.refbot.utils.GameUtils
 import com.fcfb.discord.refbot.utils.Properties
-import com.kotlindiscord.kord.extensions.utils.getJumpUrl
 import dev.kord.common.entity.Snowflake
 import dev.kord.core.Kord
 import dev.kord.core.entity.Message
 import dev.kord.core.entity.channel.MessageChannel
 
-class RedZoneHandler {
-    private val gameUtils = GameUtils()
-    private val scorebugClient = ScorebugClient()
-    private val discordMessageHandler = DiscordMessageHandler()
-
+class RedZoneHandler(
+    private val gameUtils: GameUtils,
+    private val scorebugClient: ScorebugClient,
+    private val discordMessageHandler: DiscordMessageHandler,
+    private val properties: Properties,
+) {
     suspend fun handleRedZone(
         client: Kord,
         play: Play,
@@ -169,23 +169,7 @@ class RedZoneHandler {
                     return null
                 }
             }
-        val redZoneChannel = client.getChannel(Snowflake(Properties().getDiscordProperties().redzoneChannelId)) as MessageChannel
-
-        val scorebug =
-            scorebugClient.getScorebugByGameId(game.gameId)
-                ?: return discordMessageHandler.sendMessageFromChannelObject(
-                    redZoneChannel,
-                    messageContent + playMessage?.getJumpUrl(),
-                    null,
-                )
-        val embedData =
-            gameUtils.getScorebugEmbed(scorebug, game, playMessage?.getJumpUrl())
-                ?: return discordMessageHandler.sendMessageFromChannelObject(
-                    redZoneChannel,
-                    messageContent + playMessage?.getJumpUrl(),
-                    null,
-                )
-
-        return discordMessageHandler.sendMessageFromChannelObject(redZoneChannel, messageContent, embedData)
+        val redZoneChannel = client.getChannel(Snowflake(properties.getDiscordProperties().redzoneChannelId)) as MessageChannel
+        return discordMessageHandler.sendRedZoneMessage(game, redZoneChannel, messageContent, playMessage)
     }
 }

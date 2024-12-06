@@ -1,7 +1,5 @@
 package com.fcfb.discord.refbot.requests
 
-import com.fcfb.discord.refbot.api.GameClient
-import com.fcfb.discord.refbot.handlers.ErrorHandler
 import com.fcfb.discord.refbot.handlers.discord.DiscordMessageHandler
 import com.fcfb.discord.refbot.model.fcfb.game.Game
 import com.fcfb.discord.refbot.model.fcfb.game.Scenario
@@ -9,9 +7,9 @@ import dev.kord.common.entity.Snowflake
 import dev.kord.core.Kord
 import dev.kord.core.entity.channel.thread.TextChannelThread
 
-class DelayOfGameRequest {
-    private val discordMessageHandler = DiscordMessageHandler()
-
+class DelayOfGameRequest(
+    private val discordMessageHandler: DiscordMessageHandler,
+) {
     /**
      * Notify the game thread of a delay of game
      */

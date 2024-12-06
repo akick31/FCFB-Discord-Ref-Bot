@@ -3,8 +3,6 @@ package com.fcfb.discord.refbot.handlers.discord
 import com.fcfb.discord.refbot.api.GameClient
 import com.fcfb.discord.refbot.api.GameWriteupClient
 import com.fcfb.discord.refbot.api.ScorebugClient
-import com.fcfb.discord.refbot.api.TeamClient
-import com.fcfb.discord.refbot.handlers.ErrorHandler
 import com.fcfb.discord.refbot.handlers.FileHandler
 import com.fcfb.discord.refbot.model.discord.MessageConstants.Error
 import com.fcfb.discord.refbot.model.discord.MessageConstants.Info
@@ -34,20 +32,17 @@ import dev.kord.core.entity.channel.MessageChannel
 import dev.kord.core.entity.channel.thread.TextChannelThread
 import dev.kord.rest.builder.message.EmbedBuilder
 import dev.kord.rest.builder.message.addFile
-import java.time.Instant
 import kotlin.io.path.Path
 
-class DiscordMessageHandler {
-    private val embedBuilder = EmbedBuilder()
-    private val gameClient = GameClient()
-    private val teamClient = TeamClient()
-    private val gameWriteupClient = GameWriteupClient()
-    private val scorebugClient = ScorebugClient()
-    private val gameUtils = GameUtils()
-    private val fileHandler = FileHandler()
-    private val errorHandler = ErrorHandler()
-    private val properties = Properties()
-
+class DiscordMessageHandler(
+    private val embedBuilder: EmbedBuilder,
+    private val gameClient: GameClient,
+    private val gameWriteupClient: GameWriteupClient,
+    private val scorebugClient: ScorebugClient,
+    private val gameUtils: GameUtils,
+    private val fileHandler: FileHandler,
+    private val properties: Properties,
+) {
     /**
      * Send a game message to a game thread
      * @param client The Discord client
@@ -116,21 +111,21 @@ class DiscordMessageHandler {
                 sendPrivateMessage(defensiveCoaches[0], embedData, messageContent, previousMessage) to null
             try {
                 gameClient.updateRequestMessageId(game.gameId, numberRequestMessage)
+                gameClient.updateLastMessageTimestamp(game.gameId)
             } catch (e: Exception) {
-                errorHandler.failedToSendNumberRequestMessage(previousMessage ?: return false)
+                sendErrorMessage(previousMessage ?: return false, Error.FAILED_TO_SEND_NUMBER_REQUEST_MESSAGE)
                 return false
             }
-
         } else {
             val numberRequestMessage =
                 sendPrivateMessage(defensiveCoaches[0], embedData, messageContent, previousMessage) to
-                        sendPrivateMessage(defensiveCoaches[1], embedData, messageContent, previousMessage)
+                    sendPrivateMessage(defensiveCoaches[1], embedData, messageContent, previousMessage)
             try {
                 gameClient.updateRequestMessageId(game.gameId, numberRequestMessage)
-                gameClient.updateLastMessageTimestamp(game.gameId, Instant.now().toString())
+                gameClient.updateLastMessageTimestamp(game.gameId)
                 return true
             } catch (e: Exception) {
-                errorHandler.failedToSendNumberRequestMessage(previousMessage ?: return false)
+                sendErrorMessage(previousMessage ?: return false, Error.FAILED_TO_SEND_NUMBER_REQUEST_MESSAGE)
                 return false
             }
         }
@@ -156,7 +151,7 @@ class DiscordMessageHandler {
             } else if (game.awayPlatform == Platform.DISCORD) {
                 client.getChannel(Snowflake(game.awayPlatformId.toString())) as TextChannelThread
             } else {
-                errorHandler.invalidGameThread(previousMessage ?: return false)
+                sendErrorMessage(previousMessage ?: return false, Error.INVALID_GAME_THREAD)
                 return false
             }
 
@@ -170,15 +165,16 @@ class DiscordMessageHandler {
                 gameThread,
                 timeoutCalled,
             ) ?: run {
-                errorHandler.failedToSendNumberRequestMessage(previousMessage ?: return false)
+                sendErrorMessage(previousMessage ?: return false, Error.FAILED_TO_SEND_NUMBER_REQUEST_MESSAGE)
                 return false
             }
 
         try {
             gameClient.updateRequestMessageId(game.gameId, numberRequestMessage to null)
+            gameClient.updateLastMessageTimestamp(game.gameId)
             return true
         } catch (e: Exception) {
-            errorHandler.failedToSendNumberRequestMessage(previousMessage ?: return false)
+            sendErrorMessage(previousMessage ?: return false, Error.FAILED_TO_SEND_NUMBER_REQUEST_MESSAGE)
             return false
         }
     }
@@ -279,32 +275,33 @@ class DiscordMessageHandler {
     ) {
         val coinTossWinningCoachList =
             gameUtils.getCoinTossWinners(client, game)
-                ?: return errorHandler.invalidCoinTossWinner(message)
+                ?: return sendErrorMessage(message, Error.INVALID_COIN_TOSS_WINNER)
 
-        val coinTossOutcomeMessage = when (game.gameStatus) {
-            GameStatus.PREGAME -> {
-                sendMessageFromMessageObject(
-                    message,
-                    Info.COIN_TOSS_OUTCOME.message.format(joinMentions(coinTossWinningCoachList)),
-                    null,
-                ) ?: return errorHandler.failedToSendNumberRequestMessage(message)
+        val coinTossOutcomeMessage =
+            when (game.gameStatus) {
+                GameStatus.PREGAME -> {
+                    sendMessageFromMessageObject(
+                        message,
+                        Info.COIN_TOSS_OUTCOME.message.format(joinMentions(coinTossWinningCoachList)),
+                        null,
+                    ) ?: return sendErrorMessage(message, Error.FAILED_TO_SEND_NUMBER_REQUEST_MESSAGE)
+                }
+                GameStatus.END_OF_REGULATION -> {
+                    sendMessageFromMessageObject(
+                        message,
+                        Info.OVERTIME_COIN_TOSS_OUTCOME.message.format(joinMentions(coinTossWinningCoachList)),
+                        null,
+                    ) ?: return sendErrorMessage(message, Error.FAILED_TO_SEND_NUMBER_REQUEST_MESSAGE)
+                }
+                else -> {
+                    return sendErrorMessage(message, Error.INVALID_GAME_STATUS)
+                }
             }
-            GameStatus.END_OF_REGULATION -> {
-                sendMessageFromMessageObject(
-                    message,
-                    Info.OVERTIME_COIN_TOSS_OUTCOME.message.format(joinMentions(coinTossWinningCoachList)),
-                    null,
-                ) ?: return errorHandler.failedToSendNumberRequestMessage(message)
-            }
-            else -> {
-                return errorHandler.invalidGameStatus(message)
-            }
-        }
 
         try {
             gameClient.updateRequestMessageId(game.gameId, coinTossOutcomeMessage to null)
         } catch (e: Exception) {
-            errorHandler.failedToSendNumberRequestMessage(message)
+            sendErrorMessage(message, Error.FAILED_TO_SEND_NUMBER_REQUEST_MESSAGE)
         }
     }
 
@@ -326,7 +323,7 @@ class DiscordMessageHandler {
         try {
             gameClient.updateRequestMessageId(game.gameId, coinTossRequestMessage to null)
         } catch (e: Exception) {
-            errorHandler.failedToSendNumberRequestMessage(message)
+            sendErrorMessage(message, Error.FAILED_TO_SEND_NUMBER_REQUEST_MESSAGE)
         }
     }
 
@@ -347,6 +344,37 @@ class DiscordMessageHandler {
         if (game.gameType != GameType.SCRIMMAGE) {
             postGameScore(client, game, message)
         }
+    }
+
+    /**
+     * Send message to red zone channel
+     * @param game The game object
+     * @param redZoneChannel The red zone channel object
+     * @param messageContent The message content
+     * @param message The message object
+     */
+    suspend fun sendRedZoneMessage(
+        game: Game,
+        redZoneChannel: MessageChannel,
+        messageContent: String,
+        message: Message?,
+    ): Message {
+        val scorebug =
+            scorebugClient.getScorebugByGameId(game.gameId)
+                ?: return sendMessageFromChannelObject(
+                    redZoneChannel,
+                    messageContent + message?.getJumpUrl(),
+                    null,
+                )
+        val embedData =
+            gameUtils.getScorebugEmbed(scorebug, game, message?.getJumpUrl())
+                ?: return sendMessageFromChannelObject(
+                    redZoneChannel,
+                    messageContent + message?.getJumpUrl(),
+                    null,
+                )
+
+        return sendMessageFromChannelObject(redZoneChannel, messageContent, embedData)
     }
 
     /**
@@ -515,7 +543,11 @@ class DiscordMessageHandler {
                 originalScorebug
             }
 
-        if (scorebug != null && scenario != Scenario.NORMAL_NUMBER_REQUEST) {
+        if (scorebug != null &&
+            scenario != Scenario.NORMAL_NUMBER_REQUEST &&
+            scenario != Scenario.CHEW_MODE_ENABLED &&
+            scenario != Scenario.DELAY_OF_GAME_WARNING
+        ) {
             return createGameMessageWithScorebug(
                 game,
                 scenario,
@@ -900,7 +932,7 @@ class DiscordMessageHandler {
             when (scenario) {
                 Scenario.GAME_START, Scenario.COIN_TOSS_CHOICE, Scenario.GAME_OVER,
                 !in listOf(Scenario.DM_NUMBER_REQUEST, Scenario.NORMAL_NUMBER_REQUEST),
-                    -> {
+                -> {
                     append("\n\n").append(joinMentions(homeCoaches))
                     append(" ").append(joinMentions(awayCoaches))
                 }

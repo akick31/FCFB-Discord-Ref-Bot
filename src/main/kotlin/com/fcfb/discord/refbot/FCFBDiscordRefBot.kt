@@ -3,6 +3,7 @@ package com.fcfb.discord.refbot
 import com.fcfb.discord.refbot.commands.registry.CommandRegistry
 import com.fcfb.discord.refbot.config.ServerConfig
 import com.fcfb.discord.refbot.handlers.discord.MessageProcessor
+import com.fcfb.discord.refbot.koin.appModule
 import com.fcfb.discord.refbot.utils.Logger
 import com.fcfb.discord.refbot.utils.Properties
 import dev.kord.common.annotation.KordPreview
@@ -20,17 +21,20 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import org.koin.core.context.startKoin
+import org.koin.mp.KoinPlatform.getKoin
 import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.time.temporal.ChronoUnit
 import kotlin.time.Duration.Companion.seconds
 
 @KordPreview
-class FCFBDiscordRefBot {
+class FCFBDiscordRefBot(
+    private val properties: Properties,
+    private val commandRegistry: CommandRegistry,
+    private val serverConfig: ServerConfig,
+) {
     private lateinit var client: Kord
-    private val properties = Properties()
-    private val commandRegistry = CommandRegistry()
-    private val serverConfig = ServerConfig()
     private var heartbeatJob: Job? = null
     private var restartJob: Job? = null
 
@@ -202,7 +206,13 @@ class FCFBDiscordRefBot {
 @OptIn(KordPreview::class)
 fun main() {
     Logger.info("Starting Discord Ref Bot...")
-    val bot = FCFBDiscordRefBot()
+
+    // Dependency injection
+    startKoin {
+        modules(appModule)
+    }
+
+    val bot: FCFBDiscordRefBot = getKoin().get()
     bot.start()
     Runtime.getRuntime().addShutdownHook(Thread { bot.stop() })
 }

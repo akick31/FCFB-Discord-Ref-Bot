@@ -9,9 +9,9 @@ import dev.kord.core.behavior.interaction.response.respond
 import dev.kord.core.entity.interaction.ChatInputCommandInteraction
 import dev.kord.rest.builder.interaction.string
 
-class StartScrimmageCommand {
-    private val gameClient = GameClient()
-
+class StartScrimmageCommand(
+    private val gameClient: GameClient,
+) {
     suspend fun register(client: Kord) {
         client.createGlobalChatInputCommand(
             "start_scrimmage",

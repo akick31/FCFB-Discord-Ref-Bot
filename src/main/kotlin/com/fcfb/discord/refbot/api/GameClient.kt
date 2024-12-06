@@ -115,14 +115,10 @@ class GameClient {
     /**
      * Update the request message id that the game is waiting on a response for
      * @param gameId
-     * @param timestamp
      * @return Boolean
      */
-    internal suspend fun updateLastMessageTimestamp(
-        gameId: Int,
-        timestamp: String,
-    ): Boolean {
-        val endpointUrl = "$baseUrl/game/last_message_timestamp?gameId=$gameId&timestamp=${timestamp}"
+    internal suspend fun updateLastMessageTimestamp(gameId: Int): Boolean {
+        val endpointUrl = "$baseUrl/game/last_message_timestamp?gameId=$gameId"
         return putRequestStatus(endpointUrl)
     }
 
@@ -227,7 +223,7 @@ class GameClient {
         val endpointUrl = "$baseUrl/game/chew?channelId=$channelId"
         return postRequest(endpointUrl)
     }
-    
+
     /**
      * Call a put request to the game endpoint and return a game
      * @param endpointUrl
@@ -255,7 +251,7 @@ class GameClient {
             false
         }
     }
-    
+
     /**
      * Call a post request to the game endpoint and return a game
      * @param endpointUrl
@@ -273,10 +269,10 @@ class GameClient {
             null
         }
     }
-    
+
     private suspend fun postRequestWithBody(
         endpointUrl: String,
-        body: Any
+        body: Any,
     ): Game? {
         return try {
             val response: HttpResponse =
@@ -292,7 +288,7 @@ class GameClient {
             null
         }
     }
-    
+
     /**
      * Call a get request to the game endpoint and return a game
      * @param endpointUrl
@@ -312,7 +308,7 @@ class GameClient {
             null
         }
     }
-    
+
     /**
      * Call a delete request to the game endpoint and return the status
      * @param endpointUrl

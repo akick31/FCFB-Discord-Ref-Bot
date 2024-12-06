@@ -1,7 +1,6 @@
 package com.fcfb.discord.refbot.utils
 
 import com.fcfb.discord.refbot.api.TeamClient
-import com.fcfb.discord.refbot.handlers.ErrorHandler
 import com.fcfb.discord.refbot.model.discord.MessageConstants.Info
 import com.fcfb.discord.refbot.model.fcfb.Team
 import com.fcfb.discord.refbot.model.fcfb.game.ActualResult
@@ -27,7 +26,6 @@ import java.nio.file.StandardOpenOption
 
 class GameUtils {
     private val teamClient = TeamClient()
-    private val errorHandler = ErrorHandler()
 
     /**
      * Parse a valid number from a message

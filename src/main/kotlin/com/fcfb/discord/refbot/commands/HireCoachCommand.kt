@@ -9,9 +9,9 @@ import dev.kord.core.entity.interaction.ChatInputCommandInteraction
 import dev.kord.rest.builder.interaction.string
 import dev.kord.rest.builder.interaction.user
 
-class HireCoachCommand {
-    private val teamClient = TeamClient()
-
+class HireCoachCommand(
+    private val teamClient: TeamClient,
+) {
     suspend fun register(client: Kord) {
         client.createGlobalChatInputCommand(
             "hire_coach",

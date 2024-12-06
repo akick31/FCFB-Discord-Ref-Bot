@@ -80,9 +80,7 @@ class UserClient {
      * Make a put request to the user endpoint
      * @param endpointUrl
      */
-    private suspend fun putRequest(
-        endpointUrl: String,
-    ): FCFBUser? {
+    private suspend fun putRequest(endpointUrl: String): FCFBUser? {
         return try {
             val response: HttpResponse =
                 httpClient.put(endpointUrl)

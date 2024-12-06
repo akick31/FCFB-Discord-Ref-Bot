@@ -23,7 +23,10 @@ import io.ktor.server.routing.post
 import io.ktor.server.routing.routing
 import java.text.DateFormat
 
-class ServerConfig {
+class ServerConfig(
+    private val delayOfGameRequest: DelayOfGameRequest,
+    private val startGameRequest: StartGameRequest,
+) {
     private var server: NettyApplicationEngine? = null
 
     /**
@@ -66,7 +69,7 @@ class ServerConfig {
             post("$serverUrl/start_game") {
                 try {
                     val game = call.receive<Game>()
-                    val gameThread = StartGameRequest().startGameThread(client, game)
+                    val gameThread = startGameRequest.startGameThread(client, game)
                     call.respondText(gameThread.toString())
                 } catch (e: Exception) {
                     call.respond(HttpStatusCode.BadRequest, "Error processing request: ${e.message}")
@@ -76,7 +79,7 @@ class ServerConfig {
             post("$serverUrl/delay_of_game") {
                 try {
                     val game = call.receive<Game>()
-                    DelayOfGameRequest().notifyDelayOfGame(client, game)
+                    delayOfGameRequest.notifyDelayOfGame(client, game)
                     call.respondText("Delay of game notification sent for game ${game.gameId}")
                     Logger.info("Delay of game notification sent for game ${game.gameId}")
                 } catch (e: Exception) {
@@ -88,7 +91,7 @@ class ServerConfig {
             post("$serverUrl/delay_of_game_warning") {
                 try {
                     val game = call.receive<Game>()
-                    DelayOfGameRequest().notifyWarning(client, game)
+                    delayOfGameRequest.notifyWarning(client, game)
                     call.respondText("Delay of game warning notification sent for game ${game.gameId}")
                     Logger.info("Delay of game warning notification sent for game ${game.gameId}")
                 } catch (e: Exception) {

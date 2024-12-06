@@ -10,11 +10,11 @@ import dev.kord.core.entity.interaction.ChatInputCommandInteraction
 import dev.kord.rest.builder.interaction.string
 import dev.kord.rest.builder.interaction.user
 
-class SubCoachCommand {
-    private val gameClient = GameClient()
-    private val playClient = PlayClient()
-    private val gameHandler = GameHandler()
-
+class SubCoachCommand(
+    private val gameClient: GameClient,
+    private val playClient: PlayClient,
+    private val gameHandler: GameHandler,
+) {
     suspend fun register(client: Kord) {
         client.createGlobalChatInputCommand(
             "sub_coach",

@@ -6,32 +6,25 @@ import com.fcfb.discord.refbot.handlers.discord.DiscordMessageHandler
 import com.fcfb.discord.refbot.handlers.discord.RedZoneHandler
 import com.fcfb.discord.refbot.handlers.discord.TextChannelThreadHandler
 import com.fcfb.discord.refbot.model.discord.MessageConstants.Error
-import com.fcfb.discord.refbot.model.discord.MessageConstants.Info
-import com.fcfb.discord.refbot.model.fcfb.game.ActualResult
 import com.fcfb.discord.refbot.model.fcfb.game.Game
 import com.fcfb.discord.refbot.model.fcfb.game.GameStatus
-import com.fcfb.discord.refbot.model.fcfb.game.GameType
-import com.fcfb.discord.refbot.model.fcfb.game.Platform
 import com.fcfb.discord.refbot.model.fcfb.game.Play
 import com.fcfb.discord.refbot.model.fcfb.game.PlayCall
 import com.fcfb.discord.refbot.model.fcfb.game.PlayType
 import com.fcfb.discord.refbot.model.fcfb.game.Scenario
-import com.fcfb.discord.refbot.model.fcfb.game.TeamSide
 import com.fcfb.discord.refbot.utils.GameUtils
-import dev.kord.common.entity.Snowflake
 import dev.kord.core.Kord
 import dev.kord.core.entity.Message
-import dev.kord.core.entity.channel.thread.TextChannelThread
 
-class GameHandler {
-    private val discordMessageHandler = DiscordMessageHandler()
-    private val textChannelThreadHandler = TextChannelThreadHandler()
-    private val gameClient = GameClient()
-    private val playClient = PlayClient()
-    private val gameUtils = GameUtils()
-    private val redZoneHandler = RedZoneHandler()
-    private val errorHandler = ErrorHandler()
-
+class GameHandler(
+    private val discordMessageHandler: DiscordMessageHandler,
+    private val textChannelThreadHandler: TextChannelThreadHandler,
+    private val gameClient: GameClient,
+    private val playClient: PlayClient,
+    private val gameUtils: GameUtils,
+    private val redZoneHandler: RedZoneHandler,
+    private val errorHandler: ErrorHandler,
+) {
     /**
      * Handles the user side game logic for a message
      * @param client The Discord client
@@ -83,7 +76,7 @@ class GameHandler {
                 client,
                 game,
                 false,
-                message
+                message,
             )
         }
     }
@@ -133,7 +126,8 @@ class GameHandler {
                 timeoutCalled,
             ) ?: return errorHandler.invalidOffensiveNumberSubmission(message)
 
-        val updatedGame = gameClient.getGameByRequestMessageId(message.referencedMessage?.id?.value.toString())
+        val updatedGame =
+            gameClient.getGameByRequestMessageId(message.referencedMessage?.id?.value.toString())
                 ?: return errorHandler.noGameFoundError(message)
 
         val playOutcomeMessage = discordMessageHandler.sendPlayOutcomeMessage(client, updatedGame, playOutcome, message)

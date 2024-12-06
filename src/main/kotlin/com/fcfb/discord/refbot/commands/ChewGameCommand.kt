@@ -9,11 +9,11 @@ import dev.kord.core.Kord
 import dev.kord.core.behavior.interaction.response.respond
 import dev.kord.core.entity.interaction.ChatInputCommandInteraction
 
-class ChewGameCommand {
-    private val gameClient = GameClient()
-    private val textChannelThreadHandler = TextChannelThreadHandler()
-    private val discordMessageHandler = DiscordMessageHandler()
-
+class ChewGameCommand(
+    private val gameClient: GameClient,
+    private val textChannelThreadHandler: TextChannelThreadHandler,
+    private val discordMessageHandler: DiscordMessageHandler,
+) {
     suspend fun register(client: Kord) {
         client.createGlobalChatInputCommand(
             "chew_game",

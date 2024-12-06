@@ -60,7 +60,7 @@ class AuthClient {
      */
     private suspend fun postRequestWithBody(
         endpointUrl: String,
-        body: Any
+        body: Any,
     ): FCFBUser? {
         return try {
             val response: HttpResponse =

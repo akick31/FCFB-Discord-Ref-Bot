@@ -129,8 +129,9 @@ class PlayClient {
             objectMapper.readValue(jsonResponse, Play::class.java)
         } catch (e: ClientRequestException) {
             // Handle HTTP error responses (4xx)
-            val errorMessage = e.response.headers["Error-Message"]?.firstOrNull()
-                ?: "Unknown error occurred while making a post request to the play endpoint"
+            val errorMessage =
+                e.response.headers["Error-Message"]?.firstOrNull()
+                    ?: "Unknown error occurred while making a post request to the play endpoint"
             Logger.error("Error message from header: $errorMessage")
             null
         } catch (e: Exception) {
@@ -161,8 +162,9 @@ class PlayClient {
             objectMapper.readValue(jsonResponse, Play::class.java)
         } catch (e: ClientRequestException) {
             // Handle HTTP error responses (4xx)
-            val errorMessage = e.response.headers["Error-Message"]?.firstOrNull()
-                ?: "Unknown error occurred while making a put request to the play endpoint"
+            val errorMessage =
+                e.response.headers["Error-Message"]?.firstOrNull()
+                    ?: "Unknown error occurred while making a put request to the play endpoint"
             Logger.error("Error message from header: $errorMessage")
             null
         } catch (e: Exception) {
@@ -194,8 +196,9 @@ class PlayClient {
             objectMapper.readValue(jsonResponse, Play::class.java)
         } catch (e: ClientRequestException) {
             // Handle HTTP error responses (4xx)
-            val errorMessage = e.response.headers["Error-Message"]?.firstOrNull()
-                ?: "Unknown error occurred while making a get request to the play endpoint"
+            val errorMessage =
+                e.response.headers["Error-Message"]?.firstOrNull()
+                    ?: "Unknown error occurred while making a get request to the play endpoint"
             Logger.error("Error message from header: $errorMessage")
             null
         } catch (e: Exception) {

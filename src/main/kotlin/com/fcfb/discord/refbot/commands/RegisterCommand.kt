@@ -11,9 +11,9 @@ import dev.kord.core.behavior.interaction.response.respond
 import dev.kord.core.entity.interaction.ChatInputCommandInteraction
 import dev.kord.rest.builder.interaction.string
 
-class RegisterCommand {
-    private val authClient = AuthClient()
-
+class RegisterCommand(
+    private val authClient: AuthClient,
+) {
     suspend fun register(client: Kord) {
         client.createGlobalChatInputCommand(
             "register",

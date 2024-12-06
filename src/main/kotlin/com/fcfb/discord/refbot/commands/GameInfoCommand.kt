@@ -8,9 +8,9 @@ import dev.kord.core.Kord
 import dev.kord.core.behavior.interaction.response.respond
 import dev.kord.core.entity.interaction.ChatInputCommandInteraction
 
-class GameInfoCommand {
-    private val gameClient = GameClient()
-
+class GameInfoCommand(
+    private val gameClient: GameClient,
+) {
     suspend fun register(client: Kord) {
         client.createGlobalChatInputCommand(
             "game_info",
