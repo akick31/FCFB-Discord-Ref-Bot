@@ -4,6 +4,7 @@ import com.fcfb.discord.refbot.commands.registry.CommandRegistry
 import com.fcfb.discord.refbot.config.ServerConfig
 import com.fcfb.discord.refbot.handlers.discord.MessageProcessor
 import com.fcfb.discord.refbot.koin.appModule
+import com.fcfb.discord.refbot.utils.HealthChecks
 import com.fcfb.discord.refbot.utils.Logger
 import com.fcfb.discord.refbot.utils.Properties
 import dev.kord.common.annotation.KordPreview
@@ -33,6 +34,7 @@ class FCFBDiscordRefBot(
     private val properties: Properties,
     private val commandRegistry: CommandRegistry,
     private val serverConfig: ServerConfig,
+    private val healthChecks: HealthChecks,
 ) {
     private lateinit var client: Kord
     private var heartbeatJob: Job? = null
@@ -65,7 +67,13 @@ class FCFBDiscordRefBot(
                     try {
                         // Attempt to fetch the bot's own user info as a "heartbeat" check
                         Heartbeat(15)
-                        Logger.info("Heartbeat successful.")
+                        val health = healthChecks.healthChecks(client, heartbeatJob, restartJob)
+                        if (health.status == "DOWN") {
+                            Logger.warn("Health checks failed: $health")
+                            restartDiscordBot()
+                        } else {
+                            Logger.info("Heartbeat successful.")
+                        }
                     } catch (e: Exception) {
                         Logger.warn("Heartbeat failed: Bot appears disconnected. Attempting to reconnect...")
                         restartDiscordBot()

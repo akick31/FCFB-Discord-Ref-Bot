@@ -32,7 +32,7 @@ import com.fcfb.discord.refbot.handlers.discord.TextChannelThreadHandler
 import com.fcfb.discord.refbot.requests.DelayOfGameRequest
 import com.fcfb.discord.refbot.requests.StartGameRequest
 import com.fcfb.discord.refbot.utils.GameUtils
-import com.fcfb.discord.refbot.utils.Health
+import com.fcfb.discord.refbot.utils.HealthChecks
 import com.fcfb.discord.refbot.utils.Properties
 import dev.kord.common.annotation.KordPreview
 import dev.kord.rest.builder.message.EmbedBuilder
@@ -54,7 +54,7 @@ val appModule =
         single { HelpCommand() }
         single { RoleCommand() }
         single { GameUtils() }
-        single { Health() }
+        single { HealthChecks() }
         single { Properties() }
 
         // Classes with dependencies
@@ -76,6 +76,6 @@ val appModule =
         single { StartScrimmageCommand(get()) }
         single { SubCoachCommand(get(), get(), get()) }
         single { CommandRegistry(get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get()) }
-        single { FCFBDiscordRefBot(get(), get(), get()) }
+        single { FCFBDiscordRefBot(get(), get(), get(), get()) }
         single { DiscordMessageHandler(get(), get(), get(), get(), get(), get(), get()) }
     }

@@ -3,7 +3,7 @@ package com.fcfb.discord.refbot.config
 import com.fcfb.discord.refbot.model.fcfb.game.Game
 import com.fcfb.discord.refbot.requests.DelayOfGameRequest
 import com.fcfb.discord.refbot.requests.StartGameRequest
-import com.fcfb.discord.refbot.utils.Health
+import com.fcfb.discord.refbot.utils.HealthChecks
 import com.fcfb.discord.refbot.utils.Logger
 import com.fcfb.discord.refbot.utils.Properties
 import com.google.gson.FieldNamingPolicy
@@ -29,17 +29,9 @@ import java.text.DateFormat
 class ServerConfig(
     private val delayOfGameRequest: DelayOfGameRequest,
     private val startGameRequest: StartGameRequest,
-    private val health: Health,
+    private val healthChecks: HealthChecks,
 ) {
     private var server: NettyApplicationEngine? = null
-
-    data class HealthResponse(
-        val status: String,
-        val jobs: Map<String, Boolean>?,
-        val memory: Map<String, String>?,
-        val diskSpace: Map<String, String>?,
-        val message: String? = null,
-    )
 
     /**
      * Start the Ktor server
@@ -121,55 +113,8 @@ class ServerConfig(
             }
 
             get("$serverUrl/health") {
-                try {
-                    // Simulate your health check, for example checking bot status
-                    val jobHealth = health.checkJobHealth(heartbeatJob, restartJob)
-                    var status = "UP"
-                    for ((job, isHealthy) in jobHealth) {
-                        if (!isHealthy) {
-                            status = "DOWN"
-                        }
-                    }
-
-                    val (usedMemory, freeMemory) = health.getMemoryStatus()
-                    val percentageMemoryFree = (freeMemory.toDouble() / (usedMemory + freeMemory)) * 100
-                    if (percentageMemoryFree < 10) {
-                        status = "DOWN"
-                    }
-                    val memory =
-                        mapOf(
-                            "used_memory" to usedMemory.toString(),
-                            "free_memory" to freeMemory.toString(),
-                            "total_memory" to (usedMemory + freeMemory).toString(),
-                            "percentage_free" to percentageMemoryFree.toString(),
-                            "status" to if (percentageMemoryFree < 10) "DOWN" else "UP",
-                        )
-
-                    val (usableSpace, totalSpace) = health.getDiskSpaceStatus()
-                    val percentageDiskFree = (usableSpace.toDouble() / totalSpace) * 100
-                    if (percentageDiskFree < 10) {
-                        status = "DOWN"
-                    }
-                    val diskSpace =
-                        mapOf(
-                            "usable_space" to usableSpace.toString(),
-                            "total_space" to totalSpace.toString(),
-                            "percentage_free" to percentageDiskFree.toString(),
-                            "status" to if (percentageDiskFree < 10) "DOWN" else "UP",
-                        )
-
-                    call.respond(HttpStatusCode.OK, HealthResponse(status, jobHealth, memory, diskSpace, null))
-                } catch (e: Exception) {
-                    call.respond(
-                        HttpStatusCode.InternalServerError,
-                        HealthResponse(
-                            "DOWN",
-                            null,
-                            null,
-                            null,
-                            e.message,
-                        ),
-                    )
+                healthChecks.healthChecks(client, heartbeatJob, restartJob).let { health ->
+                    call.respond(health)
                 }
             }
         }
