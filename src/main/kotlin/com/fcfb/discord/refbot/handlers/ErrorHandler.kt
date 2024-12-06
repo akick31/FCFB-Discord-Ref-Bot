@@ -119,4 +119,9 @@ class ErrorHandler {
      * Handle the invalid game status error
      */
     internal suspend fun invalidGameStatus(message: Message) = discordMessageHandler.sendErrorMessage(message, Error.INVALID_GAME_STATUS)
+
+    /**
+     * Handle the team not found error
+     */
+    internal suspend fun teamNotFoundError(message: Message) = discordMessageHandler.sendErrorMessage(message, Error.TEAM_NOT_FOUND)
 }

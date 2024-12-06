@@ -31,6 +31,7 @@ class MessageConstants {
         CHANNEL_NOT_FOUND("Could not find the channel associated with this message"),
         GAME_OVER("This game is already over"),
         INVALID_GAME_STATUS("Invalid game status"),
+        TEAM_NOT_FOUND("Could not find a team associated with this game"),
         ;
 
         fun logError() {

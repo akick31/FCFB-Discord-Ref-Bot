@@ -57,33 +57,7 @@ class PlayClient {
                 "defensiveSubmitter=$defensiveSubmitter&" +
                 "defensiveNumber=$defensiveNumber&" +
                 "timeoutCalled=$timeoutCalled"
-
-        return try {
-            val response = httpClient.post(endpointUrl)
-            if (response.status.value != 200) {
-                Logger.error("Error submitting defensive number: ${response.status.value} error")
-                return null
-            }
-
-            val jsonResponse = response.bodyAsText()
-            if (jsonResponse == "{}") {
-                return null
-            }
-
-            val objectMapper = ObjectMapper()
-            objectMapper.readValue(jsonResponse, Play::class.java)
-        } catch (e: ClientRequestException) {
-            // Handle HTTP error responses (4xx)
-            val errorMessage = e.response.headers["Error-Message"]?.firstOrNull() ?: "Unknown error"
-            Logger.error("Error message from header: $errorMessage")
-            null
-        } catch (e: Exception) {
-            // Handle non-HTTP errors
-            Logger.error(e.message ?: "Unknown error")
-            null
-        }
-
-        // TODO add more client request exceptions
+        return postRequest(endpointUrl)
     }
 
     /**
@@ -112,29 +86,7 @@ class PlayClient {
                 "unoffType=$runoffType&" +
                 "timeoutCalled=$offensiveTimeoutCalled"
 
-        return try {
-            val response = httpClient.put(endpointUrl)
-            if (response.status.value != 200) {
-                Logger.error("Error submitting offensive number: ${response.status.value} error")
-                return null
-            }
-            val jsonResponse = response.bodyAsText()
-            if (jsonResponse == "{}") {
-                return null
-            }
-
-            val objectMapper = ObjectMapper()
-            objectMapper.readValue(jsonResponse, Play::class.java)
-        } catch (e: ClientRequestException) {
-            // Handle HTTP error responses (4xx)
-            val errorMessage = e.response.headers["Error-Message"]?.firstOrNull() ?: "Unknown error"
-            Logger.error("Error message from header: $errorMessage")
-            null
-        } catch (e: Exception) {
-            // Handle non-HTTP errors
-            Logger.error(e.message ?: "Unknown error")
-            null
-        }
+        return putRequest(endpointUrl)
     }
 
     /**
@@ -143,30 +95,7 @@ class PlayClient {
      */
     internal suspend fun getPreviousPlay(gameId: Int): Play? {
         val endpointUrl = "$baseUrl/play/previous?gameId=$gameId"
-
-        return try {
-            val response = httpClient.get(endpointUrl)
-            if (response.status.value != 200) {
-                Logger.error("Error getting previous play: ${response.status.value} error")
-                return null
-            }
-            val jsonResponse = response.bodyAsText()
-            if (jsonResponse == "{}") {
-                return null
-            }
-
-            val objectMapper = ObjectMapper()
-            objectMapper.readValue(jsonResponse, Play::class.java)
-        } catch (e: ClientRequestException) {
-            // Handle HTTP error responses (4xx)
-            val errorMessage = e.response.headers["Error-Message"]?.firstOrNull() ?: "Unknown error"
-            Logger.error("Error message from header: $errorMessage")
-            null
-        } catch (e: Exception) {
-            // Handle non-HTTP errors
-            Logger.error(e.message ?: "Unknown error")
-            null
-        }
+        return getRequest(endpointUrl)
     }
 
     /**
@@ -175,11 +104,52 @@ class PlayClient {
      */
     internal suspend fun getCurrentPlay(gameId: Int): Play? {
         val endpointUrl = "$baseUrl/play/current?gameId=$gameId"
+        return getRequest(endpointUrl)
+    }
 
+    /**
+     * Make a post request to the play endpoint and return a play
+     * @param endpointUrl
+     * @return Play
+     */
+    private suspend fun postRequest(endpointUrl: String): Play? {
         return try {
-            val response = httpClient.get(endpointUrl)
+            val response = httpClient.post(endpointUrl)
             if (response.status.value != 200) {
-                Logger.error("Error getting current play: ${response.status.value} error")
+                Logger.error("Error calling POST on play: ${response.status.value} error")
+                return null
+            }
+
+            val jsonResponse = response.bodyAsText()
+            if (jsonResponse == "{}") {
+                return null
+            }
+
+            val objectMapper = ObjectMapper()
+            objectMapper.readValue(jsonResponse, Play::class.java)
+        } catch (e: ClientRequestException) {
+            // Handle HTTP error responses (4xx)
+            val errorMessage = e.response.headers["Error-Message"]?.firstOrNull()
+                ?: "Unknown error occurred while making a post request to the play endpoint"
+            Logger.error("Error message from header: $errorMessage")
+            null
+        } catch (e: Exception) {
+            // Handle non-HTTP errors
+            Logger.error(e.message ?: "Unknown error occurred while making a post request to the play endpoint")
+            null
+        }
+    }
+
+    /**
+     * Make a put request to the play endpoint and return a play
+     * @param endpointUrl
+     * @return Play
+     */
+    private suspend fun putRequest(endpointUrl: String): Play? {
+        return try {
+            val response = httpClient.put(endpointUrl)
+            if (response.status.value != 200) {
+                Logger.error("Error calling PUT on Play: ${response.status.value} error")
                 return null
             }
             val jsonResponse = response.bodyAsText()
@@ -191,12 +161,46 @@ class PlayClient {
             objectMapper.readValue(jsonResponse, Play::class.java)
         } catch (e: ClientRequestException) {
             // Handle HTTP error responses (4xx)
-            val errorMessage = e.response.headers["Error-Message"]?.firstOrNull() ?: "Unknown error"
+            val errorMessage = e.response.headers["Error-Message"]?.firstOrNull()
+                ?: "Unknown error occurred while making a put request to the play endpoint"
             Logger.error("Error message from header: $errorMessage")
             null
         } catch (e: Exception) {
             // Handle non-HTTP errors
-            Logger.error(e.message ?: "Unknown error")
+            Logger.error(e.message ?: "Unknown error occurred while making a put request to the play endpoint")
+            null
+        }
+    }
+
+    /**
+     * Make a get request to the play endpoint and return a play
+     * @param endpointUrl
+     * @return Play
+     */
+    private suspend fun getRequest(endpointUrl: String): Play? {
+        return try {
+            val response = httpClient.get(endpointUrl)
+            if (response.status.value != 200) {
+                Logger.error("Error getting play: ${response.status.value} error")
+                return null
+            }
+            val jsonResponse = response.bodyAsText()
+            if (jsonResponse == "{}") {
+                Logger.error("Play response is empty")
+                return null
+            }
+
+            val objectMapper = ObjectMapper()
+            objectMapper.readValue(jsonResponse, Play::class.java)
+        } catch (e: ClientRequestException) {
+            // Handle HTTP error responses (4xx)
+            val errorMessage = e.response.headers["Error-Message"]?.firstOrNull()
+                ?: "Unknown error occurred while making a get request to the play endpoint"
+            Logger.error("Error message from header: $errorMessage")
+            null
+        } catch (e: Exception) {
+            // Handle non-HTTP errors
+            Logger.error(e.message ?: "Unknown error occurred while making a get request to the play endpoint")
             null
         }
     }

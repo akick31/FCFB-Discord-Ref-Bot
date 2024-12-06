@@ -1,5 +1,7 @@
 package com.fcfb.discord.refbot.api
 
+import com.fcfb.discord.refbot.config.JacksonConfig
+import com.fcfb.discord.refbot.model.fcfb.game.Game
 import com.fcfb.discord.refbot.model.fcfb.game.PlayCall
 import com.fcfb.discord.refbot.model.fcfb.game.Scenario
 import com.fcfb.discord.refbot.utils.Logger
@@ -7,7 +9,10 @@ import io.ktor.client.HttpClient
 import io.ktor.client.engine.cio.CIO
 import io.ktor.client.engine.cio.endpoint
 import io.ktor.client.request.get
+import io.ktor.client.statement.HttpResponse
 import io.ktor.client.statement.bodyAsText
+import io.ktor.http.ContentType
+import io.ktor.http.contentType
 import java.util.Properties
 
 class GameWriteupClient {
@@ -42,17 +47,27 @@ class GameWriteupClient {
         scenario: Scenario,
         passOrRun: PlayCall?,
     ): String? {
+        val endpointUrl =
+            if (passOrRun != null && (passOrRun == PlayCall.PASS || passOrRun == PlayCall.RUN)) {
+                "$baseUrl/game_writeup/${scenario.name}/$passOrRun"
+            } else {
+                "$baseUrl/game_writeup/${scenario.name}/NONE"
+            }
+
+        return getRequest(endpointUrl)
+    }
+
+    /**
+     * Call a get request to the game endpoint and return a string
+     * @param endpointUrl
+     * @return String
+     */
+    private suspend fun getRequest(endpointUrl: String): String? {
         return try {
-            val endpointUrl =
-                if (passOrRun != null && (passOrRun == PlayCall.PASS || passOrRun == PlayCall.RUN)) {
-                    "$baseUrl/game_writeup/${scenario.name}/$passOrRun"
-                } else {
-                    "$baseUrl/game_writeup/${scenario.name}/NONE"
-                }
             val response = httpClient.get(endpointUrl)
-            response.bodyAsText()
+            return response.bodyAsText()
         } catch (e: Exception) {
-            Logger.error(e.message ?: "Unknown error occurred")
+            Logger.error(e.message ?: "Unknown error occurred while making a get request to the game writeup endpoint")
             null
         }
     }

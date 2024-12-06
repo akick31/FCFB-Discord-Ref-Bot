@@ -11,6 +11,8 @@ import dev.kord.core.entity.interaction.ChatInputCommandInteraction
 
 class ChewGameCommand {
     private val gameClient = GameClient()
+    private val textChannelThreadHandler = TextChannelThreadHandler()
+    private val discordMessageHandler = DiscordMessageHandler()
 
     suspend fun register(client: Kord) {
         client.createGlobalChatInputCommand(
@@ -32,8 +34,8 @@ class ChewGameCommand {
         if (chewedGame != null) {
             response.respond { this.content = "Success" }
             val message = interaction.channel.createMessage("Chew game successful")
-            val channel = TextChannelThreadHandler().getTextChannelThread(message)
-            DiscordMessageHandler().sendGameMessage(interaction.kord, chewedGame, Scenario.CHEW_MODE_ENABLED, null, null, channel)
+            val channel = textChannelThreadHandler.getTextChannelThread(message)
+            discordMessageHandler.sendGameMessage(interaction.kord, chewedGame, Scenario.CHEW_MODE_ENABLED, null, null, channel)
             Logger.info("${interaction.user.username} successfully chewed a game at channel ${interaction.channelId.value}")
         } else {
             response.respond { this.content = "Chew game failed!" }

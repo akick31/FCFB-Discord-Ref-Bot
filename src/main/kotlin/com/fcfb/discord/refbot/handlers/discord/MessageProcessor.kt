@@ -9,9 +9,10 @@ class MessageProcessor(
     private val client: Kord,
 ) {
     private val gameHandler = GameHandler()
+    private val properties = Properties()
 
     suspend fun processMessage(message: Message) {
-        val botId = Properties().getDiscordProperties().botId
+        val botId = properties.getDiscordProperties().botId
         val messageRepliedTo = message.referencedMessage
         if (message.author?.isBot == true) return
         if (messageRepliedTo == null) return

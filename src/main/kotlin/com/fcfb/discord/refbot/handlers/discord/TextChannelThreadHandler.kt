@@ -23,6 +23,10 @@ import kotlinx.serialization.json.JsonNull.content
 import kotlin.io.path.Path
 
 class TextChannelThreadHandler {
+    private val properties = Properties()
+    private val gameUtils = GameUtils()
+    private val teamClient = TeamClient()
+
     suspend fun getTextChannelThread(message: Message) = message.getChannel().asChannelOf<TextChannelThread>()
 
     /**
@@ -161,7 +165,7 @@ class TextChannelThreadHandler {
      * @return The game forum channel
      */
     private suspend fun getGameForumChannel(client: Kord): ForumChannel {
-        val discordProperties = Properties().getDiscordProperties()
+        val discordProperties = properties.getDiscordProperties()
         val guild = client.getGuild(Snowflake(discordProperties.guildId))
         return guild.getChannel(Snowflake(discordProperties.gameChannelId)) as ForumChannel
     }
@@ -172,7 +176,7 @@ class TextChannelThreadHandler {
      * @return The game forum channel
      */
     private suspend fun getPostgameForumChannel(client: Kord): ForumChannel {
-        val discordProperties = Properties().getDiscordProperties()
+        val discordProperties = properties.getDiscordProperties()
         val guild = client.getGuild(Snowflake(discordProperties.guildId))
         return guild.getChannel(Snowflake(discordProperties.postgameChannelId)) as ForumChannel
     }
@@ -235,13 +239,7 @@ class TextChannelThreadHandler {
      * @param game The game object
      */
     private suspend fun getThreadName(game: Game): String {
-        val homeTeam = TeamClient().getTeamByName(game.homeTeam)
-        val awayTeam = TeamClient().getTeamByName(game.awayTeam)
-        val homeTeamRank = homeTeam?.playoffCommitteeRanking ?: homeTeam?.coachesPollRanking
-        val awayTeamRank = awayTeam?.playoffCommitteeRanking ?: awayTeam?.coachesPollRanking
-
-        val formattedHomeTeam = if (homeTeamRank != null && homeTeamRank != 0) "#$homeTeamRank ${game.homeTeam}" else game.homeTeam
-        val formattedAwayTeam = if (awayTeamRank != null && awayTeamRank != 0) "#$awayTeamRank ${game.awayTeam}" else game.awayTeam
+        val (formattedHomeTeam, formattedAwayTeam) = gameUtils.getFormattedTeamNames(game)
 
         val teamMatchup = "$formattedHomeTeam vs $formattedAwayTeam"
 
@@ -254,7 +252,7 @@ class TextChannelThreadHandler {
             }
             GameType.CONFERENCE_CHAMPIONSHIP -> {
                 val conference =
-                    TeamClient().getTeamByName(game.homeTeam)?.conference?.description?.uppercase()
+                    teamClient.getTeamByName(game.homeTeam)?.conference?.description?.uppercase()
                         ?: return "CONFERENCE CHAMPIONSHIP || $teamMatchup"
                 return "$conference CHAMPIONSHIP || $teamMatchup"
             }
@@ -272,13 +270,7 @@ class TextChannelThreadHandler {
      * @param game The game object
      */
     private suspend fun getPostgameThreadName(game: Game): String {
-        val homeTeam = TeamClient().getTeamByName(game.homeTeam)
-        val awayTeam = TeamClient().getTeamByName(game.awayTeam)
-        val homeTeamRank = homeTeam?.playoffCommitteeRanking ?: homeTeam?.coachesPollRanking
-        val awayTeamRank = awayTeam?.playoffCommitteeRanking ?: awayTeam?.coachesPollRanking
-
-        val formattedHomeTeam = if (homeTeamRank != null && homeTeamRank != 0) "#$homeTeamRank ${game.homeTeam}" else game.homeTeam
-        val formattedAwayTeam = if (awayTeamRank != null && awayTeamRank != 0) "#$awayTeamRank ${game.awayTeam}" else game.awayTeam
+        val (formattedHomeTeam, formattedAwayTeam) = gameUtils.getFormattedTeamNames(game)
 
         var teamMatchup =
             if (game.homeScore > game.awayScore) {
@@ -303,7 +295,7 @@ class TextChannelThreadHandler {
             }
             GameType.CONFERENCE_CHAMPIONSHIP -> {
                 val conference =
-                    TeamClient().getTeamByName(game.homeTeam)?.conference?.description?.uppercase()
+                    teamClient.getTeamByName(game.homeTeam)?.conference?.description?.uppercase()
                         ?: return "CONFERENCE CHAMPIONSHIP || $teamMatchup"
                 return "$conference CHAMPIONSHIP || $teamMatchup"
             }

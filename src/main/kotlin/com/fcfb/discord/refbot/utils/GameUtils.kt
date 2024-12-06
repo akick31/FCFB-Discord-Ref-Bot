@@ -1,6 +1,9 @@
 package com.fcfb.discord.refbot.utils
 
+import com.fcfb.discord.refbot.api.TeamClient
+import com.fcfb.discord.refbot.handlers.ErrorHandler
 import com.fcfb.discord.refbot.model.discord.MessageConstants.Info
+import com.fcfb.discord.refbot.model.fcfb.Team
 import com.fcfb.discord.refbot.model.fcfb.game.ActualResult
 import com.fcfb.discord.refbot.model.fcfb.game.Game
 import com.fcfb.discord.refbot.model.fcfb.game.GameMode
@@ -23,6 +26,9 @@ import java.nio.file.Files
 import java.nio.file.StandardOpenOption
 
 class GameUtils {
+    private val teamClient = TeamClient()
+    private val errorHandler = ErrorHandler()
+
     /**
      * Parse a valid number from a message
      * @param message The message object
@@ -665,11 +671,47 @@ class GameUtils {
         )
     }
 
+    /**
+     * Get the offending team for a delay of game
+     * @param game The game object
+     */
     fun getOffendingTeam(game: Game): String {
-        return if (game.possession == TeamSide.HOME) {
+        return if (game.waitingOn == TeamSide.HOME) {
             game.homeTeam
         } else {
             game.awayTeam
         }
+    }
+
+    /**
+     * Get the teams for a game
+     * @param game The game object
+     */
+    suspend fun getTeams(game: Game): Pair<Team?, Team?> {
+        val homeTeam = teamClient.getTeamByName(game.homeTeam)
+        val awayTeam = teamClient.getTeamByName(game.awayTeam)
+        return Pair(homeTeam, awayTeam)
+    }
+
+    /**
+     * Get the teams rank for a game
+     * @param game The game object
+     */
+    private suspend fun getTeamRankings(game: Game): Pair<Int?, Int?> {
+        val (homeTeam, awayTeam) = getTeams(game)
+        val homeTeamRank = homeTeam?.playoffCommitteeRanking ?: homeTeam?.coachesPollRanking
+        val awayTeamRank = awayTeam?.playoffCommitteeRanking ?: awayTeam?.coachesPollRanking
+
+        return Pair(homeTeamRank, awayTeamRank)
+    }
+
+    /**
+     * Get the formatted team names for posting
+     */
+    suspend fun getFormattedTeamNames(game: Game): Pair<String, String> {
+        val (homeTeamRank, awayTeamRank) = getTeamRankings(game)
+        val formattedHomeTeam = if (homeTeamRank != null && homeTeamRank != 0) "#$homeTeamRank ${game.homeTeam}" else game.homeTeam
+        val formattedAwayTeam = if (awayTeamRank != null && awayTeamRank != 0) "#$awayTeamRank ${game.awayTeam}" else game.awayTeam
+        return Pair(formattedHomeTeam, formattedAwayTeam)
     }
 }

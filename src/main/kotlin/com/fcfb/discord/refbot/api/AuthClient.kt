@@ -50,12 +50,23 @@ class AuthClient {
      */
     internal suspend fun registerUser(user: FCFBUser): FCFBUser? {
         val endpointUrl = "$baseUrl/auth/register"
+        return postRequestWithBody(endpointUrl, user)
+    }
 
+    /**
+     * Send a post request with a body
+     * @param endpointUrl
+     * @param body
+     */
+    private suspend fun postRequestWithBody(
+        endpointUrl: String,
+        body: Any
+    ): FCFBUser? {
         return try {
             val response: HttpResponse =
                 httpClient.post(endpointUrl) {
                     contentType(ContentType.Application.Json)
-                    setBody(user)
+                    setBody(body)
                 }
             val jsonResponse: String = response.bodyAsText()
             val objectMapper = JacksonConfig().configureFCFBUserMapping()

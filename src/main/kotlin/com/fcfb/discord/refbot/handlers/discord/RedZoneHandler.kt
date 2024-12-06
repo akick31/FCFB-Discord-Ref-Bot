@@ -16,6 +16,10 @@ import dev.kord.core.entity.Message
 import dev.kord.core.entity.channel.MessageChannel
 
 class RedZoneHandler {
+    private val gameUtils = GameUtils()
+    private val scorebugClient = ScorebugClient()
+    private val discordMessageHandler = DiscordMessageHandler()
+
     suspend fun handleRedZone(
         client: Kord,
         play: Play,
@@ -168,20 +172,20 @@ class RedZoneHandler {
         val redZoneChannel = client.getChannel(Snowflake(Properties().getDiscordProperties().redzoneChannelId)) as MessageChannel
 
         val scorebug =
-            ScorebugClient().getScorebugByGameId(game.gameId)
-                ?: return DiscordMessageHandler().sendMessageFromChannelObject(
+            scorebugClient.getScorebugByGameId(game.gameId)
+                ?: return discordMessageHandler.sendMessageFromChannelObject(
                     redZoneChannel,
                     messageContent + playMessage?.getJumpUrl(),
                     null,
                 )
         val embedData =
-            GameUtils().getScorebugEmbed(scorebug, game, playMessage?.getJumpUrl())
-                ?: return DiscordMessageHandler().sendMessageFromChannelObject(
+            gameUtils.getScorebugEmbed(scorebug, game, playMessage?.getJumpUrl())
+                ?: return discordMessageHandler.sendMessageFromChannelObject(
                     redZoneChannel,
                     messageContent + playMessage?.getJumpUrl(),
                     null,
                 )
 
-        return DiscordMessageHandler().sendMessageFromChannelObject(redZoneChannel, messageContent, embedData)
+        return discordMessageHandler.sendMessageFromChannelObject(redZoneChannel, messageContent, embedData)
     }
 }

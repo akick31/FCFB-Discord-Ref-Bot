@@ -10,6 +10,8 @@ import dev.kord.rest.builder.interaction.string
 import dev.kord.rest.builder.interaction.user
 
 class HireCoachCommand {
+    private val teamClient = TeamClient()
+
     suspend fun register(client: Kord) {
         client.createGlobalChatInputCommand(
             "hire_coach",
@@ -59,7 +61,7 @@ class HireCoachCommand {
                 }
             }
 
-        val updatedTeam = TeamClient().hireCoach(team, coach.id.value.toString(), position)
+        val updatedTeam = teamClient.hireCoach(team, coach.id.value.toString(), position)
         if (updatedTeam == null) {
             response.respond { this.content = "Team hire failed!" }
             Logger.error("${interaction.user.username} failed to hire a new coach for ${command.options["team"]!!.value}")

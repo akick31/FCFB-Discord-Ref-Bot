@@ -45,19 +45,7 @@ class UserClient {
      */
     internal suspend fun getUserByDiscordId(discordId: String): FCFBUser? {
         val endpointUrl = "$baseUrl/user/discord?id=$discordId"
-
-        return try {
-            val response: HttpResponse =
-                httpClient.get(endpointUrl) {
-                    contentType(ContentType.Application.Json)
-                }
-            val jsonResponse: String = response.bodyAsText()
-            val objectMapper = JacksonConfig().configureFCFBUserMapping()
-            objectMapper.readValue(jsonResponse, FCFBUser::class.java)
-        } catch (e: Exception) {
-            Logger.error(e.message!!)
-            null
-        }
+        return getRequest(endpointUrl)
     }
 
     /**
@@ -70,7 +58,31 @@ class UserClient {
         role: Role,
     ): FCFBUser? {
         val endpointUrl = "$baseUrl/user/update/role?discord_id=$discordId&role=$role"
+        return putRequest(endpointUrl)
+    }
 
+    private suspend fun getRequest(endpointUrl: String): FCFBUser? {
+        return try {
+            val response: HttpResponse =
+                httpClient.get(endpointUrl) {
+                    contentType(ContentType.Application.Json)
+                }
+            val jsonResponse: String = response.bodyAsText()
+            val objectMapper = JacksonConfig().configureFCFBUserMapping()
+            objectMapper.readValue(jsonResponse, FCFBUser::class.java)
+        } catch (e: Exception) {
+            Logger.error(e.message ?: "Unknown error occurred while making a get request to the user endpoint")
+            null
+        }
+    }
+
+    /**
+     * Make a put request to the user endpoint
+     * @param endpointUrl
+     */
+    private suspend fun putRequest(
+        endpointUrl: String,
+    ): FCFBUser? {
         return try {
             val response: HttpResponse =
                 httpClient.put(endpointUrl)
@@ -78,7 +90,7 @@ class UserClient {
             val objectMapper = JacksonConfig().configureFCFBUserMapping()
             objectMapper.readValue(jsonResponse, FCFBUser::class.java)
         } catch (e: Exception) {
-            Logger.error(e.message!!)
+            Logger.error(e.message ?: "Unknown error occurred while making a put request to the user endpoint")
             null
         }
     }

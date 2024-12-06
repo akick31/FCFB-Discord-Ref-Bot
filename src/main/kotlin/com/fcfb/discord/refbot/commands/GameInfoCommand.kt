@@ -9,6 +9,8 @@ import dev.kord.core.behavior.interaction.response.respond
 import dev.kord.core.entity.interaction.ChatInputCommandInteraction
 
 class GameInfoCommand {
+    private val gameClient = GameClient()
+
     suspend fun register(client: Kord) {
         client.createGlobalChatInputCommand(
             "game_info",
@@ -25,7 +27,7 @@ class GameInfoCommand {
         )
         val response = interaction.deferPublicResponse()
 
-        val game = GameClient().getGameByPlatformId(interaction.channelId.value.toString())
+        val game = gameClient.getGameByPlatformId(interaction.channelId.value.toString())
 
         if (game != null) {
             val messageContent = getGameInformation(game)
