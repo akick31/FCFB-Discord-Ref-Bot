@@ -11,7 +11,9 @@ import dev.kord.core.behavior.interaction.response.respond
 import dev.kord.core.entity.interaction.ChatInputCommandInteraction
 import dev.kord.rest.builder.interaction.string
 
-class RegisterCommand {
+class RegisterCommand(
+    private val authClient: AuthClient,
+) {
     suspend fun register(client: Kord) {
         client.createGlobalChatInputCommand(
             "register",
@@ -141,7 +143,7 @@ class RegisterCommand {
                 verificationToken = "",
                 approved = 0,
             )
-        val registeredUser = AuthClient().registerUser(user)
+        val registeredUser = authClient.registerUser(user)
         if (registeredUser == null) {
             response.respond { this.content = "User registration failed!" }
             Logger.error("${interaction.user.username} failed to register a new user")

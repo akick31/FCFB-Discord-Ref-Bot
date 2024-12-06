@@ -42,17 +42,27 @@ class GameWriteupClient {
         scenario: Scenario,
         passOrRun: PlayCall?,
     ): String? {
+        val endpointUrl =
+            if (passOrRun != null && (passOrRun == PlayCall.PASS || passOrRun == PlayCall.RUN)) {
+                "$baseUrl/game_writeup/${scenario.name}/$passOrRun"
+            } else {
+                "$baseUrl/game_writeup/${scenario.name}/NONE"
+            }
+
+        return getRequest(endpointUrl)
+    }
+
+    /**
+     * Call a get request to the game endpoint and return a string
+     * @param endpointUrl
+     * @return String
+     */
+    private suspend fun getRequest(endpointUrl: String): String? {
         return try {
-            val endpointUrl =
-                if (passOrRun != null && (passOrRun == PlayCall.PASS || passOrRun == PlayCall.RUN)) {
-                    "$baseUrl/game_writeup/${scenario.name}/$passOrRun"
-                } else {
-                    "$baseUrl/game_writeup/${scenario.name}/NONE"
-                }
             val response = httpClient.get(endpointUrl)
-            response.bodyAsText()
+            return response.bodyAsText()
         } catch (e: Exception) {
-            Logger.error(e.message ?: "Unknown error occurred")
+            Logger.error(e.message ?: "Unknown error occurred while making a get request to the game writeup endpoint")
             null
         }
     }

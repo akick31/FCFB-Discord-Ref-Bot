@@ -8,7 +8,9 @@ import dev.kord.core.entity.interaction.ChatInputCommandInteraction
 import dev.kord.rest.builder.interaction.string
 import dev.kord.rest.builder.interaction.user
 
-class FireCoachCommand {
+class FireCoachCommand(
+    private val teamClient: TeamClient,
+) {
     suspend fun register(client: Kord) {
         client.createGlobalChatInputCommand(
             "fire_coach",
@@ -32,7 +34,7 @@ class FireCoachCommand {
 
         val team = command.options["team"]!!.value.toString()
 
-        val updatedTeam = TeamClient().fireCoach(team)
+        val updatedTeam = teamClient.fireCoach(team)
         if (updatedTeam == null) {
             response.respond { this.content = "Team fire failed!" }
             Logger.error("${interaction.user.username} failed to fire a coach for ${command.options["team"]!!.value}")

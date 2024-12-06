@@ -54,11 +54,9 @@ class GameClient {
 
     /**
      * Start a new game
+     * @param subdivision
      * @param homeTeam
      * @param awayTeam
-     * @param season
-     * @param week
-     * @param subdivision
      * @param tvChannel
      * @param startTime
      * @param location
@@ -87,32 +85,19 @@ class GameClient {
             )
 
         val endpointUrl = "$baseUrl/game/start"
-
-        return try {
-            val response: HttpResponse =
-                httpClient.post(endpointUrl) {
-                    contentType(ContentType.Application.Json)
-                    setBody(startRequest)
-                }
-            val jsonResponse = response.bodyAsText()
-            val objectMapper = JacksonConfig().configureGameMapping()
-            return objectMapper.readValue(jsonResponse, Game::class.java)
-        } catch (e: Exception) {
-            Logger.error(e.message!!)
-            null
-        }
+        return postRequestWithBody(endpointUrl, startRequest)
     }
 
     /**
      * Update the request message id that the game is waiting on a response for
      * @param gameId
      * @param numberRequestMessagePair
-     * @return OngoingGame
+     * @return Boolean
      */
     internal suspend fun updateRequestMessageId(
         gameId: Int,
         numberRequestMessagePair: Pair<Message?, Message?>,
-    ): Boolean? {
+    ): Boolean {
         val firstNumberRequestMessage = numberRequestMessagePair.first
         val secondNumberRequestMessage = numberRequestMessagePair.second
 
@@ -124,58 +109,41 @@ class GameClient {
                     ",${secondNumberRequestMessage.id.value}"
             }
 
-        return try {
-            val response = httpClient.put(endpointUrl)
-            response.status.value == 200
-        } catch (e: Exception) {
-            Logger.error(e.message!!)
-            null
-        }
+        return putRequestStatus(endpointUrl)
+    }
+
+    /**
+     * Update the request message id that the game is waiting on a response for
+     * @param gameId
+     * @return Boolean
+     */
+    internal suspend fun updateLastMessageTimestamp(gameId: Int): Boolean {
+        val endpointUrl = "$baseUrl/game/last_message_timestamp?gameId=$gameId"
+        return putRequestStatus(endpointUrl)
     }
 
     /**
      * Get the game by request message id
-     * @param userId
-     * @return OngoingGame
+     * @param messageId
+     * @return Game
      */
     internal suspend fun getGameByRequestMessageId(messageId: String): Game? {
         val endpointUrl = "$baseUrl/game/request_message?requestMessageId=$messageId"
-
-        return try {
-            val response: HttpResponse =
-                httpClient.get(endpointUrl) {
-                    contentType(ContentType.Application.Json)
-                }
-            val jsonResponse = response.bodyAsText()
-            val objectMapper = JacksonConfig().configureGameMapping()
-            objectMapper.readValue(jsonResponse, Game::class.java)
-        } catch (e: Exception) {
-            Logger.error(e.message!!)
-            null
-        }
+        return getRequest(endpointUrl)
     }
 
     /**
      * Call the coin toss in Arceus
      * @param gameId
      * @param coinTossCall
+     * @return Game
      */
     internal suspend fun callCoinToss(
         gameId: Int,
         coinTossCall: String,
     ): Game? {
         val endpointUrl = "$baseUrl/game/coin_toss?gameId=$gameId&coinTossCall=$coinTossCall"
-
-        return try {
-            val response: HttpResponse = httpClient.put(endpointUrl)
-            val jsonResponse = response.bodyAsText()
-
-            val objectMapper = JacksonConfig().configureGameMapping()
-            objectMapper.readValue(jsonResponse, Game::class.java)
-        } catch (e: Exception) {
-            Logger.error(e.message!!)
-            null
-        }
+        return putRequest(endpointUrl)
     }
 
     /**
@@ -188,17 +156,7 @@ class GameClient {
         coinTossChoice: String,
     ): Game? {
         val endpointUrl = "$baseUrl/game/make_coin_toss_choice?gameId=$gameId&coinTossChoice=$coinTossChoice"
-
-        return try {
-            val response: HttpResponse = httpClient.put(endpointUrl)
-            val jsonResponse = response.bodyAsText()
-
-            val objectMapper = JacksonConfig().configureGameMapping()
-            objectMapper.readValue(jsonResponse, Game::class.java)
-        } catch (e: Exception) {
-            Logger.error(e.message!!)
-            null
-        }
+        return putRequest(endpointUrl)
     }
 
     /**
@@ -211,17 +169,7 @@ class GameClient {
         coinTossChoice: String,
     ): Game? {
         val endpointUrl = "$baseUrl/game/make_overtime_coin_toss_choice?gameId=$gameId&coinTossChoice=$coinTossChoice"
-
-        return try {
-            val response: HttpResponse = httpClient.put(endpointUrl)
-            val jsonResponse = response.bodyAsText()
-
-            val objectMapper = JacksonConfig().configureGameMapping()
-            objectMapper.readValue(jsonResponse, Game::class.java)
-        } catch (e: Exception) {
-            Logger.error(e.message!!)
-            null
-        }
+        return putRequest(endpointUrl)
     }
 
     /**
@@ -230,17 +178,7 @@ class GameClient {
      */
     internal suspend fun endGame(channelId: ULong): Game? {
         val endpointUrl = "$baseUrl/game/end?channelId=$channelId"
-
-        return try {
-            val response: HttpResponse = httpClient.post(endpointUrl)
-            val jsonResponse = response.bodyAsText()
-
-            val objectMapper = JacksonConfig().configureGameMapping()
-            objectMapper.readValue(jsonResponse, Game::class.java)
-        } catch (e: Exception) {
-            Logger.error(e.message!!)
-            null
-        }
+        return postRequest(endpointUrl)
     }
 
     /**
@@ -249,24 +187,114 @@ class GameClient {
      */
     internal suspend fun deleteGame(channelId: ULong): Int? {
         val endpointUrl = "$baseUrl/game?channelId=$channelId"
+        return deleteRequest(endpointUrl)
+    }
 
+    /**
+     * Get game by platform id
+     * @param platformId
+     * @return Game
+     */
+    internal suspend fun getGameByPlatformId(platformId: String): Game? {
+        val endpointUrl = "$baseUrl/game/platform_id?id=$platformId"
+        return getRequest(endpointUrl)
+    }
+
+    /**
+     * Sub a coach in a game in Arceus
+     * @param team
+     * @param coachId
+     * @param gameId
+     */
+    internal suspend fun subCoach(
+        team: String,
+        coachId: String,
+        gameId: Int,
+    ): Game? {
+        val endpointUrl = "$baseUrl/game/sub?gameId=$gameId&team=${team.replace(" ", "_")}&coachId=$coachId"
+        return putRequest(endpointUrl)
+    }
+
+    /**
+     * Chew a game
+     * @param channelId
+     */
+    internal suspend fun chewGame(channelId: ULong): Game? {
+        val endpointUrl = "$baseUrl/game/chew?channelId=$channelId"
+        return postRequest(endpointUrl)
+    }
+
+    /**
+     * Call a put request to the game endpoint and return a game
+     * @param endpointUrl
+     * @return Game
+     */
+    private suspend fun putRequest(endpointUrl: String): Game? {
         return try {
-            val response = httpClient.delete(endpointUrl)
-            return response.status.value
+            val response: HttpResponse = httpClient.put(endpointUrl)
+            val jsonResponse = response.bodyAsText()
+
+            val objectMapper = JacksonConfig().configureGameMapping()
+            objectMapper.readValue(jsonResponse, Game::class.java)
         } catch (e: Exception) {
-            Logger.error(e.message!!)
+            Logger.error(e.message ?: "Unknown error occurred while making a put request to the game endpoint")
+            null
+        }
+    }
+
+    private suspend fun putRequestStatus(endpointUrl: String): Boolean {
+        return try {
+            val response = httpClient.put(endpointUrl)
+            response.status.value == 200
+        } catch (e: Exception) {
+            Logger.error(e.message ?: "Unknown error occurred while making a put request to the game endpoint")
+            false
+        }
+    }
+
+    /**
+     * Call a post request to the game endpoint and return a game
+     * @param endpointUrl
+     * @return Game
+     */
+    private suspend fun postRequest(endpointUrl: String): Game? {
+        return try {
+            val response: HttpResponse = httpClient.post(endpointUrl)
+            val jsonResponse = response.bodyAsText()
+
+            val objectMapper = JacksonConfig().configureGameMapping()
+            objectMapper.readValue(jsonResponse, Game::class.java)
+        } catch (e: Exception) {
+            Logger.error(e.message ?: "Unknown error occurred while making a post request to the game endpoint")
+            null
+        }
+    }
+
+    private suspend fun postRequestWithBody(
+        endpointUrl: String,
+        body: Any,
+    ): Game? {
+        return try {
+            val response: HttpResponse =
+                httpClient.post(endpointUrl) {
+                    contentType(ContentType.Application.Json)
+                    setBody(body)
+                }
+            val jsonResponse = response.bodyAsText()
+            val objectMapper = JacksonConfig().configureGameMapping()
+            objectMapper.readValue(jsonResponse, Game::class.java)
+        } catch (e: Exception) {
+            Logger.error(e.message ?: "Unknown error occurred while making a post request to the game endpoint")
             null
         }
     }
 
     /**
-     * Get game by platform id
-     * @param userId
-     * @return OngoingGame
+     * Call a get request to the game endpoint and return a game
+     * @param endpointUrl
+     * @return Game
      */
-    internal suspend fun getGameByPlatformId(platformId: String): Game? {
-        val endpointUrl = "$baseUrl/game/platform_id?id=$platformId"
-
+    private suspend fun getRequest(endpointUrl: String): Game? {
         return try {
             val response: HttpResponse =
                 httpClient.get(endpointUrl) {
@@ -276,49 +304,22 @@ class GameClient {
             val objectMapper = JacksonConfig().configureGameMapping()
             objectMapper.readValue(jsonResponse, Game::class.java)
         } catch (e: Exception) {
-            Logger.error(e.message!!)
+            Logger.error(e.message ?: "Unknown error occurred while making a get request to the game endpoint")
             null
         }
     }
 
     /**
-     * Sub a coach in a game in Arceus
-     * @param channelId
+     * Call a delete request to the game endpoint and return the status
+     * @param endpointUrl
+     * @return Game
      */
-    internal suspend fun subCoach(
-        team: String,
-        coachId: String,
-        gameId: Int,
-    ): Game? {
-        val endpointUrl = "$baseUrl/game/sub?gameId=$gameId&team=${team.replace(" ", "_")}&coachId=$coachId"
-
+    private suspend fun deleteRequest(endpointUrl: String): Int? {
         return try {
-            val response: HttpResponse = httpClient.put(endpointUrl)
-            val jsonResponse = response.bodyAsText()
-
-            val objectMapper = JacksonConfig().configureGameMapping()
-            objectMapper.readValue(jsonResponse, Game::class.java)
+            val response = httpClient.delete(endpointUrl)
+            return response.status.value
         } catch (e: Exception) {
-            Logger.error(e.message!!)
-            null
-        }
-    }
-
-    /**
-     * Chew a game
-     * @param channelId
-     */
-    internal suspend fun chewGame(channelId: ULong): Game? {
-        val endpointUrl = "$baseUrl/game/chew?channelId=$channelId"
-
-        return try {
-            val response: HttpResponse = httpClient.post(endpointUrl)
-            val jsonResponse = response.bodyAsText()
-
-            val objectMapper = JacksonConfig().configureGameMapping()
-            objectMapper.readValue(jsonResponse, Game::class.java)
-        } catch (e: Exception) {
-            Logger.error(e.message!!)
+            Logger.error(e.message ?: "Unknown error occurred while making a delete request to the game endpoint")
             null
         }
     }

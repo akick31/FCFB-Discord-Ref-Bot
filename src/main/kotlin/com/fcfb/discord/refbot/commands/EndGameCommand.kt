@@ -8,9 +8,11 @@ import dev.kord.core.Kord
 import dev.kord.core.behavior.interaction.response.respond
 import dev.kord.core.entity.interaction.ChatInputCommandInteraction
 
-class EndGameCommand {
-    private val gameClient = GameClient()
-
+class EndGameCommand(
+    private val gameClient: GameClient,
+    private val scorebugClient: ScorebugClient,
+    private val gameHandler: GameHandler,
+) {
     suspend fun register(client: Kord) {
         client.createGlobalChatInputCommand(
             "end_game",
@@ -31,8 +33,8 @@ class EndGameCommand {
         if (endedGame != null) {
             response.respond { this.content = "End game successful" }
             val message = interaction.channel.createMessage("Game ended")
-            ScorebugClient().generateScorebug(endedGame.gameId)
-            GameHandler().endGame(interaction.kord, endedGame, message)
+            scorebugClient.generateScorebug(endedGame.gameId)
+            gameHandler.endGame(interaction.kord, endedGame, message)
             Logger.info("${interaction.user.username} successfully ended a game at channel ${interaction.channelId.value}")
         } else {
             response.respond { this.content = "End game failed!" }

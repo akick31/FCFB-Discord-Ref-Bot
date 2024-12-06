@@ -49,6 +49,7 @@ data class Game(
     @JsonProperty("home_platform_id") val homePlatformId: String?,
     @JsonProperty("away_platform") val awayPlatform: Platform,
     @JsonProperty("away_platform_id") val awayPlatformId: String?,
+    @JsonProperty("last_message_timestamp") val lastMessageTimestamp: String?,
     @JsonProperty("game_timer") val gameTimer: String?,
     @JsonProperty("game_warned") val gameWarned: Boolean?,
     @JsonProperty("current_play_type") val currentPlayType: PlayType?,

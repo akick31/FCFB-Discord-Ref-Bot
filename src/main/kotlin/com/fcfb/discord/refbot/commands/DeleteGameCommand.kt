@@ -9,9 +9,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.lang.Thread.sleep
 
-class DeleteGameCommand {
-    private val gameClient = GameClient()
-
+class DeleteGameCommand(
+    private val gameClient: GameClient,
+) {
     suspend fun register(client: Kord) {
         client.createGlobalChatInputCommand(
             "delete_game",

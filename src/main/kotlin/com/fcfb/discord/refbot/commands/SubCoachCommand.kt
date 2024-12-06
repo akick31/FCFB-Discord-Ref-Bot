@@ -10,7 +10,11 @@ import dev.kord.core.entity.interaction.ChatInputCommandInteraction
 import dev.kord.rest.builder.interaction.string
 import dev.kord.rest.builder.interaction.user
 
-class SubCoachCommand {
+class SubCoachCommand(
+    private val gameClient: GameClient,
+    private val playClient: PlayClient,
+    private val gameHandler: GameHandler,
+) {
     suspend fun register(client: Kord) {
         client.createGlobalChatInputCommand(
             "sub_coach",
@@ -37,19 +41,19 @@ class SubCoachCommand {
         val coach = command.users["coach"]!!
         val team = command.options["team"]!!.value.toString()
         val game =
-            GameClient().getGameByPlatformId(interaction.channelId.value.toString()) ?: run {
+            gameClient.getGameByPlatformId(interaction.channelId.value.toString()) ?: run {
                 response.respond { this.content = "No game found. Sub coach failed!" }
                 Logger.error("${interaction.user.username} failed to sub a new coach for ${command.options["team"]!!.value}")
                 return
             }
 
-        val updatedGame = GameClient().subCoach(team, coach.id.value.toString(), game.gameId)
+        val updatedGame = gameClient.subCoach(team, coach.id.value.toString(), game.gameId)
         if (updatedGame == null) {
             response.respond { this.content = "Sub coach failed!" }
             Logger.error("${interaction.user.username} failed to sub a new coach for ${command.options["team"]!!.value}")
         } else {
             val previousPlay =
-                PlayClient().getPreviousPlay(updatedGame.gameId) ?: run {
+                playClient.getPreviousPlay(updatedGame.gameId) ?: run {
                     response.respond { this.content = "No previous play found. Ping failed!" }
                     Logger.error(
                         "${interaction.user.username} failed to ping a game in channel ${interaction.channelId.value}" +
@@ -58,7 +62,7 @@ class SubCoachCommand {
                     return
                 }
             val currentPlay =
-                PlayClient().getCurrentPlay(updatedGame.gameId) ?: run {
+                playClient.getCurrentPlay(updatedGame.gameId) ?: run {
                     response.respond { this.content = "No current play found. Ping failed!" }
                     Logger.error(
                         "${interaction.user.username} failed to ping a game in channel ${interaction.channelId.value}" +
@@ -67,7 +71,7 @@ class SubCoachCommand {
                     return
                 }
             val message = interaction.channel.createMessage("Subbed ${coach.username} for $team")
-            GameHandler().sendGamePing(interaction.kord, updatedGame, previousPlay, currentPlay, message)
+            gameHandler.sendGamePing(interaction.kord, updatedGame, previousPlay, currentPlay, message)
             Logger.info("${interaction.user.username} successfully subbed a new coach for ${command.options["team"]!!.value}")
         }
     }

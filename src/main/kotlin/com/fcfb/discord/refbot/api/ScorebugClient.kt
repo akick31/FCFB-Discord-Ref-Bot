@@ -40,18 +40,8 @@ class ScorebugClient {
      * @return ByteArray
      */
     internal suspend fun generateScorebug(gameId: Int): Boolean {
-        return try {
-            val endpointUrl = "$baseUrl/scorebug/generate?gameId=$gameId"
-            val response = httpClient.post(endpointUrl)
-            if (!response.status.isSuccess()) {
-                Logger.error("Failed to generate the scorebug image")
-                return false
-            }
-            return true
-        } catch (e: Exception) {
-            Logger.error(e.message ?: "Unknown error occurred while fetching the scorebug image")
-            false
-        }
+        val endpointUrl = "$baseUrl/scorebug/generate?gameId=$gameId"
+        return postRequest(endpointUrl)
     }
 
     /**
@@ -60,16 +50,44 @@ class ScorebugClient {
      * @return ByteArray
      */
     internal suspend fun getScorebugByGameId(gameId: Int): ByteArray? {
+        val endpointUrl = "$baseUrl/scorebug?gameId=$gameId"
+        return getRequest(endpointUrl)
+    }
+
+    /**
+     * Call a post request to the scorebug endpoint
+     * @param endpointUrl
+     * @return Boolean
+     */
+    private suspend fun postRequest(endpointUrl: String): Boolean {
         return try {
-            val endpointUrl = "$baseUrl/scorebug?gameId=$gameId"
+            val response = httpClient.post(endpointUrl)
+            if (!response.status.isSuccess()) {
+                Logger.error("Failed to make a post request to the scorebug endpoint")
+                return false
+            }
+            return true
+        } catch (e: Exception) {
+            Logger.error(e.message ?: "Unknown error occurred while making a post request to the scorebug endpoint")
+            false
+        }
+    }
+
+    /**
+     * Call a get request to the scorebug endpoint and return a byte array
+     * @param endpointUrl
+     * @return ByteArray
+     */
+    private suspend fun getRequest(endpointUrl: String): ByteArray? {
+        return try {
             val response = httpClient.get(endpointUrl)
             if (!response.status.isSuccess()) {
-                Logger.error("Failed to fetch the scorebug image")
+                Logger.error("Failed to make a get request to the scorebug endpoint")
                 return null
             }
             response.bodyAsChannel().readRemaining().readBytes()
         } catch (e: Exception) {
-            Logger.error(e.message ?: "Unknown error occurred while fetching the scorebug image")
+            Logger.error(e.message ?: "Unknown error occurred while making a get request to the scorebug endpoint")
             null
         }
     }

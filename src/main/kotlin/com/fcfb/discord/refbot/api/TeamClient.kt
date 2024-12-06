@@ -38,8 +38,10 @@ class TeamClient {
 
     /**
      * Hire a coach
-     * @param userId
-     * @return User
+     * @param teamName
+     * @param discordId
+     * @param coachPosition
+     * @return Team
      */
     internal suspend fun hireCoach(
         teamName: String,
@@ -47,35 +49,17 @@ class TeamClient {
         coachPosition: CoachPosition,
     ): Team? {
         val endpointUrl = "$baseUrl/team/${teamName.replace(" ", "_")}/hire?discordId=$discordId&coachPosition=$coachPosition"
-
-        return try {
-            val response: HttpResponse = httpClient.post(endpointUrl)
-            val jsonResponse: String = response.bodyAsText()
-            val objectMapper = JacksonConfig().configureTeamMapping()
-            return objectMapper.readValue(jsonResponse, Team::class.java)
-        } catch (e: Exception) {
-            Logger.error(e.message!!)
-            null
-        }
+        return postRequest(endpointUrl)
     }
 
     /**
      * Fire all coaches
      * @param teamName
-     * @return User
+     * @return Team
      */
     internal suspend fun fireCoach(teamName: String): Team? {
         val endpointUrl = "$baseUrl/team/fire?team=${teamName.replace(" ", "_")}"
-
-        return try {
-            val response: HttpResponse = httpClient.post(endpointUrl)
-            val jsonResponse: String = response.bodyAsText()
-            val objectMapper = JacksonConfig().configureTeamMapping()
-            return objectMapper.readValue(jsonResponse, Team::class.java)
-        } catch (e: Exception) {
-            Logger.error(e.message!!)
-            null
-        }
+        return postRequest(endpointUrl)
     }
 
     /**
@@ -83,16 +67,7 @@ class TeamClient {
      */
     internal suspend fun getTeamByName(teamName: String): Team? {
         val endpointUrl = "$baseUrl/team/name?name=${teamName.replace(" ", "_")}"
-
-        return try {
-            val response: HttpResponse = httpClient.get(endpointUrl)
-            val jsonResponse: String = response.bodyAsText()
-            val objectMapper = JacksonConfig().configureTeamMapping()
-            return objectMapper.readValue(jsonResponse, Team::class.java)
-        } catch (e: Exception) {
-            Logger.error(e.message!!)
-            null
-        }
+        return getRequest(endpointUrl)
     }
 
     /**
@@ -101,7 +76,10 @@ class TeamClient {
      */
     internal suspend fun getAllTeams(): List<Team>? {
         val endpointUrl = "$baseUrl/team"
+        return getAllRequest(endpointUrl)
+    }
 
+    private suspend fun getAllRequest(endpointUrl: String): List<Team>? {
         return try {
             val response: HttpResponse = httpClient.get(endpointUrl)
             val jsonResponse: String = response.bodyAsText()
@@ -111,7 +89,41 @@ class TeamClient {
                 objectMapper.typeFactory.constructCollectionType(List::class.java, Team::class.java),
             )
         } catch (e: Exception) {
-            Logger.error(e.message!!)
+            Logger.error(e.message ?: "Unknown error occurred while making a get request to the team endpoint")
+            null
+        }
+    }
+
+    /**
+     * Call a get request to the team endpoint and return a team
+     * @param endpointUrl
+     * @return Team
+     */
+    private suspend fun getRequest(endpointUrl: String): Team? {
+        return try {
+            val response: HttpResponse = httpClient.get(endpointUrl)
+            val jsonResponse: String = response.bodyAsText()
+            val objectMapper = JacksonConfig().configureTeamMapping()
+            return objectMapper.readValue(jsonResponse, Team::class.java)
+        } catch (e: Exception) {
+            Logger.error(e.message ?: "Unknown error occurred while making a get request to the team endpoint")
+            null
+        }
+    }
+
+    /**
+     * Call a post request to the team endpoint
+     * @param endpointUrl
+     * @return Team
+     */
+    private suspend fun postRequest(endpointUrl: String): Team? {
+        return try {
+            val response: HttpResponse = httpClient.post(endpointUrl)
+            val jsonResponse: String = response.bodyAsText()
+            val objectMapper = JacksonConfig().configureTeamMapping()
+            return objectMapper.readValue(jsonResponse, Team::class.java)
+        } catch (e: Exception) {
+            Logger.error(e.message ?: "Unknown error occurred while making a post request to the team endpoint")
             null
         }
     }

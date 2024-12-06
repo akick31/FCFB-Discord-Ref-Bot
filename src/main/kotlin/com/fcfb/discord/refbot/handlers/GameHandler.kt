@@ -6,31 +6,25 @@ import com.fcfb.discord.refbot.handlers.discord.DiscordMessageHandler
 import com.fcfb.discord.refbot.handlers.discord.RedZoneHandler
 import com.fcfb.discord.refbot.handlers.discord.TextChannelThreadHandler
 import com.fcfb.discord.refbot.model.discord.MessageConstants.Error
-import com.fcfb.discord.refbot.model.discord.MessageConstants.Info
-import com.fcfb.discord.refbot.model.fcfb.game.ActualResult
 import com.fcfb.discord.refbot.model.fcfb.game.Game
 import com.fcfb.discord.refbot.model.fcfb.game.GameStatus
-import com.fcfb.discord.refbot.model.fcfb.game.GameType
-import com.fcfb.discord.refbot.model.fcfb.game.Platform
 import com.fcfb.discord.refbot.model.fcfb.game.Play
 import com.fcfb.discord.refbot.model.fcfb.game.PlayCall
 import com.fcfb.discord.refbot.model.fcfb.game.PlayType
 import com.fcfb.discord.refbot.model.fcfb.game.Scenario
-import com.fcfb.discord.refbot.model.fcfb.game.TeamSide
 import com.fcfb.discord.refbot.utils.GameUtils
-import dev.kord.common.entity.Snowflake
 import dev.kord.core.Kord
 import dev.kord.core.entity.Message
-import dev.kord.core.entity.channel.thread.TextChannelThread
 
-class GameHandler {
-    private val discordMessageHandler = DiscordMessageHandler()
-    private val textChannelThreadHandler = TextChannelThreadHandler()
-    private val gameClient = GameClient()
-    private val playClient = PlayClient()
-    private val gameUtils = GameUtils()
-    private val errorHandler = ErrorHandler()
-
+class GameHandler(
+    private val discordMessageHandler: DiscordMessageHandler,
+    private val textChannelThreadHandler: TextChannelThreadHandler,
+    private val gameClient: GameClient,
+    private val playClient: PlayClient,
+    private val gameUtils: GameUtils,
+    private val redZoneHandler: RedZoneHandler,
+    private val errorHandler: ErrorHandler,
+) {
     /**
      * Handles the user side game logic for a message
      * @param client The Discord client
@@ -68,42 +62,29 @@ class GameHandler {
         previousPlay: Play,
         currentPlay: Play?,
         message: Message,
-    ): Boolean? {
-        if (game.waitingOn != game.possession || currentPlay == null) {
-            val numberRequestMessage =
-                discordMessageHandler.sendRequestForDefensiveNumber(
-                    client,
-                    game,
-                    Scenario.DM_NUMBER_REQUEST,
-                    previousPlay,
-                    message,
-                ) ?: return null
-
-            if (numberRequestMessage.first == null) {
-                return null
-            }
-
-            return gameClient.updateRequestMessageId(game.gameId, numberRequestMessage)
+    ): Boolean {
+        return if (game.waitingOn != game.possession || currentPlay == null) {
+            discordMessageHandler.sendRequestForDefensiveNumber(
+                client,
+                game,
+                Scenario.DM_NUMBER_REQUEST,
+                previousPlay,
+                message,
+            )
         } else {
-            val offensiveNumberRequestMessage =
-                discordMessageHandler.sendGameMessage(
-                    client,
-                    game,
-                    Scenario.NORMAL_NUMBER_REQUEST,
-                    null,
-                    message,
-                    null,
-                    currentPlay.defensiveTimeoutCalled ?: false,
-                ) ?: return null
-
-            return gameClient.updateRequestMessageId(game.gameId, offensiveNumberRequestMessage to null)
+            discordMessageHandler.sendRequestForOffensiveNumber(
+                client,
+                game,
+                false,
+                message,
+            )
         }
     }
 
     /**
      * Handles the offensive number submission for a game
      * @param client The Discord client
-     * @param gameId The game ID
+     * @param game The game object
      * @param message The message object
      */
     private suspend fun handleOffensiveNumberSubmission(
@@ -148,34 +129,27 @@ class GameHandler {
         val updatedGame =
             gameClient.getGameByRequestMessageId(message.referencedMessage?.id?.value.toString())
                 ?: return errorHandler.noGameFoundError(message)
-        val scenario = if (playOutcome.actualResult == ActualResult.TOUCHDOWN) Scenario.TOUCHDOWN else playOutcome.result!!
-        val submittedMessage = discordMessageHandler.sendGameMessage(client, updatedGame, scenario, playOutcome, message, null, false)
+
+        val playOutcomeMessage = discordMessageHandler.sendPlayOutcomeMessage(client, updatedGame, playOutcome, message)
+
         textChannelThreadHandler.updateThread(textChannelThreadHandler.getTextChannelThread(message), updatedGame)
+        redZoneHandler.handleRedZone(client, playOutcome, updatedGame, playOutcomeMessage)
 
-        RedZoneHandler().handleRedZone(client, playOutcome, updatedGame, submittedMessage)
-
-        if (updatedGame.gameStatus == GameStatus.FINAL) {
-            endGame(client, updatedGame, message)
-        } else if (updatedGame.gameStatus == GameStatus.END_OF_REGULATION) {
-            startOvertime(client, updatedGame, message)
-        } else {
-            val numberRequestMessage =
+        when (updatedGame.gameStatus) {
+            GameStatus.FINAL -> {
+                endGame(client, updatedGame, message)
+            }
+            GameStatus.END_OF_REGULATION -> {
+                discordMessageHandler.sendOvertimeCoinTossRequest(client, updatedGame, message)
+            }
+            else -> {
                 discordMessageHandler.sendRequestForDefensiveNumber(
                     client,
                     updatedGame,
                     Scenario.DM_NUMBER_REQUEST,
                     playOutcome,
-                    submittedMessage,
-                ) ?: return errorHandler.failedToSendNumberRequestMessage(message)
-
-            if (numberRequestMessage.first == null) {
-                return errorHandler.failedToSendNumberRequestMessage(message)
-            }
-
-            try {
-                gameClient.updateRequestMessageId(updatedGame.gameId, numberRequestMessage)
-            } catch (e: Exception) {
-                errorHandler.failedToSendNumberRequestMessage(message)
+                    playOutcomeMessage,
+                )
             }
         }
     }
@@ -204,46 +178,8 @@ class GameHandler {
         playClient.submitDefensiveNumber(game.gameId, defensiveSubmitter, number, timeoutCalled)
             ?: return errorHandler.invalidDefensiveNumberSubmission(message)
 
-        val baseMessage = Info.SUCCESSFUL_NUMBER_SUBMISSION.message.format(number)
-        val messageContent =
-            if (timeoutCalled) {
-                if ((game.possession == TeamSide.HOME && game.homeTimeouts == 0) ||
-                    (game.possession == TeamSide.AWAY && game.awayTimeouts == 0)
-                ) {
-                    "$baseMessage. You have no timeouts remaining so not calling timeout."
-                } else {
-                    "$baseMessage. Attempting to call a timeout."
-                }
-            } else {
-                baseMessage
-            }
-        discordMessageHandler.sendMessageFromMessageObject(message, messageContent, null)
-
-        val gameThread =
-            if (game.homePlatform == Platform.DISCORD) {
-                client.getChannel(Snowflake(game.homePlatformId.toString())) as TextChannelThread
-            } else if (game.awayPlatform == Platform.DISCORD) {
-                client.getChannel(Snowflake(game.awayPlatformId.toString())) as TextChannelThread
-            } else {
-                return errorHandler.invalidGameThread(message)
-            }
-
-        val numberRequestMessage =
-            discordMessageHandler.sendGameMessage(
-                client,
-                game,
-                Scenario.NORMAL_NUMBER_REQUEST,
-                null,
-                null,
-                gameThread,
-                timeoutCalled,
-            ) ?: return errorHandler.failedToSendNumberRequestMessage(message)
-
-        try {
-            gameClient.updateRequestMessageId(game.gameId, numberRequestMessage to null)
-        } catch (e: Exception) {
-            errorHandler.failedToSendNumberRequestMessage(message)
-        }
+        discordMessageHandler.sendNumberConfirmationMessage(game, number, timeoutCalled, message)
+        discordMessageHandler.sendRequestForOffensiveNumber(client, game, timeoutCalled, message)
     }
 
     /**
@@ -267,32 +203,7 @@ class GameHandler {
             gameClient.callCoinToss(game.gameId, coinTossResponse.uppercase())
                 ?: return errorHandler.invalidCoinToss(message)
 
-        val coinTossWinningCoachList =
-            gameUtils.getCoinTossWinners(client, updatedGame)
-                ?: return errorHandler.invalidCoinTossWinner(message)
-
-        val coinTossRequestMessage =
-            if (game.gameStatus == GameStatus.PREGAME) {
-                discordMessageHandler.sendMessageFromMessageObject(
-                    message,
-                    Info.COIN_TOSS_OUTCOME.message.format(discordMessageHandler.joinMentions(coinTossWinningCoachList)),
-                    null,
-                ) ?: return errorHandler.failedToSendNumberRequestMessage(message)
-            } else if (game.gameStatus == GameStatus.END_OF_REGULATION) {
-                discordMessageHandler.sendMessageFromMessageObject(
-                    message,
-                    Info.OVERTIME_COIN_TOSS_OUTCOME.message.format(discordMessageHandler.joinMentions(coinTossWinningCoachList)),
-                    null,
-                ) ?: return errorHandler.failedToSendNumberRequestMessage(message)
-            } else {
-                return errorHandler.invalidGameStatus(message)
-            }
-
-        try {
-            gameClient.updateRequestMessageId(game.gameId, coinTossRequestMessage to null)
-        } catch (e: Exception) {
-            errorHandler.failedToSendNumberRequestMessage(message)
-        }
+        discordMessageHandler.sendCoinTossOutcomeMessage(client, updatedGame, message)
     }
 
     /**
@@ -316,20 +227,7 @@ class GameHandler {
             gameClient.makeCoinTossChoice(game.gameId, coinTossChoice.uppercase())
                 ?: return errorHandler.invalidCoinTossChoice(message)
 
-        discordMessageHandler.sendGameMessage(client, updatedGame, Scenario.COIN_TOSS_CHOICE, null, message, null, false)
-        val numberRequestMessage =
-            discordMessageHandler.sendRequestForDefensiveNumber(
-                client,
-                updatedGame,
-                Scenario.KICKOFF_NUMBER_REQUEST,
-                null,
-            ) ?: return errorHandler.failedToSendNumberRequestMessage(message)
-
-        try {
-            gameClient.updateRequestMessageId(game.gameId, numberRequestMessage)
-        } catch (e: Exception) {
-            errorHandler.failedToSendNumberRequestMessage(message)
-        }
+        discordMessageHandler.sendCoinTossChoiceMessage(client, updatedGame, message)
     }
 
     /**
@@ -353,45 +251,7 @@ class GameHandler {
             gameClient.makeOvertimeCoinTossChoice(game.gameId, coinTossChoice.uppercase())
                 ?: return errorHandler.invalidCoinTossChoice(message)
 
-        discordMessageHandler.sendGameMessage(client, updatedGame, Scenario.OVERTIME_COIN_TOSS_CHOICE, null, message, null, false)
-        val numberRequestMessage =
-            discordMessageHandler.sendRequestForDefensiveNumber(
-                client,
-                updatedGame,
-                Scenario.DM_NUMBER_REQUEST,
-                null,
-            ) ?: return errorHandler.failedToSendNumberRequestMessage(message)
-
-        try {
-            gameClient.updateRequestMessageId(game.gameId, numberRequestMessage)
-        } catch (e: Exception) {
-            errorHandler.failedToSendNumberRequestMessage(message)
-        }
-    }
-
-    /**
-     * Starts overtime for a game
-     */
-    suspend fun startOvertime(
-        client: Kord,
-        game: Game,
-        message: Message,
-    ) {
-        val coinTossRequestMessage =
-            discordMessageHandler.sendGameMessage(
-                client,
-                game,
-                Scenario.OVERTIME_START,
-                null,
-                message,
-                null,
-                false,
-            )
-        try {
-            gameClient.updateRequestMessageId(game.gameId, coinTossRequestMessage to null)
-        } catch (e: Exception) {
-            errorHandler.failedToSendNumberRequestMessage(message)
-        }
+        discordMessageHandler.sendOvertimeCoinTossChoiceMessage(client, updatedGame, message)
     }
 
     /**
@@ -407,11 +267,6 @@ class GameHandler {
         val gameThread = textChannelThreadHandler.getTextChannelThread(message)
         textChannelThreadHandler.updateThread(gameThread, updatedGame)
         textChannelThreadHandler.createPostgameThread(client, updatedGame, message)
-        discordMessageHandler.sendGameMessage(client, updatedGame, Scenario.GAME_OVER, null, message, null, false)
-
-        // No need to post scrimmage scores
-        if (updatedGame.gameType != GameType.SCRIMMAGE) {
-            discordMessageHandler.postGameScore(client, updatedGame, message)
-        }
+        discordMessageHandler.sendEndOfGameMessages(client, updatedGame, message)
     }
 }

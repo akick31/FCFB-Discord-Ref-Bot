@@ -8,7 +8,11 @@ import dev.kord.core.Kord
 import dev.kord.core.behavior.interaction.response.respond
 import dev.kord.core.entity.interaction.ChatInputCommandInteraction
 
-class PingCommand {
+class PingCommand(
+    private val gameClient: GameClient,
+    private val playClient: PlayClient,
+    private val gameHandler: GameHandler,
+) {
     suspend fun register(client: Kord) {
         client.createGlobalChatInputCommand(
             "ping",
@@ -17,7 +21,7 @@ class PingCommand {
     }
 
     /**
-     * Start a new game
+     * Ping a user
      */
     suspend fun execute(interaction: ChatInputCommandInteraction) {
         Logger.info(
@@ -25,11 +29,11 @@ class PingCommand {
         )
         val response = interaction.deferPublicResponse()
 
-        val game = GameClient().getGameByPlatformId(interaction.channelId.value.toString())
+        val game = gameClient.getGameByPlatformId(interaction.channelId.value.toString())
 
         if (game != null) {
             val previousPlay =
-                PlayClient().getPreviousPlay(game.gameId) ?: run {
+                playClient.getPreviousPlay(game.gameId) ?: run {
                     response.respond { this.content = "No previous play found. Ping failed!" }
                     Logger.error(
                         "${interaction.user.username} failed to ping a game in channel ${interaction.channelId.value}" +
@@ -37,9 +41,9 @@ class PingCommand {
                     )
                     return
                 }
-            val currentPlay = PlayClient().getCurrentPlay(game.gameId)
+            val currentPlay = playClient.getCurrentPlay(game.gameId)
             val message = interaction.channel.createMessage("Pinging user...")
-            GameHandler().sendGamePing(interaction.kord, game, previousPlay, currentPlay, message)
+            gameHandler.sendGamePing(interaction.kord, game, previousPlay, currentPlay, message)
             response.respond { this.content = "Ping successful!" }
             Logger.info("${interaction.user.username} successfully pinged a game in channel ${interaction.channelId.value}")
         } else {
