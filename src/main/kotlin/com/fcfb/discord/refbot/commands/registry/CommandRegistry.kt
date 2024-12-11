@@ -3,6 +3,7 @@ package com.fcfb.discord.refbot.commands.registry
 import com.fcfb.discord.refbot.api.UserClient
 import com.fcfb.discord.refbot.commands.ChewGameCommand
 import com.fcfb.discord.refbot.commands.DeleteGameCommand
+import com.fcfb.discord.refbot.commands.EndAllGamesCommand
 import com.fcfb.discord.refbot.commands.EndGameCommand
 import com.fcfb.discord.refbot.commands.FireCoachCommand
 import com.fcfb.discord.refbot.commands.GameInfoCommand
