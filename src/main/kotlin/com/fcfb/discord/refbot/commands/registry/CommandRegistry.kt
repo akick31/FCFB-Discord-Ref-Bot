@@ -26,6 +26,7 @@ class CommandRegistry(
     private val chewGameCommand: ChewGameCommand,
     private val deleteGameCommand: DeleteGameCommand,
     private val endGameCommand: EndGameCommand,
+    private val endAllGamesCommand: EndAllGamesCommand,
     private val fireCoachCommand: FireCoachCommand,
     private val gameInfoCommand: GameInfoCommand,
     private val helpCommand: HelpCommand,
@@ -45,6 +46,7 @@ class CommandRegistry(
         chewGameCommand.register(client)
         deleteGameCommand.register(client)
         endGameCommand.register(client)
+        endAllGamesCommand.register(client)
         fireCoachCommand.register(client)
         gameInfoCommand.register(client)
         helpCommand.register(client)
@@ -78,6 +80,7 @@ class CommandRegistry(
             "chew_game" -> chewGameCommand.execute(interaction)
             "delete_game" -> deleteGameCommand.execute(interaction)
             "end_game" -> endGameCommand.execute(interaction)
+            "end_all" -> endAllGamesCommand.execute(interaction)
             "fire_coach" -> fireCoachCommand.execute(interaction)
             "game_info" -> gameInfoCommand.execute(interaction)
             "help" -> helpCommand.execute(userRole, interaction)

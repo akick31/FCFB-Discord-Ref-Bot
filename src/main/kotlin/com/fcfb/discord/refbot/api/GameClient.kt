@@ -182,6 +182,14 @@ class GameClient {
     }
 
     /**
+     * End all ongoing games in Arceus
+     */
+    internal suspend fun endAllGames(): List<Game>? {
+        val endpointUrl = "$baseUrl/game/end_all"
+        return postRequestList(endpointUrl)
+    }
+
+    /**
      * Delete a game in Arceus
      * @param channelId
      */
@@ -264,6 +272,27 @@ class GameClient {
 
             val objectMapper = JacksonConfig().configureGameMapping()
             objectMapper.readValue(jsonResponse, Game::class.java)
+        } catch (e: Exception) {
+            Logger.error(e.message ?: "Unknown error occurred while making a post request to the game endpoint")
+            null
+        }
+    }
+
+    /**
+     * Call a post request to the game endpoint and return a list of games
+     * @param endpointUrl
+     * @return Game
+     */
+    private suspend fun postRequestList(endpointUrl: String): List<Game>? {
+        return try {
+            val response: HttpResponse = httpClient.post(endpointUrl)
+            val jsonResponse = response.bodyAsText()
+
+            val objectMapper = JacksonConfig().configureGameMapping()
+            return objectMapper.readValue(
+                jsonResponse,
+                objectMapper.typeFactory.constructCollectionType(List::class.java, Game::class.java),
+            )
         } catch (e: Exception) {
             Logger.error(e.message ?: "Unknown error occurred while making a post request to the game endpoint")
             null
