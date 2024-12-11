@@ -19,7 +19,6 @@ import dev.kord.core.entity.channel.ForumChannel
 import dev.kord.core.entity.channel.thread.TextChannelThread
 import dev.kord.rest.builder.message.EmbedBuilder
 import dev.kord.rest.builder.message.addFile
-import kotlinx.serialization.json.JsonNull.content
 import kotlin.io.path.Path
 
 class TextChannelThreadHandler {
@@ -217,7 +216,7 @@ class TextChannelThreadHandler {
             if (tag.name == "Season " + game.season) {
                 tagsToApply.add(tag.id)
             }
-            if (tag.name == "Ongoing Game" && game.gameStatus != GameStatus.FINAL) {
+            if (tag.name == "Ongoing Game" && game.gameStatus != GameStatus.FINAL && game.gameType != GameType.SCRIMMAGE) {
                 tagsToApply.add(tag.id)
             }
             if (tag.name == "Final" && game.gameStatus == GameStatus.FINAL) {

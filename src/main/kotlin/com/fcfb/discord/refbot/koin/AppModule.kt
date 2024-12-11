@@ -10,6 +10,7 @@ import com.fcfb.discord.refbot.api.TeamClient
 import com.fcfb.discord.refbot.api.UserClient
 import com.fcfb.discord.refbot.commands.ChewGameCommand
 import com.fcfb.discord.refbot.commands.DeleteGameCommand
+import com.fcfb.discord.refbot.commands.EndAllGamesCommand
 import com.fcfb.discord.refbot.commands.EndGameCommand
 import com.fcfb.discord.refbot.commands.FireCoachCommand
 import com.fcfb.discord.refbot.commands.GameInfoCommand
@@ -67,6 +68,7 @@ val appModule =
         single { ChewGameCommand(get(), get(), get()) }
         single { DeleteGameCommand(get()) }
         single { EndGameCommand(get(), get(), get()) }
+        single { EndAllGamesCommand(get(), get(), get()) }
         single { FireCoachCommand(get()) }
         single { GameInfoCommand(get()) }
         single { HireCoachCommand(get()) }
@@ -75,7 +77,12 @@ val appModule =
         single { StartGameCommand(get()) }
         single { StartScrimmageCommand(get()) }
         single { SubCoachCommand(get(), get(), get()) }
-        single { CommandRegistry(get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get()) }
+        single {
+            CommandRegistry(
+                get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(),
+                get(), get(), get(),
+            )
+        }
         single { FCFBDiscordRefBot(get(), get(), get(), get()) }
         single { DiscordMessageHandler(get(), get(), get(), get(), get(), get(), get()) }
     }

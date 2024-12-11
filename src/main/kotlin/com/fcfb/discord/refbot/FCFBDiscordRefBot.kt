@@ -47,7 +47,7 @@ class FCFBDiscordRefBot(
         runBlocking {
             try {
                 startHeartbeat()
-                scheduleRestart()
+                startRestartJob()
                 initializeBot()
                 startServices(client, heartbeatJob, restartJob)
             } catch (e: Exception) {
@@ -70,13 +70,13 @@ class FCFBDiscordRefBot(
                         val health = healthChecks.healthChecks(client, heartbeatJob, restartJob)
                         if (health.status == "DOWN") {
                             Logger.warn("Health checks failed: $health")
-                            restartDiscordBot()
+                            restartBot()
                         } else {
                             Logger.info("Heartbeat successful.")
                         }
                     } catch (e: Exception) {
                         Logger.warn("Heartbeat failed: Bot appears disconnected. Attempting to reconnect...")
-                        restartDiscordBot()
+                        restartBot()
                     }
                 }
             }
@@ -85,7 +85,7 @@ class FCFBDiscordRefBot(
     /**
      * Schedule a restart for 4 AM EST every day
      */
-    private fun scheduleRestart() {
+    private fun startRestartJob() {
         restartJob?.cancel() // Cancel any existing restart job
         restartJob =
             CoroutineScope(Dispatchers.IO).launch {
@@ -101,7 +101,7 @@ class FCFBDiscordRefBot(
                     Logger.info("Next restart scheduled in ${delay / 1000 / 60} minutes.")
                     delay(delay)
                     Logger.info("Restarting bot for daily maintenance...")
-                    restartDiscordBot()
+                    restartBot()
                 }
             }
     }
@@ -109,9 +109,9 @@ class FCFBDiscordRefBot(
     /**
      * Restart the Discord bot
      */
-    private suspend fun restartDiscordBot() {
+    private suspend fun restartBot() {
         try {
-            stopDiscordBot()
+            logoutOfDiscord()
             initializeBot()
             startServices(client, heartbeatJob, restartJob)
             Logger.info("Bot restarted successfully.")
@@ -123,7 +123,7 @@ class FCFBDiscordRefBot(
     /**
      * Clean up any resources, including heartbeat job
      */
-    fun stop() {
+    fun stopJobs() {
         heartbeatJob?.cancel()
         restartJob?.cancel()
         Logger.info("FCFB Discord Ref Bot stopped.")
@@ -155,14 +155,14 @@ class FCFBDiscordRefBot(
         }
 
         launch {
-            startDiscordBot()
+            loginToDiscord()
         }
     }
 
     /**
      * Start the Discord bot
      */
-    private suspend fun startDiscordBot() {
+    private suspend fun loginToDiscord() {
         Logger.info("Logging into the Discord Ref Bot...")
         client.login {
             @OptIn(PrivilegedIntent::class)
@@ -174,7 +174,7 @@ class FCFBDiscordRefBot(
     /**
      * Stop the Discord bot
      */
-    private suspend fun stopDiscordBot() {
+    private suspend fun logoutOfDiscord() {
         Logger.info("Shutting down the Discord Ref Bot...")
         runBlocking {
             serverConfig.stopKtorServer()
@@ -227,5 +227,5 @@ fun main() {
 
     val bot: FCFBDiscordRefBot = getKoin().get()
     bot.start()
-    Runtime.getRuntime().addShutdownHook(Thread { bot.stop() })
+    Runtime.getRuntime().addShutdownHook(Thread { bot.stopJobs() })
 }
