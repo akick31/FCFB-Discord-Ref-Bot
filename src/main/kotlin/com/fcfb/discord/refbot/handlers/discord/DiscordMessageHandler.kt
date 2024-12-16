@@ -105,31 +105,15 @@ class DiscordMessageHandler(
             }
         val (messageContent, embedData) = gameMessage.first
         val defensiveCoaches = gameMessage.second
-
-        if (defensiveCoaches.size == 1) {
-            val numberRequestMessage =
-                sendPrivateMessage(defensiveCoaches[0], embedData, messageContent, previousMessage) to null
-            try {
-                gameClient.updateRequestMessageId(game.gameId, numberRequestMessage)
-                gameClient.updateLastMessageTimestamp(game.gameId)
-            } catch (e: Exception) {
-                sendErrorMessage(previousMessage ?: return false, Error.FAILED_TO_SEND_NUMBER_REQUEST_MESSAGE)
-                return false
-            }
-        } else {
-            val numberRequestMessage =
-                sendPrivateMessage(defensiveCoaches[0], embedData, messageContent, previousMessage) to
-                    sendPrivateMessage(defensiveCoaches[1], embedData, messageContent, previousMessage)
-            try {
-                gameClient.updateRequestMessageId(game.gameId, numberRequestMessage)
-                gameClient.updateLastMessageTimestamp(game.gameId)
-                return true
-            } catch (e: Exception) {
-                sendErrorMessage(previousMessage ?: return false, Error.FAILED_TO_SEND_NUMBER_REQUEST_MESSAGE)
-                return false
-            }
+        val numberRequestMessage = sendPrivateMessage(defensiveCoaches, embedData, messageContent, previousMessage)
+        try {
+            gameClient.updateRequestMessageId(game.gameId, numberRequestMessage)
+            gameClient.updateLastMessageTimestamp(game.gameId)
+            return true
+        } catch (e: Exception) {
+            sendErrorMessage(previousMessage ?: return false, Error.FAILED_TO_SEND_NUMBER_REQUEST_MESSAGE)
+            return false
         }
-        return false
     }
 
     /**
@@ -170,7 +154,7 @@ class DiscordMessageHandler(
             }
 
         try {
-            gameClient.updateRequestMessageId(game.gameId, numberRequestMessage to null)
+            gameClient.updateRequestMessageId(game.gameId, listOf(numberRequestMessage))
             gameClient.updateLastMessageTimestamp(game.gameId)
             return true
         } catch (e: Exception) {
@@ -299,7 +283,7 @@ class DiscordMessageHandler(
             }
 
         try {
-            gameClient.updateRequestMessageId(game.gameId, coinTossOutcomeMessage to null)
+            gameClient.updateRequestMessageId(game.gameId, listOf(coinTossOutcomeMessage))
         } catch (e: Exception) {
             sendErrorMessage(message, Error.FAILED_TO_SEND_NUMBER_REQUEST_MESSAGE)
         }
@@ -321,7 +305,7 @@ class DiscordMessageHandler(
                 false,
             )
         try {
-            gameClient.updateRequestMessageId(game.gameId, coinTossRequestMessage to null)
+            gameClient.updateRequestMessageId(game.gameId, listOf(coinTossRequestMessage))
         } catch (e: Exception) {
             sendErrorMessage(message, Error.FAILED_TO_SEND_NUMBER_REQUEST_MESSAGE)
         }
@@ -702,57 +686,61 @@ class DiscordMessageHandler(
      * @param messageContent The message content
      */
     private suspend fun sendPrivateMessage(
-        user: User?,
+        userList: List<User?>,
         embedData: EmbedData?,
         messageContent: String,
         previousMessage: Message? = null,
-    ): Message? {
-        val submittedMessage =
-            user?.let {
-                it.getDmChannel().createMessage {
-                    embedData?.let { embed ->
-                        if (embed.image.value?.url?.value == null) {
-                            embeds =
-                                mutableListOf(
-                                    embedBuilder.apply {
-                                        title = embed.title.value
-                                        description = embed.description.value
-                                        footer {
-                                            text = embed.footer.value?.text ?: ""
-                                        }
-                                    },
-                                )
-                        } else {
-                            val file = addFile(Path(embed.image.value?.url?.value.toString()))
-                            embeds =
-                                mutableListOf(
-                                    embedBuilder.apply {
-                                        title = embed.title.value
-                                        description = embed.description.value
-                                        image = file.url
-                                        footer {
-                                            text = embed.footer.value?.text ?: ""
-                                        }
-                                    },
-                                )
+    ): List<Message?> {
+        val submittedMessages = mutableListOf<Message?>()
+        for (user in userList) {
+            val submittedMessage =
+                user?.let {
+                    it.getDmChannel().createMessage {
+                        embedData?.let { embed ->
+                            if (embed.image.value?.url?.value == null) {
+                                embeds =
+                                    mutableListOf(
+                                        embedBuilder.apply {
+                                            title = embed.title.value
+                                            description = embed.description.value
+                                            footer {
+                                                text = embed.footer.value?.text ?: ""
+                                            }
+                                        },
+                                    )
+                            } else {
+                                val file = addFile(Path(embed.image.value?.url?.value.toString()))
+                                embeds =
+                                    mutableListOf(
+                                        embedBuilder.apply {
+                                            title = embed.title.value
+                                            description = embed.description.value
+                                            image = file.url
+                                            footer {
+                                                text = embed.footer.value?.text ?: ""
+                                            }
+                                        },
+                                    )
+                            }
                         }
+                        content =
+                            if (previousMessage == null) {
+                                messageContent
+                            } else {
+                                (previousMessage.getJumpUrl()) + "\n" + messageContent
+                            }
                     }
-                    content =
-                        if (previousMessage == null) {
-                            messageContent
-                        } else {
-                            (previousMessage.getJumpUrl()) + "\n" + messageContent
-                        }
+                } ?: run {
+                    Logger.error(Error.PRIVATE_MESSAGE_EXCEPTION.message)
+                    return emptyList()
                 }
-            } ?: run {
-                Logger.error(Error.PRIVATE_MESSAGE_EXCEPTION.message)
-                return null
-            }
+            submittedMessages.add(submittedMessage)
+        }
 
         if (embedData != null) {
             fileHandler.deleteFile(embedData.image.value?.url?.value.toString())
         }
-        return submittedMessage
+        return submittedMessages
     }
 
     /**
