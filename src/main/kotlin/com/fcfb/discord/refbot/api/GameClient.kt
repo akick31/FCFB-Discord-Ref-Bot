@@ -91,22 +91,21 @@ class GameClient {
     /**
      * Update the request message id that the game is waiting on a response for
      * @param gameId
-     * @param numberRequestMessagePair
+     * @param numberRequestMessageList
      * @return Boolean
      */
     internal suspend fun updateRequestMessageId(
         gameId: Int,
-        numberRequestMessagePair: Pair<Message?, Message?>,
+        numberRequestMessageList: List<Message?>,
     ): Boolean {
-        val firstNumberRequestMessage = numberRequestMessagePair.first
-        val secondNumberRequestMessage = numberRequestMessagePair.second
-
         val endpointUrl =
-            if (secondNumberRequestMessage == null) {
-                "$baseUrl/game/request_message?gameId=$gameId&requestMessageId=${firstNumberRequestMessage?.id?.value}"
+            if (numberRequestMessageList.size == 1) {
+                "$baseUrl/game/request_message?gameId=$gameId&requestMessageId=${numberRequestMessageList[0]?.id?.value}"
+            } else if (numberRequestMessageList.size == 2) {
+                "$baseUrl/game/request_message?gameId=$gameId&requestMessageId=${numberRequestMessageList[0]?.id?.value}" +
+                        ",${numberRequestMessageList[1]?.id?.value}"
             } else {
-                "$baseUrl/game/request_message?gameId=$gameId&requestMessageId=${firstNumberRequestMessage?.id?.value}" +
-                    ",${secondNumberRequestMessage.id.value}"
+                return false
             }
 
         return putRequestStatus(endpointUrl)
