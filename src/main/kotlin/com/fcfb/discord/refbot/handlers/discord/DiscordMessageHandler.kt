@@ -32,7 +32,6 @@ import dev.kord.core.entity.channel.MessageChannel
 import dev.kord.core.entity.channel.thread.TextChannelThread
 import dev.kord.rest.builder.message.EmbedBuilder
 import dev.kord.rest.builder.message.addFile
-import kotlinx.coroutines.delay
 import kotlin.io.path.Path
 
 class DiscordMessageHandler(

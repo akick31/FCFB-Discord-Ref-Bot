@@ -103,7 +103,7 @@ class GameClient {
                 "$baseUrl/game/request_message?gameId=$gameId&requestMessageId=${numberRequestMessageList[0]?.id?.value}"
             } else if (numberRequestMessageList.size == 2) {
                 "$baseUrl/game/request_message?gameId=$gameId&requestMessageId=${numberRequestMessageList[0]?.id?.value}" +
-                        ",${numberRequestMessageList[1]?.id?.value}"
+                    ",${numberRequestMessageList[1]?.id?.value}"
             } else {
                 return false
             }
