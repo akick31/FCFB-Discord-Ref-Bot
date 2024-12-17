@@ -11,6 +11,7 @@ import com.fcfb.discord.refbot.model.fcfb.game.Play
 import com.fcfb.discord.refbot.model.fcfb.game.PlayCall
 import com.fcfb.discord.refbot.model.fcfb.game.PlayType
 import com.fcfb.discord.refbot.model.fcfb.game.RunoffType
+import com.fcfb.discord.refbot.model.fcfb.game.Scenario
 import com.fcfb.discord.refbot.model.fcfb.game.TeamSide
 import dev.kord.common.entity.Snowflake
 import dev.kord.common.entity.optional.Optional
@@ -476,6 +477,9 @@ class GameUtils {
         play: Play?,
     ): String {
         return when {
+            play?.result == Scenario.PUNT_RETURN_TOUCHDOWN -> "${game.defensiveTeam()} just scored."
+            play?.result == Scenario.KICK_SIX -> "${game.defensiveTeam()} just scored."
+            play?.result == Scenario.RETURN_TOUCHDOWN -> "${game.defensiveTeam()} just scored."
             play?.actualResult.isOffensiveTouchdown() -> "${game.offensiveTeam()} just scored."
             play?.actualResult.isDefensiveTouchdown() -> "${game.defensiveTeam()} just scored."
             game.currentPlayType == PlayType.PAT -> "${game.offensiveTeam()} is attempting a PAT."
