@@ -2,8 +2,8 @@ pipeline {
     agent any
 
     environment {
-        IMAGE_NAME = 'fcfb-discord-ref-bot_dev'
-        CONTAINER_NAME = 'FCFB-Discord-Ref-Bot_DEV'
+        IMAGE_NAME = 'fcfb-discord-ref-bot-dev'
+        CONTAINER_NAME = 'FCFB-Discord-Ref-Bot-DEV'
         DOCKERFILE = 'Dockerfile'
         APP_PROPERTIES = "${env.WORKSPACE}/src/main/resources/application.properties"
         DISCORD_TOKEN = credentials('DEV_REFBOT_DISCORD_TOKEN')

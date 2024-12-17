@@ -134,6 +134,7 @@ enum class ActualResult(val description: String) {
     FIRST_DOWN("FIRST DOWN"),
     GAIN("GAIN"),
     NO_GAIN("NO GAIN"),
+    LOSS("LOSS"),
     TURNOVER_ON_DOWNS("TURNOVER ON DOWNS"),
     TOUCHDOWN("TOUCHDOWN"),
     SAFETY("SAFETY"),
