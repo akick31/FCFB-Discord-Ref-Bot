@@ -14,7 +14,7 @@ object Permissions {
             "fire_coach",
             "sub_coach",
             "chew_game",
-            "role"
+            "role",
         )
 
     private val rolePermissions =
