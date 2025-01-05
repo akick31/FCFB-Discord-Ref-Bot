@@ -3,7 +3,7 @@ package com.fcfb.discord.refbot.commands.permissions
 import com.fcfb.discord.refbot.model.fcfb.Role
 
 object Permissions {
-    private val generalCommands = setOf("help", "register", "ping", "game_info", "start_scrimmage")
+    private val generalCommands = setOf("help", "register", "ping", "game_info", "start_scrimmage", "get_role")
     private val adminCommands =
         setOf(
             "start_game",

@@ -7,6 +7,7 @@ import com.fcfb.discord.refbot.commands.EndAllGamesCommand
 import com.fcfb.discord.refbot.commands.EndGameCommand
 import com.fcfb.discord.refbot.commands.FireCoachCommand
 import com.fcfb.discord.refbot.commands.GameInfoCommand
+import com.fcfb.discord.refbot.commands.GetRoleCommand
 import com.fcfb.discord.refbot.commands.HelpCommand
 import com.fcfb.discord.refbot.commands.HireCoachCommand
 import com.fcfb.discord.refbot.commands.PingCommand
@@ -38,6 +39,7 @@ class CommandRegistry(
     private val startGameCommand: StartGameCommand,
     private val startScrimmageCommand: StartScrimmageCommand,
     private val subCoachCommand: SubCoachCommand,
+    private val getRoleCommand: GetRoleCommand,
 ) {
     suspend fun registerCommands(client: Kord) {
 //        // Delete old commands just in case of changes
@@ -58,6 +60,7 @@ class CommandRegistry(
         startGameCommand.register(client)
         startScrimmageCommand.register(client)
         subCoachCommand.register(client)
+        getRoleCommand.register(client)
     }
 
     suspend fun executeCommand(interaction: ChatInputCommandInteraction) {
@@ -92,6 +95,7 @@ class CommandRegistry(
             "start_game" -> startGameCommand.execute(interaction)
             "start_scrimmage" -> startScrimmageCommand.execute(interaction)
             "sub_coach" -> subCoachCommand.execute(interaction)
+            "get_role" -> getRoleCommand.execute(interaction)
         }
     }
 }
