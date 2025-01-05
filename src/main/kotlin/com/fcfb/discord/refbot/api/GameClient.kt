@@ -62,7 +62,7 @@ class GameClient {
      * @param location
      * @param gameType
      */
-    internal suspend fun gitstartGame(
+    internal suspend fun startGame(
         subdivision: Subdivision,
         homeTeam: String,
         awayTeam: String,
