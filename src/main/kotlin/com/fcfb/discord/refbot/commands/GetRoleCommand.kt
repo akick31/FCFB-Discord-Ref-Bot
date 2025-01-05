@@ -1,9 +1,6 @@
 package com.fcfb.discord.refbot.commands
 
-import com.fcfb.discord.refbot.api.GameClient
 import com.fcfb.discord.refbot.api.UserClient
-import com.fcfb.discord.refbot.model.fcfb.game.Game
-import com.fcfb.discord.refbot.model.fcfb.game.TeamSide
 import com.fcfb.discord.refbot.utils.Logger
 import dev.kord.core.Kord
 import dev.kord.core.behavior.interaction.response.respond

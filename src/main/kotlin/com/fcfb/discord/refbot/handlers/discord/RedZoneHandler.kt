@@ -131,7 +131,7 @@ class RedZoneHandler(
                         "$homeTeam has their field goal blocked!"
                     } else if (play.possession == TeamSide.AWAY && play.playCall == PlayCall.FIELD_GOAL) {
                         "$awayTeam has their field goal blocked!"
-                    }  else if (play.possession == TeamSide.HOME && play.playCall == PlayCall.PUNT) {
+                    } else if (play.possession == TeamSide.HOME && play.playCall == PlayCall.PUNT) {
                         "$homeTeam has their punt blocked!"
                     } else if (play.possession == TeamSide.AWAY && play.playCall == PlayCall.PUNT) {
                         "$awayTeam has their punt blocked!"
