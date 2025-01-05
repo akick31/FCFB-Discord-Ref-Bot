@@ -12,7 +12,5 @@ data class StartRequest(
     val homeTeam: String,
     val awayTeam: String,
     val tvChannel: TVChannel?,
-    val startTime: String?,
-    val location: String?,
     val gameType: GameType,
 )

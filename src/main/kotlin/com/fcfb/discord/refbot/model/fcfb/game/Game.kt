@@ -103,6 +103,13 @@ enum class TVChannel(val description: String) {
     FS1("FS1"),
     FS2("FS2"),
     NBC("NBC"),
+    ACC_NETWORK("ACC Network"),
+    BIG_TEN_NETWORK("Big Ten Network"),
+    CBS_SPORTS_NETWORK("CBS Sports Network"),
+    THE_CW("The CW"),
+    ESPNU("ESPNU"),
+    ESPN_PLUS("ESPN+"),
+    SEC_NETWORK("SEC Network"),
 }
 
 enum class Platform(val description: String) {

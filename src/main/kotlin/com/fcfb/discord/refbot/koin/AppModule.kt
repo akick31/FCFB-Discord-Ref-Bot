@@ -14,6 +14,7 @@ import com.fcfb.discord.refbot.commands.EndAllGamesCommand
 import com.fcfb.discord.refbot.commands.EndGameCommand
 import com.fcfb.discord.refbot.commands.FireCoachCommand
 import com.fcfb.discord.refbot.commands.GameInfoCommand
+import com.fcfb.discord.refbot.commands.GetRoleCommand
 import com.fcfb.discord.refbot.commands.HelpCommand
 import com.fcfb.discord.refbot.commands.HireCoachCommand
 import com.fcfb.discord.refbot.commands.PingCommand
@@ -77,10 +78,11 @@ val appModule =
         single { StartGameCommand(get()) }
         single { StartScrimmageCommand(get()) }
         single { SubCoachCommand(get(), get(), get()) }
+        single { GetRoleCommand(get()) }
         single {
             CommandRegistry(
                 get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(),
-                get(), get(), get(),
+                get(), get(), get(), get(),
             )
         }
         single { FCFBDiscordRefBot(get(), get(), get(), get()) }

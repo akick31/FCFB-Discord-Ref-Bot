@@ -45,18 +45,6 @@ class StartGameCommand(
                     choice("NBC", "NBC"),
                 )
             }
-            string("start_time", "Start Time") {
-                required = true
-                mutableListOf(
-                    choice("12:00 PM EST", "12:00 PM EST"),
-                    choice("3:30 PM EST", "3:30 PM EST"),
-                    choice("7:00 PM EST", "7:00 PM EST"),
-                    choice("10:30 PM EST", "10:30 PM EST"),
-                )
-            }
-            string("location", "Location") {
-                required = true
-            }
             string("game_type", "Game Type") {
                 required = true
                 mutableListOf(
@@ -128,10 +116,29 @@ class StartGameCommand(
                 "NBC" -> {
                     TVChannel.NBC
                 }
+                "ACC Network" -> {
+                    TVChannel.ACC_NETWORK
+                }
+                "Big Ten Network" -> {
+                    TVChannel.BIG_TEN_NETWORK
+                }
+                "CBS Sports Network" -> {
+                    TVChannel.CBS_SPORTS_NETWORK
+                }
+                "The CW" -> {
+                    TVChannel.THE_CW
+                }
+                "ESPNU" -> {
+                    TVChannel.ESPNU
+                }
+                "ESPN+" -> {
+                    TVChannel.ESPN_PLUS
+                }
+                "SEC Network" -> {
+                    TVChannel.SEC_NETWORK
+                }
                 else -> null
             }
-        val startTime = command.options["start_time"]!!.value.toString()
-        val location = command.options["location"]!!.value.toString()
         val gameTypeString = command.options["game_type"]!!.value.toString()
         val gameType =
             when (gameTypeString) {
@@ -159,7 +166,7 @@ class StartGameCommand(
                 else -> GameType.SCRIMMAGE
             }
 
-        val startedGame = gameClient.startGame(subdivision, homeTeam, awayTeam, tvChannel, startTime, location, gameType)
+        val startedGame = gameClient.startGame(subdivision, homeTeam, awayTeam, tvChannel, gameType)
         if (startedGame == null) {
             response.respond { this.content = "Start game failed!" }
             Logger.error("${interaction.user.username} failed to start a game between $homeTeam and $awayTeam")

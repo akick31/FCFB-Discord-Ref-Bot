@@ -67,8 +67,6 @@ class GameClient {
         homeTeam: String,
         awayTeam: String,
         tvChannel: TVChannel?,
-        startTime: String?,
-        location: String?,
         gameType: GameType,
     ): Game? {
         val startRequest =
@@ -79,8 +77,6 @@ class GameClient {
                 homeTeam = homeTeam,
                 awayTeam = awayTeam,
                 tvChannel = tvChannel,
-                startTime = startTime,
-                location = location,
                 gameType = gameType,
             )
 
