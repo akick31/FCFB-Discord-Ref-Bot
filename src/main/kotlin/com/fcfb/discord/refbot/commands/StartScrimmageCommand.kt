@@ -38,7 +38,7 @@ class StartScrimmageCommand(
         val awayTeam = command.options["away_team"]!!.value.toString()
         val gameType = GameType.SCRIMMAGE
 
-        val startedGame = gameClient.startGame(Subdivision.FCFB, homeTeam, awayTeam, null, null, null, gameType)
+        val startedGame = gameClient.startGame(Subdivision.FCFB, homeTeam, awayTeam, null, gameType)
         if (startedGame == null) {
             response.respond { this.content = "Start scrimmage failed!" }
             Logger.error("${interaction.user.username} failed to start a scrimmage between $homeTeam and $awayTeam")
