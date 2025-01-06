@@ -15,6 +15,7 @@ object Permissions {
             "sub_coach",
             "chew_game",
             "role",
+            "rollback",
         )
 
     private val rolePermissions =
