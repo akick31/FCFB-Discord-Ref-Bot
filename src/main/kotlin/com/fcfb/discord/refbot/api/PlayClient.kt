@@ -39,6 +39,16 @@ class PlayClient {
     }
 
     /**
+     * Rollback the last play in Arceus
+     * @param gameId
+     * @return Play
+     */
+    internal suspend fun rollbackPlay(gameId: Int): Play? {
+        val endpointUrl = "$baseUrl/play/rollback?gameId=$gameId"
+        return putRequest(endpointUrl)
+    }
+
+    /**
      * Submit a defensive number in Arceus
      * @param gameId
      * @param defensiveSubmitter
