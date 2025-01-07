@@ -516,6 +516,8 @@ class DiscordMessageHandler(
             }
         }
 
+        messageContent += "\n\n[Play List](http://51.81.32.234:462/game-details/${game.gameId})"
+
         val originalScorebug = scorebugClient.getScorebugByGameId(game.gameId)
 
         // If no scorebug was found, generate one and try to read it again
