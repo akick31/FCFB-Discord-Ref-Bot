@@ -66,7 +66,7 @@ val appModule =
         single { StartGameRequest(get(), get()) }
         single { ServerConfig(get(), get(), get()) }
         single { GameHandler(get(), get(), get(), get(), get(), get(), get()) }
-        single { RedZoneHandler(get(), get(), get(), get()) }
+        single { RedZoneHandler(get(), get()) }
         single { ChewGameCommand(get(), get(), get()) }
         single { DeleteGameCommand(get()) }
         single { EndGameCommand(get(), get(), get()) }
