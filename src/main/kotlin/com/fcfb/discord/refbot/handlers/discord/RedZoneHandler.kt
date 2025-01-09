@@ -1,13 +1,12 @@
 package com.fcfb.discord.refbot.handlers.discord
 
-import com.fcfb.discord.refbot.api.ScorebugClient
 import com.fcfb.discord.refbot.model.fcfb.game.ActualResult
 import com.fcfb.discord.refbot.model.fcfb.game.Game
+import com.fcfb.discord.refbot.model.fcfb.game.GameType
 import com.fcfb.discord.refbot.model.fcfb.game.Play
 import com.fcfb.discord.refbot.model.fcfb.game.PlayCall
 import com.fcfb.discord.refbot.model.fcfb.game.PlayCall.PASS
 import com.fcfb.discord.refbot.model.fcfb.game.TeamSide
-import com.fcfb.discord.refbot.utils.GameUtils
 import com.fcfb.discord.refbot.utils.Properties
 import dev.kord.common.entity.Snowflake
 import dev.kord.core.Kord
@@ -15,8 +14,6 @@ import dev.kord.core.entity.Message
 import dev.kord.core.entity.channel.MessageChannel
 
 class RedZoneHandler(
-    private val gameUtils: GameUtils,
-    private val scorebugClient: ScorebugClient,
     private val discordMessageHandler: DiscordMessageHandler,
     private val properties: Properties,
 ) {
@@ -26,9 +23,9 @@ class RedZoneHandler(
         game: Game,
         playMessage: Message?,
     ): Message? {
-//        if (game.gameType == GameType.SCRIMMAGE) {
-//            return
-//        }
+        if (game.gameType == GameType.SCRIMMAGE) {
+            return null
+        }
         val homeTeam = game.homeTeam
         val awayTeam = game.awayTeam
         val messageContent =
