@@ -34,7 +34,7 @@ class FireCoachCommand(
 
         val team = command.options["team"]!!.value.toString()
 
-        val updatedTeam = teamClient.fireCoach(team)
+        val updatedTeam = teamClient.fireCoach(team, interaction.user.username)
         if (updatedTeam == null) {
             response.respond { this.content = "Team fire failed!" }
             Logger.error("${interaction.user.username} failed to fire a coach for ${command.options["team"]!!.value}")
