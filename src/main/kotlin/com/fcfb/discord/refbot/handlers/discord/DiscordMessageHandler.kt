@@ -516,7 +516,8 @@ class DiscordMessageHandler(
             }
         }
 
-        messageContent += "\n\n[Play List](https://fakecollegefootball.com/game-details/${game.gameId})"
+        messageContent += "\n\n[Play List](http://51.81.32.234:462/game-details/${game.gameId})" +
+                "\n[Ranges](https://docs.google.com/spreadsheets/d/1yXG2Xe1W_G5uq_1Tus3AbP4u8HOwjgmJ1LOQDV-dhvc/edit#gid=1822037032)"
 
         val originalScorebug = scorebugClient.getScorebugByGameId(game.gameId)
 
