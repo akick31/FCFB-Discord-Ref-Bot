@@ -37,7 +37,6 @@ class HireCoachCommand(
     /**
      * Hire a new coach for a team
      * @param interaction The interaction object
-     * @param command The command object
      */
     suspend fun execute(interaction: ChatInputCommandInteraction) {
         val command = interaction.command

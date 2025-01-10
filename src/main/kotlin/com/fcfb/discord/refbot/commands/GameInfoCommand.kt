@@ -44,6 +44,7 @@ class GameInfoCommand(
     private fun getGameInformation(game: Game): String {
         val waitingOn = if (game.waitingOn == TeamSide.HOME) game.homeTeam else game.awayTeam
         val possession = if (game.possession == TeamSide.HOME) game.homeTeam else game.awayTeam
+        val coinTossWinner = if (game.coinTossWinner == TeamSide.HOME) game.homeTeam else game.awayTeam
         var messageContent = "**${game.homeTeam} vs ${game.awayTeam}**\n"
         messageContent += "**Game Type**: ${game.gameType?.description}\n"
         messageContent += "**Game Status**: ${game.gameStatus?.description}\n"
@@ -65,6 +66,8 @@ class GameInfoCommand(
         }
         messageContent += "**Possession**: ${possession}\n"
         messageContent += "**Waiting On**: ${waitingOn}\n"
+        messageContent += "**Coin Toss Winner**: ${coinTossWinner}\n"
+        messageContent += "**Coin Toss Choice**: ${game.coinTossChoice?.description}\n"
         messageContent += "**Game Timer**: ${game.gameTimer}\n"
         messageContent += "**Game ID**: ${game.gameId}\n"
         messageContent += "**Request Message ID**: ${game.requestMessageId}\n"
