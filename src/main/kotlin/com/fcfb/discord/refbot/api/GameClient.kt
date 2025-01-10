@@ -206,15 +206,15 @@ class GameClient {
     /**
      * Sub a coach in a game in Arceus
      * @param team
-     * @param coachId
+     * @param discordId
      * @param gameId
      */
     internal suspend fun subCoach(
         team: String,
-        coachId: String,
+        discordId: String,
         gameId: Int,
     ): Game? {
-        val endpointUrl = "$baseUrl/game/sub?gameId=$gameId&team=${team.replace(" ", "_")}&coachId=$coachId"
+        val endpointUrl = "$baseUrl/game/sub?gameId=$gameId&team=${team.replace(" ", "_")}&discordId=$discordId"
         return putRequest(endpointUrl)
     }
 

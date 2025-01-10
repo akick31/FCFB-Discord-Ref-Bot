@@ -34,6 +34,7 @@ class CommandRegistry(
     private val gameInfoCommand: GameInfoCommand,
     private val helpCommand: HelpCommand,
     private val hireCoachCommand: HireCoachCommand,
+    private val hireInterimCoachCommand: HireCoachCommand,
     private val pingCommand: PingCommand,
     private val registerCommand: RegisterCommand,
     private val roleCommand: RoleCommand,
@@ -56,6 +57,7 @@ class CommandRegistry(
         gameInfoCommand.register(client)
         helpCommand.register(client)
         hireCoachCommand.register(client)
+        hireInterimCoachCommand.register(client)
         pingCommand.register(client)
         registerCommand.register(client)
         roleCommand.register(client)
@@ -92,6 +94,7 @@ class CommandRegistry(
             "game_info" -> gameInfoCommand.execute(interaction)
             "help" -> helpCommand.execute(userRole, interaction)
             "hire_coach" -> hireCoachCommand.execute(interaction)
+            "hire_interim_coach" -> hireInterimCoachCommand.execute(interaction)
             "ping" -> pingCommand.execute(interaction)
             "register" -> registerCommand.execute(interaction)
             "role" -> roleCommand.execute(userRole, interaction)
