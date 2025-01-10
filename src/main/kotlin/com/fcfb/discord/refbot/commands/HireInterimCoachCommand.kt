@@ -1,7 +1,6 @@
 package com.fcfb.discord.refbot.commands
 
 import com.fcfb.discord.refbot.api.TeamClient
-import com.fcfb.discord.refbot.model.fcfb.CoachPosition
 import com.fcfb.discord.refbot.utils.Logger
 import dev.kord.core.Kord
 import dev.kord.core.behavior.interaction.response.respond

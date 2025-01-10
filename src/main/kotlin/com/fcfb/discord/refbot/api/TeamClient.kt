@@ -57,12 +57,12 @@ class TeamClient {
     }
 
     /**
-    * Hire an interim coach
-    * @param teamName
-    * @param discordId
-    * @param processedBy
-    * @return Team
-    */
+     * Hire an interim coach
+     * @param teamName
+     * @param discordId
+     * @param processedBy
+     * @return Team
+     */
     internal suspend fun hireInterimCoach(
         teamName: String,
         discordId: String,
