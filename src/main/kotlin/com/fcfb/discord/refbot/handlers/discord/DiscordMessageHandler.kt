@@ -510,7 +510,7 @@ class DiscordMessageHandler(
                 "{actual_result}" to play?.actualResult?.description,
                 "{result}" to play?.result?.name,
                 "{timeout_called}" to gameUtils.getTimeoutMessage(game, play, timeoutCalled),
-                "{clock_status}" to if (game.clockStopped) "" else "The clock is running.",
+                "{clock_status}" to if (game.clockStopped) "The clock is stopped." else "The clock is running.",
                 "{ball_location_scenario}" to gameUtils.getBallLocationScenarioMessage(game, play),
                 "{dog_deadline}" to game.gameTimer.toString(),
                 "{play_options}" to gameUtils.getPlayOptions(game),

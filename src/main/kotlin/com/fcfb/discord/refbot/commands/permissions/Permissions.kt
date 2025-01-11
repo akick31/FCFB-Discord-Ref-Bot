@@ -21,6 +21,7 @@ object Permissions {
             "restart_game",
             "hire_coach",
             "hire_interim_coach",
+            "message_all_games",
             "fire_coach",
             "sub_coach",
             "chew_game",

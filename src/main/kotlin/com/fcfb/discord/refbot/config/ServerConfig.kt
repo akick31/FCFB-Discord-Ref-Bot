@@ -90,8 +90,9 @@ class ServerConfig(
 
             post("$serverUrl/delay_of_game") {
                 try {
-                    val isDelayOfGameOut: Boolean = call.request.queryParameters["isDelayOfGameOut"]?.toBoolean()
-                        ?: throw IllegalArgumentException("Missing or invalid 'isDelayOfGameOut' parameter")
+                    val isDelayOfGameOut: Boolean =
+                        call.request.queryParameters["isDelayOfGameOut"]?.toBoolean()
+                            ?: false
                     val game = call.receive<Game>()
                     delayOfGameRequest.notifyDelayOfGame(client, game, isDelayOfGameOut)
                     call.respondText("Delay of game notification sent for game ${game.gameId}")

@@ -23,14 +23,15 @@ class DelayOfGameRequest(
         isDelayOfGameOut: Boolean,
     ) {
         val gameThread = client.getChannel(Snowflake(game.homePlatformId ?: return)) as TextChannelThread
-        val message = discordMessageHandler.sendGameMessage(
-            client,
-            game,
-            Scenario.DELAY_OF_GAME_NOTIFICATION,
-            null,
-            null,
-            gameThread,
-        ) ?: return
+        val message =
+            discordMessageHandler.sendGameMessage(
+                client,
+                game,
+                Scenario.DELAY_OF_GAME_NOTIFICATION,
+                null,
+                null,
+                gameThread,
+            ) ?: return
 
         if (isDelayOfGameOut) {
             scorebugClient.generateScorebug(game.gameId)

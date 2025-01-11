@@ -31,7 +31,10 @@ class TextChannelThreadHandler {
      * @param client The Discord client
      * @param threadId The thread ID
      */
-    suspend fun getTextChannelThreadById(client: Kord, threadId: Snowflake) = client.getChannel(threadId)?.asChannelOf<TextChannelThread>()
+    suspend fun getTextChannelThreadById(
+        client: Kord,
+        threadId: Snowflake,
+    ) = client.getChannel(threadId)?.asChannelOf<TextChannelThread>()
 
     /**
      * Get the text channel thread from a message

@@ -23,6 +23,10 @@ import io.ktor.client.statement.bodyAsText
 import io.ktor.http.ContentType
 import io.ktor.http.contentType
 import io.ktor.serialization.jackson.jackson
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import java.net.URLEncoder
+import java.nio.charset.StandardCharsets
 import java.util.Properties
 
 class GameClient {
@@ -217,7 +221,7 @@ class GameClient {
      * @return List<Game>
      */
     internal suspend fun getAllOngoingGames(): List<Game>? {
-        val endpointUrl = "$baseUrl/game/ongoing"
+        val endpointUrl = "$baseUrl/game/all/ongoing"
         return getRequestList(endpointUrl)
     }
 
@@ -232,7 +236,15 @@ class GameClient {
         discordId: String,
         gameId: Int,
     ): Game? {
-        val endpointUrl = "$baseUrl/game/sub?gameId=$gameId&team=${team.replace(" ", "_")}&discordId=$discordId"
+        val endpointUrl =
+            "$baseUrl/game/sub?" +
+                "gameId=$gameId&" +
+                "team=${
+                    withContext(Dispatchers.IO) {
+                        URLEncoder.encode(team, StandardCharsets.UTF_8.toString())
+                    }
+                }&" +
+                "discordId=$discordId"
         return putRequest(endpointUrl)
     }
 
@@ -363,6 +375,7 @@ class GameClient {
                     contentType(ContentType.Application.Json)
                 }
             val jsonResponse = response.bodyAsText()
+
             val objectMapper = JacksonConfig().configureGameMapping()
             return objectMapper.readValue(
                 jsonResponse,

@@ -92,8 +92,8 @@ class PlayClient {
                 "gameId=$gameId&" +
                 "offensiveSubmitter=$offensiveSubmitter&" +
                 "offensiveNumber=$offensiveNumber&" +
-                "playCall=$playCall&r" +
-                "unoffType=$runoffType&" +
+                "playCall=$playCall&" +
+                "runoffType=$runoffType&" +
                 "timeoutCalled=$offensiveTimeoutCalled"
 
         return putRequest(endpointUrl)
