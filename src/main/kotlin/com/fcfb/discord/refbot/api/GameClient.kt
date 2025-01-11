@@ -23,6 +23,10 @@ import io.ktor.client.statement.bodyAsText
 import io.ktor.http.ContentType
 import io.ktor.http.contentType
 import io.ktor.serialization.jackson.jackson
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import java.net.URLEncoder
+import java.nio.charset.StandardCharsets
 import java.util.Properties
 
 class GameClient {
@@ -194,6 +198,15 @@ class GameClient {
     }
 
     /**
+     * Restart a game in Arceus
+     * @param channelId
+     */
+    internal suspend fun restartGame(channelId: ULong): Game? {
+        val endpointUrl = "$baseUrl/game/restart?channelId=$channelId"
+        return postRequest(endpointUrl)
+    }
+
+    /**
      * Get game by platform id
      * @param platformId
      * @return Game
@@ -201,6 +214,15 @@ class GameClient {
     internal suspend fun getGameByPlatformId(platformId: String): Game? {
         val endpointUrl = "$baseUrl/game/platform_id?id=$platformId"
         return getRequest(endpointUrl)
+    }
+
+    /**
+     * Get all ongoing games in Arceus
+     * @return List<Game>
+     */
+    internal suspend fun getAllOngoingGames(): List<Game>? {
+        val endpointUrl = "$baseUrl/game/all/ongoing"
+        return getRequestList(endpointUrl)
     }
 
     /**
@@ -214,7 +236,15 @@ class GameClient {
         discordId: String,
         gameId: Int,
     ): Game? {
-        val endpointUrl = "$baseUrl/game/sub?gameId=$gameId&team=${team.replace(" ", "_")}&discordId=$discordId"
+        val endpointUrl =
+            "$baseUrl/game/sub?" +
+                "gameId=$gameId&" +
+                "team=${
+                    withContext(Dispatchers.IO) {
+                        URLEncoder.encode(team, StandardCharsets.UTF_8.toString())
+                    }
+                }&" +
+                "discordId=$discordId"
         return putRequest(endpointUrl)
     }
 
@@ -327,6 +357,30 @@ class GameClient {
             val jsonResponse = response.bodyAsText()
             val objectMapper = JacksonConfig().configureGameMapping()
             objectMapper.readValue(jsonResponse, Game::class.java)
+        } catch (e: Exception) {
+            Logger.error(e.message ?: "Unknown error occurred while making a get request to the game endpoint")
+            null
+        }
+    }
+
+    /**
+     * Call a get request to the game endpoint and return a game list
+     * @param endpointUrl
+     * @return Game
+     */
+    private suspend fun getRequestList(endpointUrl: String): List<Game>? {
+        return try {
+            val response: HttpResponse =
+                httpClient.get(endpointUrl) {
+                    contentType(ContentType.Application.Json)
+                }
+            val jsonResponse = response.bodyAsText()
+
+            val objectMapper = JacksonConfig().configureGameMapping()
+            return objectMapper.readValue(
+                jsonResponse,
+                objectMapper.typeFactory.constructCollectionType(List::class.java, Game::class.java),
+            )
         } catch (e: Exception) {
             Logger.error(e.message ?: "Unknown error occurred while making a get request to the game endpoint")
             null

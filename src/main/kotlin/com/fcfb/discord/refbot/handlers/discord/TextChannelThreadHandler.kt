@@ -26,6 +26,20 @@ class TextChannelThreadHandler {
     private val gameUtils = GameUtils()
     private val teamClient = TeamClient()
 
+    /**
+     * Get the text channel thread by ID
+     * @param client The Discord client
+     * @param threadId The thread ID
+     */
+    suspend fun getTextChannelThreadById(
+        client: Kord,
+        threadId: Snowflake,
+    ) = client.getChannel(threadId)?.asChannelOf<TextChannelThread>()
+
+    /**
+     * Get the text channel thread from a message
+     * @param message The message object
+     */
     suspend fun getTextChannelThread(message: Message) = message.getChannel().asChannelOf<TextChannelThread>()
 
     /**

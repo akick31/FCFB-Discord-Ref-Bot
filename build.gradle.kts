@@ -57,7 +57,7 @@ dependencies {
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.18.0")
     implementation("org.jetbrains.kotlin:kotlin-stdlib:2.0.21")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3")
-    implementation("io.github.oshai:kotlin-logging-jvm:4.0.0")
+    implementation("io.github.oshai:kotlin-logging-jvm:7.0.3")
     implementation("io.insert-koin:koin-core:3.5.0")
     testImplementation("io.insert-koin:koin-test:3.5.0")
 }

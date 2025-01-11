@@ -11,6 +11,10 @@ import io.ktor.client.request.get
 import io.ktor.client.request.post
 import io.ktor.client.statement.HttpResponse
 import io.ktor.client.statement.bodyAsText
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import java.net.URLEncoder
+import java.nio.charset.StandardCharsets
 import java.util.Properties
 
 class TeamClient {
@@ -49,10 +53,16 @@ class TeamClient {
         coachPosition: CoachPosition,
         processedBy: String,
     ): Team? {
-        val endpointUrl = "$baseUrl/team/hire?team=${teamName.replace(
-            " ",
-            "_",
-        )}&discordId=$discordId&coachPosition=$coachPosition&processedBy=$processedBy"
+        val endpointUrl =
+            "$baseUrl/team/hire?" +
+                "team=${
+                    withContext(Dispatchers.IO) {
+                        URLEncoder.encode(teamName, StandardCharsets.UTF_8.toString())
+                    }
+                }&" +
+                "discordId=$discordId&" +
+                "coachPosition=$coachPosition&" +
+                "processedBy=$processedBy"
         return postRequest(endpointUrl)
     }
 
@@ -68,10 +78,15 @@ class TeamClient {
         discordId: String,
         processedBy: String,
     ): Team? {
-        val endpointUrl = "$baseUrl/team/hire/interim?team=${teamName.replace(
-            " ",
-            "_",
-        )}&discordId=$discordId&processedBy=$processedBy"
+        val endpointUrl =
+            "$baseUrl/team/hire/interim?" +
+                "team=${
+                    withContext(Dispatchers.IO) {
+                        URLEncoder.encode(teamName, StandardCharsets.UTF_8.toString())
+                    }
+                }&" +
+                "discordId=$discordId&" +
+                "processedBy=$processedBy"
         return postRequest(endpointUrl)
     }
 
@@ -84,7 +99,14 @@ class TeamClient {
         teamName: String,
         processedBy: String,
     ): Team? {
-        val endpointUrl = "$baseUrl/team/fire?team=${teamName.replace(" ", "_")}&processedBy=$processedBy"
+        val endpointUrl =
+            "$baseUrl/team/fire?" +
+                "team=${
+                    withContext(Dispatchers.IO) {
+                        URLEncoder.encode(teamName, StandardCharsets.UTF_8.toString())
+                    }
+                }&" +
+                "processedBy=$processedBy"
         return postRequest(endpointUrl)
     }
 
@@ -92,7 +114,13 @@ class TeamClient {
      * Get a team by name
      */
     internal suspend fun getTeamByName(teamName: String): Team? {
-        val endpointUrl = "$baseUrl/team/name?name=${teamName.replace(" ", "_")}"
+        val endpointUrl =
+            "$baseUrl/team/name?" +
+                "name=${
+                    withContext(Dispatchers.IO) {
+                        URLEncoder.encode(teamName, StandardCharsets.UTF_8.toString())
+                    }
+                }"
         return getRequest(endpointUrl)
     }
 

@@ -1,5 +1,7 @@
 package com.fcfb.discord.refbot.requests
 
+import com.fcfb.discord.refbot.api.ScorebugClient
+import com.fcfb.discord.refbot.handlers.GameHandler
 import com.fcfb.discord.refbot.handlers.discord.DiscordMessageHandler
 import com.fcfb.discord.refbot.model.fcfb.game.Game
 import com.fcfb.discord.refbot.model.fcfb.game.Scenario
@@ -9,6 +11,8 @@ import dev.kord.core.entity.channel.thread.TextChannelThread
 
 class DelayOfGameRequest(
     private val discordMessageHandler: DiscordMessageHandler,
+    private val scorebugClient: ScorebugClient,
+    private val gameHandler: GameHandler,
 ) {
     /**
      * Notify the game thread of a delay of game
@@ -16,23 +20,30 @@ class DelayOfGameRequest(
     suspend fun notifyDelayOfGame(
         client: Kord,
         game: Game,
+        isDelayOfGameOut: Boolean,
     ) {
         val gameThread = client.getChannel(Snowflake(game.homePlatformId ?: return)) as TextChannelThread
-        discordMessageHandler.sendGameMessage(
-            client,
-            game,
-            Scenario.DELAY_OF_GAME_NOTIFICATION,
-            null,
-            null,
-            gameThread,
-        ) ?: return
+        val message =
+            discordMessageHandler.sendGameMessage(
+                client,
+                game,
+                Scenario.DELAY_OF_GAME_NOTIFICATION,
+                null,
+                null,
+                gameThread,
+            ) ?: return
 
-        discordMessageHandler.sendRequestForDefensiveNumber(
-            client,
-            game,
-            Scenario.DELAY_OF_GAME,
-            null,
-        )
+        if (isDelayOfGameOut) {
+            scorebugClient.generateScorebug(game.gameId)
+            gameHandler.endGame(client, game, message)
+        } else {
+            discordMessageHandler.sendRequestForDefensiveNumber(
+                client,
+                game,
+                Scenario.DELAY_OF_GAME,
+                null,
+            )
+        }
     }
 
     /**
