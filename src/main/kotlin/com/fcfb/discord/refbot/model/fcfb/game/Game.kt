@@ -167,6 +167,7 @@ enum class ActualResult(val description: String) {
     PUNT_TEAM_TOUCHDOWN("PUNT TEAM TOUCHDOWN"),
     MUFFED_PUNT("MUFFED PUNT"),
     DELAY_OF_GAME("DELAY OF GAME"),
+    END_OF_HALF("END OF HALF"),
 }
 
 enum class RunoffType(val description: String) {
@@ -284,6 +285,7 @@ enum class Scenario(val description: String) {
     DELAY_OF_GAME("DELAY OF GAME"),
     CHEW_MODE_ENABLED("CHEW MODE ENABLED"),
     GAME_OVER("GAME OVER"),
+    END_OF_HALF("END OF HALF"),
 }
 
 enum class TeamSide(val description: String) {

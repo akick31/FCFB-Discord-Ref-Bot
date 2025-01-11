@@ -44,6 +44,16 @@ class DiscordMessageHandler(
     private val properties: Properties,
 ) {
     /**
+     * Send a general message to a text channel
+     */
+    suspend fun sendGeneralMessage(
+        textChannel: TextChannelThread?,
+        messageContent: String,
+    ): Message? {
+        return sendMessageFromTextChannelObject(textChannel, messageContent, null)
+    }
+
+    /**
      * Send a game message to a game thread
      * @param client The Discord client
      * @param game The game object

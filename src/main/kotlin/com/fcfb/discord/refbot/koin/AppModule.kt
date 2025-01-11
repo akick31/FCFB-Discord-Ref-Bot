@@ -19,6 +19,7 @@ import com.fcfb.discord.refbot.commands.HelpCommand
 import com.fcfb.discord.refbot.commands.HireCoachCommand
 import com.fcfb.discord.refbot.commands.PingCommand
 import com.fcfb.discord.refbot.commands.RegisterCommand
+import com.fcfb.discord.refbot.commands.RestartGameCommand
 import com.fcfb.discord.refbot.commands.RoleCommand
 import com.fcfb.discord.refbot.commands.RollbackCommand
 import com.fcfb.discord.refbot.commands.StartGameCommand
@@ -62,18 +63,20 @@ val appModule =
 
         // Classes with dependencies
         single { ErrorHandler(get()) }
-        single { DelayOfGameRequest(get()) }
         single { StartGameRequest(get(), get()) }
         single { ServerConfig(get(), get(), get()) }
         single { GameHandler(get(), get(), get(), get(), get(), get(), get()) }
+        single { DelayOfGameRequest(get(), get(), get()) }
         single { RedZoneHandler(get(), get()) }
         single { ChewGameCommand(get(), get(), get()) }
         single { DeleteGameCommand(get()) }
+        single { RestartGameCommand(get()) }
         single { EndGameCommand(get(), get(), get()) }
         single { EndAllGamesCommand(get(), get(), get()) }
         single { FireCoachCommand(get()) }
         single { GameInfoCommand(get()) }
         single { HireCoachCommand(get()) }
+        single { HireInterimCoachCommand(get())}
         single { PingCommand(get(), get(), get()) }
         single { RegisterCommand(get()) }
         single { StartGameCommand(get()) }
@@ -84,7 +87,7 @@ val appModule =
         single {
             CommandRegistry(
                 get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(),
-                get(), get(), get(), get(), get(),
+                get(), get(), get(), get(), get(), get(), get()
             )
         }
         single { FCFBDiscordRefBot(get(), get(), get(), get()) }

@@ -10,6 +10,7 @@ object Permissions {
             "end_game",
             "end_all",
             "delete_game",
+            "restart_game",
             "hire_coach",
             "fire_coach",
             "sub_coach",
