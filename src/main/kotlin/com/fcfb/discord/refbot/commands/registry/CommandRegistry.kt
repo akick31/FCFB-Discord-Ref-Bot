@@ -11,6 +11,7 @@ import com.fcfb.discord.refbot.commands.GetRoleCommand
 import com.fcfb.discord.refbot.commands.HelpCommand
 import com.fcfb.discord.refbot.commands.HireCoachCommand
 import com.fcfb.discord.refbot.commands.HireInterimCoachCommand
+import com.fcfb.discord.refbot.commands.MessageAllGamesCommand
 import com.fcfb.discord.refbot.commands.PingCommand
 import com.fcfb.discord.refbot.commands.RegisterCommand
 import com.fcfb.discord.refbot.commands.RestartGameCommand
@@ -38,6 +39,7 @@ class CommandRegistry(
     private val helpCommand: HelpCommand,
     private val hireCoachCommand: HireCoachCommand,
     private val hireInterimCoachCommand: HireInterimCoachCommand,
+    private val messageAllGamesCommand: MessageAllGamesCommand,
     private val pingCommand: PingCommand,
     private val registerCommand: RegisterCommand,
     private val roleCommand: RoleCommand,
@@ -61,6 +63,8 @@ class CommandRegistry(
         gameInfoCommand.register(client)
         helpCommand.register(client)
         hireCoachCommand.register(client)
+        hireInterimCoachCommand.register(client)
+        messageAllGamesCommand.register(client)
         pingCommand.register(client)
         registerCommand.register(client)
         roleCommand.register(client)
@@ -98,6 +102,8 @@ class CommandRegistry(
             "game_info" -> gameInfoCommand.execute(interaction)
             "help" -> helpCommand.execute(userRole, interaction)
             "hire_coach" -> hireCoachCommand.execute(interaction)
+            "hire_interim_coach" -> hireInterimCoachCommand.execute(interaction)
+            "message_all_games" -> messageAllGamesCommand.execute(interaction)
             "ping" -> pingCommand.execute(interaction)
             "register" -> registerCommand.execute(interaction)
             "role" -> roleCommand.execute(userRole, interaction)

@@ -39,13 +39,20 @@ class MessageAllGamesCommand(
         val messageContent = command.options["message"]!!.value.toString()
         val response = interaction.deferPublicResponse()
 
-        val gameList = gameClient.getAllOngoingGames()
+        val gameList = gameClient.getAllOngoingGames() ?: run {
+            response.respond { this.content = "Failed to get all ongoing games!" }
+            return
+        }
 
         try{
             for (game in gameList) {
-                val channel = textChannelThreadHandler.getTextChannelThreadById(interaction.kord, Snowflake(game.homePlatformId))
+                val channel = textChannelThreadHandler.getTextChannelThreadById(
+                    interaction.kord,
+                    Snowflake(game.homePlatformId ?: game.awayPlatformId ?: throw Exception("No platform ID found for game ${game.gameId}"))
+                )
                 discordMessageHandler.sendGeneralMessage(channel, messageContent)
             }
+            response.respond { this.content = "Message all games command successful!" }
         } catch (e: Exception) {
             response.respond { this.content = "Message all games command failed!" }
             Logger.error("${interaction.user.username} failed to message all games")

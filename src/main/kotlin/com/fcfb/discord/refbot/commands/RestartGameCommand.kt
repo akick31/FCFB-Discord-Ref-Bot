@@ -28,16 +28,16 @@ class RestartGameCommand(
         )
         val response = interaction.deferPublicResponse()
 
-        val deletedGame = gameClient.restartGame(interaction.channelId.value)
-        if (deletedGame == 200 || deletedGame == 201) {
-            response.respond { this.content = "Delete game successful" }
+        val restartedGame = gameClient.restartGame(interaction.channelId.value)
+        if (restartedGame != null) {
+            response.respond { this.content = "Restart game successful" }
             withContext(Dispatchers.IO) {
                 sleep(5000)
             }
             interaction.channel.delete()
             Logger.info("${interaction.user.username} successfully restarted a game at channel ${interaction.channelId.value}")
         } else {
-            response.respond { this.content = "Delete game failed!" }
+            response.respond { this.content = "Restart game failed!" }
             Logger.error("${interaction.user.username} failed to restarted a game at channel ${interaction.channelId.value}")
         }
     }

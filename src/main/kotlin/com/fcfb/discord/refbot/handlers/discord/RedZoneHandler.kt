@@ -80,6 +80,13 @@ class RedZoneHandler(
                         "$homeTeam scores a touchdown on a kickoff return!"
                     }
                 }
+                ActualResult.MUFFED_PUNT -> {
+                    if (play.possession == TeamSide.HOME) {
+                        "$awayTeam muffed the kickoff and $homeTeam gets the ball back!"
+                    } else {
+                        "$homeTeam muffed the kickoff and $awayTeam gets the ball back!"
+                    }
+                }
                 ActualResult.MUFFED_KICK -> {
                     if (play.possession == TeamSide.HOME) {
                         "$awayTeam muffed the kickoff and $homeTeam gets the ball back!"

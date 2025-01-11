@@ -49,10 +49,29 @@ class TeamClient {
         coachPosition: CoachPosition,
         processedBy: String,
     ): Team? {
-        val endpointUrl = "$baseUrl/team/hire?name=${teamName.replace(
+        val endpointUrl = "$baseUrl/team/hire?team=${teamName.replace(
             " ",
             "_",
         )}&discordId=$discordId&coachPosition=$coachPosition&processedBy=$processedBy"
+        return postRequest(endpointUrl)
+    }
+
+    /**
+     * Hire an interim coach
+     * @param teamName
+     * @param discordId
+     * @param processedBy
+     * @return Team
+     */
+    internal suspend fun hireInterimCoach(
+        teamName: String,
+        discordId: String,
+        processedBy: String,
+    ): Team? {
+        val endpointUrl = "$baseUrl/team/hire/interim?team=${teamName.replace(
+            " ",
+            "_",
+        )}&discordId=$discordId&processedBy=$processedBy"
         return postRequest(endpointUrl)
     }
 
