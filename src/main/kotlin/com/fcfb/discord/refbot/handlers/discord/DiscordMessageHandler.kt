@@ -41,16 +41,33 @@ class DiscordMessageHandler(
     private val scorebugClient: ScorebugClient,
     private val gameUtils: GameUtils,
     private val fileHandler: FileHandler,
+    private val textChannelThreadHandler: TextChannelThreadHandler,
     private val properties: Properties,
 ) {
     /**
-     * Send a general message to a text channel
+     * Send an announcement to a game
      */
-    suspend fun sendGeneralMessage(
-        textChannel: TextChannelThread?,
+    suspend fun sendGameAnnouncement(
+        client: Kord,
+        game: Game,
         messageContent: String,
     ): Message? {
-        return sendMessageFromTextChannelObject(textChannel, messageContent, null)
+        val channel =
+            textChannelThreadHandler.getTextChannelThreadById(
+                client,
+                Snowflake(
+                    game.homePlatformId ?: game.awayPlatformId ?: throw Exception("No platform ID found for game ${game.gameId}"),
+                ),
+            )
+
+        // Append user pings
+        val homeCoaches = game.homeCoachDiscordIds.map { client.getUser(Snowflake(it)) }
+        val awayCoaches = game.awayCoachDiscordIds.map { client.getUser(Snowflake(it)) }
+        var updatedMessageContent = joinMentions(homeCoaches)
+        updatedMessageContent += joinMentions(awayCoaches)
+        updatedMessageContent += "\n\n" + messageContent
+
+        return sendMessageFromTextChannelObject(channel, updatedMessageContent, null)
     }
 
     /**

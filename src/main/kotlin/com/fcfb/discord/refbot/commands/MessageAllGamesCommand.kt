@@ -2,11 +2,9 @@ package com.fcfb.discord.refbot.commands
 
 import com.fcfb.discord.refbot.api.GameClient
 import com.fcfb.discord.refbot.handlers.discord.DiscordMessageHandler
-import com.fcfb.discord.refbot.handlers.discord.TextChannelThreadHandler
 import com.fcfb.discord.refbot.model.fcfb.game.Game
 import com.fcfb.discord.refbot.model.fcfb.game.TeamSide
 import com.fcfb.discord.refbot.utils.Logger
-import dev.kord.common.entity.Snowflake
 import dev.kord.core.Kord
 import dev.kord.core.behavior.interaction.response.respond
 import dev.kord.core.entity.interaction.ChatInputCommandInteraction
@@ -14,7 +12,6 @@ import dev.kord.rest.builder.interaction.string
 
 class MessageAllGamesCommand(
     private val gameClient: GameClient,
-    private val textChannelThreadHandler: TextChannelThreadHandler,
     private val discordMessageHandler: DiscordMessageHandler,
 ) {
     suspend fun register(client: Kord) {
@@ -36,7 +33,7 @@ class MessageAllGamesCommand(
             "${interaction.user.username} is messaging all games",
         )
         val command = interaction.command
-        val messageContent = "**ANNOUNCEMENT**\n\n ${command.options["message"]!!.value}"
+        val messageContent = "**ANNOUNCEMENT**\n${command.options["message"]!!.value}"
         val response = interaction.deferPublicResponse()
 
         val gameList =
@@ -47,14 +44,7 @@ class MessageAllGamesCommand(
 
         try {
             for (game in gameList) {
-                val channel =
-                    textChannelThreadHandler.getTextChannelThreadById(
-                        interaction.kord,
-                        Snowflake(
-                            game.homePlatformId ?: game.awayPlatformId ?: throw Exception("No platform ID found for game ${game.gameId}"),
-                        ),
-                    )
-                discordMessageHandler.sendGeneralMessage(channel, messageContent)
+                discordMessageHandler.sendGameAnnouncement(interaction.kord, game, messageContent)
             }
             response.respond { this.content = "Message all games command successful!" }
         } catch (e: Exception) {
