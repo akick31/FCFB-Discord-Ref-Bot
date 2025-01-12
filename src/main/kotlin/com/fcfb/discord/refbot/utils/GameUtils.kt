@@ -11,7 +11,6 @@ import com.fcfb.discord.refbot.model.fcfb.game.Play
 import com.fcfb.discord.refbot.model.fcfb.game.PlayCall
 import com.fcfb.discord.refbot.model.fcfb.game.PlayType
 import com.fcfb.discord.refbot.model.fcfb.game.RunoffType
-import com.fcfb.discord.refbot.model.fcfb.game.Scenario
 import com.fcfb.discord.refbot.model.fcfb.game.TeamSide
 import dev.kord.common.entity.Snowflake
 import dev.kord.common.entity.optional.Optional
@@ -445,9 +444,9 @@ class GameUtils {
      */
     private fun ActualResult?.isTouchdown() =
         this == ActualResult.TOUCHDOWN || this == ActualResult.KICKING_TEAM_TOUCHDOWN ||
-                this == ActualResult.PUNT_TEAM_TOUCHDOWN || this == ActualResult.TURNOVER_TOUCHDOWN ||
-                this == ActualResult.RETURN_TOUCHDOWN || this == ActualResult.PUNT_RETURN_TOUCHDOWN ||
-                this == ActualResult.KICK_SIX
+            this == ActualResult.PUNT_TEAM_TOUCHDOWN || this == ActualResult.TURNOVER_TOUCHDOWN ||
+            this == ActualResult.RETURN_TOUCHDOWN || this == ActualResult.PUNT_RETURN_TOUCHDOWN ||
+            this == ActualResult.KICK_SIX
 
     /**
      * Get the offensive team from a game
