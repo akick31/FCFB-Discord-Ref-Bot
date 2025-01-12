@@ -73,6 +73,13 @@ class RedZoneHandler(
                         "$homeTeam scores a touchdown on a scoop and score!"
                     }
                 }
+                ActualResult.RETURN_TOUCHDOWN -> {
+                    if (play.possession == TeamSide.HOME) {
+                        "$homeTeam scores a touchdown on a kickoff return!"
+                    } else {
+                        "$awayTeam scores a touchdown on a kickoff return!"
+                    }
+                }
                 ActualResult.KICKING_TEAM_TOUCHDOWN -> {
                     if (play.possession == TeamSide.HOME) {
                         "$awayTeam scores a touchdown on a kickoff return!"

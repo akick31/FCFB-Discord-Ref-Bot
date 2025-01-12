@@ -11,7 +11,6 @@ import com.fcfb.discord.refbot.model.fcfb.game.Play
 import com.fcfb.discord.refbot.model.fcfb.game.PlayCall
 import com.fcfb.discord.refbot.model.fcfb.game.PlayType
 import com.fcfb.discord.refbot.model.fcfb.game.RunoffType
-import com.fcfb.discord.refbot.model.fcfb.game.Scenario
 import com.fcfb.discord.refbot.model.fcfb.game.TeamSide
 import dev.kord.common.entity.Snowflake
 import dev.kord.common.entity.optional.Optional
@@ -443,16 +442,10 @@ class GameUtils {
      * @return True if the actual result is an offensive touchdown
      * @see ActualResult
      */
-    private fun ActualResult?.isOffensiveTouchdown() =
-        this == ActualResult.TOUCHDOWN || this == ActualResult.KICKING_TEAM_TOUCHDOWN || this == ActualResult.PUNT_TEAM_TOUCHDOWN
-
-    /**
-     * Check if the actual result is a defensive touchdown
-     * @return True if the actual result is a defensive touchdown
-     * @see ActualResult
-     */
-    private fun ActualResult?.isDefensiveTouchdown() =
-        this == ActualResult.TURNOVER_TOUCHDOWN || this == ActualResult.RETURN_TOUCHDOWN || this == ActualResult.PUNT_RETURN_TOUCHDOWN ||
+    private fun ActualResult?.isTouchdown() =
+        this == ActualResult.TOUCHDOWN || this == ActualResult.KICKING_TEAM_TOUCHDOWN ||
+            this == ActualResult.PUNT_TEAM_TOUCHDOWN || this == ActualResult.TURNOVER_TOUCHDOWN ||
+            this == ActualResult.RETURN_TOUCHDOWN || this == ActualResult.PUNT_RETURN_TOUCHDOWN ||
             this == ActualResult.KICK_SIX
 
     /**
@@ -477,11 +470,7 @@ class GameUtils {
         play: Play?,
     ): String {
         return when {
-            play?.result == Scenario.PUNT_RETURN_TOUCHDOWN -> "${game.defensiveTeam()} just scored."
-            play?.result == Scenario.KICK_SIX -> "${game.defensiveTeam()} just scored."
-            play?.result == Scenario.RETURN_TOUCHDOWN -> "${game.defensiveTeam()} just scored."
-            play?.actualResult.isOffensiveTouchdown() -> "${game.offensiveTeam()} just scored."
-            play?.actualResult.isDefensiveTouchdown() -> "${game.defensiveTeam()} just scored."
+            play?.actualResult.isTouchdown() -> "${game.offensiveTeam()} just scored."
             game.currentPlayType == PlayType.PAT -> "${game.offensiveTeam()} is attempting a PAT."
             game.currentPlayType == PlayType.KICKOFF -> "${game.offensiveTeam()} is kicking off."
             else -> game.getDownAndDistanceDescription()
