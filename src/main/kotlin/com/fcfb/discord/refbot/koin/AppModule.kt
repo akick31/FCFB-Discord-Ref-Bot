@@ -79,7 +79,7 @@ val appModule =
         single { GameInfoCommand(get()) }
         single { HireCoachCommand(get()) }
         single { HireInterimCoachCommand(get()) }
-        single { MessageAllGamesCommand(get(), get(), get()) }
+        single { MessageAllGamesCommand(get(), get()) }
         single { PingCommand(get(), get(), get()) }
         single { RegisterCommand(get()) }
         single { StartGameCommand(get()) }
@@ -94,5 +94,5 @@ val appModule =
             )
         }
         single { FCFBDiscordRefBot(get(), get(), get(), get()) }
-        single { DiscordMessageHandler(get(), get(), get(), get(), get(), get(), get()) }
+        single { DiscordMessageHandler(get(), get(), get(), get(), get(), get(), get(), get()) }
     }
