@@ -807,7 +807,7 @@ class DiscordMessageHandler(
      * @param messageContent The message content
      * @param embedData The embed data
      */
-    private suspend fun sendMessageFromChannelObject(
+    suspend fun sendMessageFromChannelObject(
         channel: MessageChannel,
         messageContent: String,
         embedData: EmbedData?,

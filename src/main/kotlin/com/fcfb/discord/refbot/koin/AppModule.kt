@@ -82,7 +82,7 @@ val appModule =
         single { StartScrimmageCommand(get()) }
         single { SubCoachCommand(get(), get(), get()) }
         single { GetRoleCommand(get()) }
-        single { RollbackCommand(get(), get(), get(), get()) }
+        single { RollbackCommand(get(), get(), get(), get(), get(), get()) }
         single {
             CommandRegistry(
                 get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(),
