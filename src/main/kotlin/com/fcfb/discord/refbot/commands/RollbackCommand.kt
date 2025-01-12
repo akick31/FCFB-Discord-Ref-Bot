@@ -18,7 +18,7 @@ class RollbackCommand(
     private val discordMessageHandler: DiscordMessageHandler,
     private val scorebugClient: ScorebugClient,
     private val gameHandler: GameHandler,
-    private val gameUtils: GameUtils
+    private val gameUtils: GameUtils,
 ) {
     suspend fun register(client: Kord) {
         client.createGlobalChatInputCommand(
