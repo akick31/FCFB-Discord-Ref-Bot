@@ -50,7 +50,7 @@ class DiscordMessageHandler(
     suspend fun sendGameAnnouncement(
         client: Kord,
         game: Game,
-        messageContent: String
+        messageContent: String,
     ): Message? {
         val channel =
             textChannelThreadHandler.getTextChannelThreadById(
