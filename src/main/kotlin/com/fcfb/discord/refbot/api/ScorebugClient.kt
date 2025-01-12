@@ -39,16 +39,6 @@ class ScorebugClient {
      * @param gameId
      * @return ByteArray
      */
-    internal suspend fun generateScorebug(gameId: Int): Boolean {
-        val endpointUrl = "$baseUrl/scorebug/generate?gameId=$gameId"
-        return postRequest(endpointUrl)
-    }
-
-    /**
-     * Fetch the game scorebug by the game id
-     * @param gameId
-     * @return ByteArray
-     */
     internal suspend fun getScorebugByGameId(gameId: Int): ByteArray? {
         val endpointUrl = "$baseUrl/scorebug?gameId=$gameId"
         return getRequest(endpointUrl)

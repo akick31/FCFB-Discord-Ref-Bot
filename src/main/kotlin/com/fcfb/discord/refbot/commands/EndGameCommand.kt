@@ -33,7 +33,6 @@ class EndGameCommand(
         if (endedGame != null) {
             response.respond { this.content = "End game successful" }
             val message = interaction.channel.createMessage("Game ended")
-            scorebugClient.generateScorebug(endedGame.gameId)
             gameHandler.endGame(interaction.kord, endedGame, message)
             Logger.info("${interaction.user.username} successfully ended a game at channel ${interaction.channelId.value}")
         } else {

@@ -54,7 +54,6 @@ class RollbackCommand(
                 response.respond { this.content = "Play rollback successful" }
                 // Post scorebug
                 val channel = interaction.channel.asChannel()
-                scorebugClient.generateScorebug(game.gameId)
                 val scorebug = scorebugClient.getScorebugByGameId(game.gameId)
                 val embedData = gameUtils.getScorebugEmbed(scorebug, game, message.getJumpUrl())
                 discordMessageHandler.sendMessageFromChannelObject(channel, "", embedData)

@@ -104,6 +104,7 @@ class TextChannelThreadHandler {
         // Get the thread content
         val threadContent = getPostgameInformation(game, lastMessage)
         val tags = getTagsForThread(game, gameChannel)
+
         val scorebug = ScorebugClient().getScorebugByGameId(game.gameId)
         val embedData = GameUtils().getScorebugEmbed(scorebug, game, threadContent)
 

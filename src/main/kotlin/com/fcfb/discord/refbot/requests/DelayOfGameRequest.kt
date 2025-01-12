@@ -34,7 +34,6 @@ class DelayOfGameRequest(
             ) ?: return
 
         if (isDelayOfGameOut) {
-            scorebugClient.generateScorebug(game.gameId)
             gameHandler.endGame(client, game, message)
         } else {
             discordMessageHandler.sendRequestForDefensiveNumber(
