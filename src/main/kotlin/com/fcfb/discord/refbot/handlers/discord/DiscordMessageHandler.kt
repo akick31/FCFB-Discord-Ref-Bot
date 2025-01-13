@@ -468,7 +468,7 @@ class DiscordMessageHandler(
         if (scenario == Scenario.DM_NUMBER_REQUEST || scenario == Scenario.KICKOFF_NUMBER_REQUEST ||
             scenario == Scenario.NORMAL_NUMBER_REQUEST || scenario == Scenario.GAME_START ||
             scenario == Scenario.COIN_TOSS_CHOICE || scenario == Scenario.OVERTIME_COIN_TOSS_CHOICE ||
-            scenario == Scenario.OVERTIME_START || scenario == Scenario.GAME_OVER
+            scenario == Scenario.OVERTIME_START || scenario == Scenario.GAME_OVER || scenario == Scenario.END_OF_HALF
         ) {
             messageContent = gameWriteupClient.getGameMessageByScenario(scenario, null) ?: return null
         } else if (play?.playCall == PlayCall.PASS || play?.playCall == PlayCall.RUN) {
