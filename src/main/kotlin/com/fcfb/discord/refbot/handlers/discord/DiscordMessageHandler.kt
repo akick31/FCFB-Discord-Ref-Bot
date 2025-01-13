@@ -468,7 +468,9 @@ class DiscordMessageHandler(
         if (scenario == Scenario.DM_NUMBER_REQUEST || scenario == Scenario.KICKOFF_NUMBER_REQUEST ||
             scenario == Scenario.NORMAL_NUMBER_REQUEST || scenario == Scenario.GAME_START ||
             scenario == Scenario.COIN_TOSS_CHOICE || scenario == Scenario.OVERTIME_COIN_TOSS_CHOICE ||
-            scenario == Scenario.OVERTIME_START || scenario == Scenario.GAME_OVER || scenario == Scenario.END_OF_HALF
+            scenario == Scenario.OVERTIME_START || scenario == Scenario.GAME_OVER || scenario == Scenario.END_OF_HALF ||
+            scenario == Scenario.DELAY_OF_GAME || scenario == Scenario.DELAY_OF_GAME_WARNING ||
+            scenario == Scenario.DELAY_OF_GAME_NOTIFICATION || scenario == Scenario.CHEW_MODE_ENABLED
         ) {
             messageContent = gameWriteupClient.getGameMessageByScenario(scenario, null) ?: return null
         } else if (play?.playCall == PlayCall.PASS || play?.playCall == PlayCall.RUN) {
@@ -544,7 +546,7 @@ class DiscordMessageHandler(
         }
 
         messageContent += "\n\n[Play List](http://51.81.32.234:462/game-details/${game.gameId})" +
-                "\n[Ranges](https://docs.google.com/spreadsheets/d/1yXG2Xe1W_G5uq_1Tus3AbP4u8HOwjgmJ1LOQDV-dhvc/edit#gid=1822037032)"
+            "\n[Ranges](https://docs.google.com/spreadsheets/d/1yXG2Xe1W_G5uq_1Tus3AbP4u8HOwjgmJ1LOQDV-dhvc/edit#gid=1822037032)"
 
         // If no scorebug was found, generate one and try to read it again
         val scorebug = scorebugClient.getScorebugByGameId(game.gameId)
