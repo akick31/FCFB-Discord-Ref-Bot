@@ -10,15 +10,15 @@ import com.fcfb.discord.refbot.model.fcfb.game.Subdivision
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy::class)
 data class Team(
     @JsonProperty("id") var id: Long = 0,
+    @JsonProperty("name") var name: String? = null,
+    @JsonProperty("short_name") var location: String? = null,
+    @JsonProperty("abbreviation") var abbreviation: String? = null,
     @JsonProperty("logo") var logo: String? = null,
     @JsonProperty("scorebug_logo") var scorebugLogo: String? = null,
     @JsonProperty("coach_usernames") var coachUsernames: List<String>,
     @JsonProperty("coach_names") var coachNames: List<String>,
     @JsonProperty("coach_discord_tags") var coachDiscordTags: List<String>,
     @JsonProperty("coach_discord_ids") var coachDiscordIds: List<String>,
-    @JsonProperty("name") var name: String? = null,
-    @JsonProperty("short_name") var location: String? = null,
-    @JsonProperty("abbreviation") var abbreviation: String? = null,
     @JsonProperty("primary_color") var primaryColor: String? = null,
     @JsonProperty("secondary_color") var secondaryColor: String? = null,
     @JsonProperty("coaches_poll_ranking") var coachesPollRanking: Int? = null,

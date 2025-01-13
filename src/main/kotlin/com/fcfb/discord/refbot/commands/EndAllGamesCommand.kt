@@ -36,7 +36,6 @@ class EndAllGamesCommand(
             try {
                 val channel = interaction.kord.getChannel(Snowflake(game.homePlatformId ?: continue)) as MessageChannelBehavior
                 val message = channel.createMessage("Game ended")
-                scorebugClient.generateScorebug(game.gameId)
                 gameHandler.endGame(interaction.kord, game, message)
                 Logger.info("${interaction.user.username} successfully ended a game between ${game.homeTeam} and ${game.awayTeam}")
             } catch (e: Exception) {
