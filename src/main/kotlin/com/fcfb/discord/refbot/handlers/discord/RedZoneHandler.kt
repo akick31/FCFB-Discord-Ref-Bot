@@ -75,9 +75,9 @@ class RedZoneHandler(
                 }
                 ActualResult.RETURN_TOUCHDOWN -> {
                     if (play.possession == TeamSide.HOME) {
-                        "$homeTeam scores a touchdown on a kickoff return!"
-                    } else {
                         "$awayTeam scores a touchdown on a kickoff return!"
+                    } else {
+                        "$homeTeam scores a touchdown on a kickoff return!"
                     }
                 }
                 ActualResult.KICKING_TEAM_TOUCHDOWN -> {
@@ -122,8 +122,12 @@ class RedZoneHandler(
                         "$awayTeam makes the field goal!"
                     } else if (play.possession == TeamSide.HOME && play.playCall == PlayCall.PAT) {
                         "$homeTeam makes the extra point!"
-                    } else {
+                    } else if (play.possession == TeamSide.AWAY && play.playCall == PlayCall.PAT) {
                         "$awayTeam makes the extra point!"
+                    } else if (play.possession == TeamSide.HOME && play.playCall == PlayCall.TWO_POINT) {
+                        "$homeTeam makes the two point conversion!"
+                    } else {
+                        "$awayTeam makes the two point conversion!"
                     }
                 }
                 ActualResult.NO_GOOD -> {
@@ -133,8 +137,12 @@ class RedZoneHandler(
                         "$awayTeam misses the field goal!"
                     } else if (play.possession == TeamSide.HOME && play.playCall == PlayCall.PAT) {
                         "$homeTeam misses the extra point!"
-                    } else {
+                    } else if (play.possession == TeamSide.AWAY && play.playCall == PlayCall.PAT) {
                         "$awayTeam misses the extra point!"
+                    } else if (play.possession == TeamSide.HOME && play.playCall == PlayCall.TWO_POINT) {
+                        "$homeTeam fails the two point conversion!"
+                    } else {
+                        "$awayTeam fails the two point conversion!"
                     }
                 }
                 ActualResult.BLOCKED -> {

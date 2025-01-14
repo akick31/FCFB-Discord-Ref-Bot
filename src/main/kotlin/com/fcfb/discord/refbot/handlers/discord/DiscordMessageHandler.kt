@@ -521,6 +521,7 @@ class DiscordMessageHandler(
                 "{defensive_team}" to defensiveTeam,
                 "{play_writeup}" to playWriteup,
                 "{clock_info}" to gameUtils.getClockInfo(game),
+                "{play_time}" to gameUtils.getPlayTimeInfo(game, play),
                 "{clock}" to game.clock,
                 "{quarter}" to gameUtils.toOrdinal(game.quarter),
                 "{offensive_number}" to play?.offensiveNumber.toString(),

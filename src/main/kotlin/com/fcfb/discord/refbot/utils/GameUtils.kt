@@ -422,8 +422,29 @@ class GameUtils {
         }
 
     fun getClockInfo(game: Game): String {
+        val quarter =
+            if (game.quarter >= 5) {
+                4
+            } else {
+                game.quarter
+            }
         return if (game.gameStatus != GameStatus.OVERTIME) {
-            " ${game.clock} left in the ${toOrdinal(game.quarter)}."
+            " ${game.clock} left in the ${toOrdinal(quarter)}."
+        } else {
+            ""
+        }
+    }
+
+    fun getPlayTimeInfo(
+        game: Game,
+        play: Play?,
+    ): String {
+        return if (game.gameStatus != GameStatus.OVERTIME) {
+            if (play?.playCall != PlayCall.PAT && play?.playCall != PlayCall.TWO_POINT) {
+                "The play took ${(play?.playTime ?: 0) + (play?.runoffTime ?: 0)} seconds. "
+            } else {
+                ""
+            }
         } else {
             ""
         }
