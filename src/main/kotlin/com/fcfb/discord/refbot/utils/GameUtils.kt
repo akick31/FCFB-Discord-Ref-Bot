@@ -421,6 +421,28 @@ class GameUtils {
             else -> number.toString()
         }
 
+    /**
+     * Get the previous play info for a game
+     * @param previousPlay The play object
+     */
+    fun getPreviousPlayInfo(previousPlay: Play?): String {
+        return if (previousPlay != null) {
+            "\n\n**Previous Play**\n" +
+                "Offensive Number: ${previousPlay.offensiveNumber}\n" +
+                "Defensive Number: ${previousPlay.defensiveNumber}\n" +
+                "Difference: ${previousPlay.difference}\n" +
+                "Play Call: ${previousPlay.playCall}\n" +
+                "Result: ${previousPlay.result}\n" +
+                "Actual Result: ${previousPlay.actualResult}\n"
+        } else {
+            ""
+        }
+    }
+
+    /**
+     * Get the clock info for a game
+     * @param game The game object
+     */
     fun getClockInfo(game: Game): String {
         val quarter =
             if (game.quarter >= 5) {
@@ -435,6 +457,11 @@ class GameUtils {
         }
     }
 
+    /***
+     * Get the play time info for a game
+     * @param game The game object
+     * @param play The play object
+     */
     fun getPlayTimeInfo(
         game: Game,
         play: Play?,
