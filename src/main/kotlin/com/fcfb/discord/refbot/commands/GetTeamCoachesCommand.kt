@@ -1,7 +1,6 @@
 package com.fcfb.discord.refbot.commands
 
 import com.fcfb.discord.refbot.api.TeamClient
-import com.fcfb.discord.refbot.api.UserClient
 import com.fcfb.discord.refbot.model.fcfb.game.Game
 import com.fcfb.discord.refbot.model.fcfb.game.TeamSide
 import com.fcfb.discord.refbot.utils.Logger
@@ -12,7 +11,7 @@ import dev.kord.core.entity.interaction.ChatInputCommandInteraction
 import dev.kord.rest.builder.interaction.string
 
 class GetTeamCoachesCommand(
-    private val teamClient: TeamClient
+    private val teamClient: TeamClient,
 ) {
     suspend fun register(client: Kord) {
         client.createGlobalChatInputCommand(
