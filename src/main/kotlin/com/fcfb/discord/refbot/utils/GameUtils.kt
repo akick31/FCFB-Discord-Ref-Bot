@@ -428,12 +428,12 @@ class GameUtils {
     fun getPreviousPlayInfo(previousPlay: Play?): String {
         return if (previousPlay != null) {
             "\n\n**Previous Play**\n" +
-                    "Offensive Number: ${previousPlay.offensiveNumber}\n" +
-                    "Defensive Number: ${previousPlay.defensiveNumber}\n" +
-                    "Difference: ${previousPlay.difference}\n" +
-                    "Play Call: ${previousPlay.playCall}\n" +
-                    "Result: ${previousPlay.result}\n" +
-                    "Actual Result: ${previousPlay.actualResult}\n"
+                "Offensive Number: ${previousPlay.offensiveNumber}\n" +
+                "Defensive Number: ${previousPlay.defensiveNumber}\n" +
+                "Difference: ${previousPlay.difference}\n" +
+                "Play Call: ${previousPlay.playCall}\n" +
+                "Result: ${previousPlay.result}\n" +
+                "Actual Result: ${previousPlay.actualResult}\n"
         } else {
             ""
         }
