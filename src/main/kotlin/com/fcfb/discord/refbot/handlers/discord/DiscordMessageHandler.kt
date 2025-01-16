@@ -536,6 +536,7 @@ class DiscordMessageHandler(
                 "{play_options}" to gameUtils.getPlayOptions(game),
                 "{outcome}" to gameUtils.getOutcomeMessage(game),
                 "{offending_team}" to gameUtils.getOffendingTeam(game),
+                "{previous_play}" to gameUtils.getPreviousPlayInfo(play),
                 "<br>" to "\n",
             )
 
