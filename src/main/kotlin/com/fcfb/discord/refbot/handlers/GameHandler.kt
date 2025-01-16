@@ -92,13 +92,17 @@ class GameHandler(
         game: Game,
         message: Message,
     ) {
-        val number =
-            when (val messageNumber = gameUtils.parseValidNumberFromMessage(message)) {
-                -1 -> return errorHandler.multipleNumbersFoundError(message)
-                -2 -> return errorHandler.invalidNumberError(message)
-                else -> messageNumber
-            }
         val playCall = gameUtils.parsePlayCallFromMessage(message) ?: return errorHandler.invalidPlayCall(message)
+        val number =
+            if (playCall == PlayCall.KNEEL || playCall == PlayCall.SPIKE) {
+                null
+            } else {
+                when (val messageNumber = gameUtils.parseValidNumberFromMessage(message)) {
+                    -1 -> return errorHandler.multipleNumbersFoundError(message)
+                    -2 -> return errorHandler.invalidNumberError(message)
+                    else -> messageNumber
+                }
+            }
         val runoffType = gameUtils.parseRunoffTypeFromMessage(game, message)
         val timeoutCalled = gameUtils.parseTimeoutFromMessage(message)
         val offensiveSubmitter = message.author?.username ?: return errorHandler.invalidOffensiveSubmitter(message)
