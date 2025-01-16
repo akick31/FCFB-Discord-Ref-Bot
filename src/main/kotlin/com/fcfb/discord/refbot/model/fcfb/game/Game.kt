@@ -114,7 +114,6 @@ enum class TVChannel(val description: String) {
 
 enum class Platform(val description: String) {
     DISCORD("DISCORD"),
-    REDDIT("REDDIT"),
 }
 
 enum class PlayCall(val description: String) {
