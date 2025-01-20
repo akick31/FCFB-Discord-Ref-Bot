@@ -45,7 +45,32 @@ class DiscordMessageHandler(
     private val properties: Properties,
 ) {
     /**
+     * Send a general message to the game thread
+     * @param client The Discord client
+     * @param game The game object
+     * @param messageContent The message content
+     */
+    suspend fun sendGeneralMessage(
+        client: Kord,
+        game: Game,
+        messageContent: String,
+    ): Message? {
+        val channel =
+            textChannelThreadHandler.getTextChannelThreadById(
+                client,
+                Snowflake(
+                    game.homePlatformId ?: game.awayPlatformId ?: throw Exception("No platform ID found for game ${game.gameId}"),
+                ),
+            )
+
+        return sendMessageFromTextChannelObject(channel, messageContent, null)
+    }
+
+    /**
      * Send an announcement to a game
+     * @param client The Discord client
+     * @param game The game object
+     * @param messageContent The message content
      */
     suspend fun sendGameAnnouncement(
         client: Kord,

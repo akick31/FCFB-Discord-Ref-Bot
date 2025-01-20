@@ -258,6 +258,24 @@ class GameClient {
     }
 
     /**
+     * Mark the game as having pinged the close game role
+     * @param gameId
+     */
+    internal suspend fun markCloseGamePinged(gameId: Int): Game? {
+        val endpointUrl = "$baseUrl/game/close_game_pinged?gameId=$gameId"
+        return putRequest(endpointUrl)
+    }
+
+    /**
+     * Mark the game as having pinged the upset alert role
+     * @param gameId
+     */
+    internal suspend fun markUpsetAlertPinged(gameId: Int): Game? {
+        val endpointUrl = "$baseUrl/game/upset_alert_pinged?gameId=$gameId"
+        return putRequest(endpointUrl)
+    }
+
+    /**
      * Call a put request to the game endpoint and return a game
      * @param endpointUrl
      * @return Game

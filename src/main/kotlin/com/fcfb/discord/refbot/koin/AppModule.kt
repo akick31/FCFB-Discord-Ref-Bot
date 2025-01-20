@@ -33,9 +33,11 @@ import com.fcfb.discord.refbot.config.ServerConfig
 import com.fcfb.discord.refbot.handlers.ErrorHandler
 import com.fcfb.discord.refbot.handlers.FileHandler
 import com.fcfb.discord.refbot.handlers.GameHandler
+import com.fcfb.discord.refbot.handlers.discord.CloseGameHandler
 import com.fcfb.discord.refbot.handlers.discord.DiscordMessageHandler
 import com.fcfb.discord.refbot.handlers.discord.RedZoneHandler
 import com.fcfb.discord.refbot.handlers.discord.TextChannelThreadHandler
+import com.fcfb.discord.refbot.handlers.discord.UpsetAlertHandler
 import com.fcfb.discord.refbot.requests.DelayOfGameRequest
 import com.fcfb.discord.refbot.requests.StartGameRequest
 import com.fcfb.discord.refbot.utils.GameUtils
@@ -68,9 +70,11 @@ val appModule =
         single { ErrorHandler(get()) }
         single { StartGameRequest(get(), get()) }
         single { ServerConfig(get(), get(), get()) }
-        single { GameHandler(get(), get(), get(), get(), get(), get(), get()) }
+        single { GameHandler(get(), get(), get(), get(), get(), get(), get(), get(), get()) }
         single { DelayOfGameRequest(get(), get(), get()) }
         single { RedZoneHandler(get(), get()) }
+        single { CloseGameHandler(get(), get(), get()) }
+        single { UpsetAlertHandler(get(), get(), get(), get()) }
         single { ChewGameCommand(get(), get(), get()) }
         single { DeleteGameCommand(get()) }
         single { RestartGameCommand(get()) }
