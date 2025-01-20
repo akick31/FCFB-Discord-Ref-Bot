@@ -2,9 +2,11 @@ package com.fcfb.discord.refbot.handlers
 
 import com.fcfb.discord.refbot.api.GameClient
 import com.fcfb.discord.refbot.api.PlayClient
+import com.fcfb.discord.refbot.handlers.discord.CloseGameHandler
 import com.fcfb.discord.refbot.handlers.discord.DiscordMessageHandler
 import com.fcfb.discord.refbot.handlers.discord.RedZoneHandler
 import com.fcfb.discord.refbot.handlers.discord.TextChannelThreadHandler
+import com.fcfb.discord.refbot.handlers.discord.UpsetAlertHandler
 import com.fcfb.discord.refbot.model.discord.MessageConstants.Error
 import com.fcfb.discord.refbot.model.fcfb.game.Game
 import com.fcfb.discord.refbot.model.fcfb.game.GameStatus
@@ -22,6 +24,8 @@ class GameHandler(
     private val gameClient: GameClient,
     private val playClient: PlayClient,
     private val gameUtils: GameUtils,
+    private val closeGameHandler: CloseGameHandler,
+    private val upsetAlertHandler: UpsetAlertHandler,
     private val redZoneHandler: RedZoneHandler,
     private val errorHandler: ErrorHandler,
 ) {
@@ -136,8 +140,11 @@ class GameHandler(
 
         val playOutcomeMessage = discordMessageHandler.sendPlayOutcomeMessage(client, updatedGame, playOutcome, message)
 
-        textChannelThreadHandler.updateThread(textChannelThreadHandler.getTextChannelThread(message), updatedGame)
+        val gameThread = textChannelThreadHandler.getTextChannelThread(message)
+        textChannelThreadHandler.updateThread(gameThread, updatedGame)
         redZoneHandler.handleRedZone(client, playOutcome, updatedGame, playOutcomeMessage)
+        closeGameHandler.handleCloseGame(client, updatedGame)
+        upsetAlertHandler.handleUpsetAlert(client, updatedGame)
 
         when (updatedGame.gameStatus) {
             GameStatus.FINAL -> {

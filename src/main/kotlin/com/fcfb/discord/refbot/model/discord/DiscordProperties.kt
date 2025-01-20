@@ -7,5 +7,8 @@ data class DiscordProperties(
     val postgameChannelId: String,
     val redzoneChannelId: String,
     val scoresChannelId: String,
+    val fbsCloseGameRoleId: String,
+    val fcsCloseGameRoleId: String,
+    val upsetAlertRoleId: String,
     val botId: String,
 )

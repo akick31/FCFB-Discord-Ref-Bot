@@ -1,0 +1,62 @@
+package com.fcfb.discord.refbot.handlers.discord
+
+import com.fcfb.discord.refbot.api.GameClient
+import com.fcfb.discord.refbot.model.fcfb.game.Game
+import com.fcfb.discord.refbot.model.fcfb.game.GameType
+import com.fcfb.discord.refbot.utils.Logger
+import com.fcfb.discord.refbot.utils.Properties
+import dev.kord.common.entity.Snowflake
+import dev.kord.core.Kord
+import dev.kord.core.entity.Message
+
+class CloseGameHandler(
+    private val gameClient: GameClient,
+    private val discordMessageHandler: DiscordMessageHandler,
+    private val properties: Properties,
+) {
+    /**
+     * Handles pinging close game
+     * @param client the discord client
+     * @param game the game
+     */
+    suspend fun handleCloseGame(
+        client: Kord,
+        game: Game,
+    ): Message? {
+        if (game.gameType == GameType.SCRIMMAGE || !game.closeGame || game.closeGamePinged) {
+            return null
+        }
+
+        val guild = client.getGuild(Snowflake(properties.getDiscordProperties().guildId))
+        val fbsCloseGameRole = guild.getRole(Snowflake(properties.getDiscordProperties().fbsCloseGameRoleId))
+        val fcsCloseGameRole = guild.getRole(Snowflake(properties.getDiscordProperties().fcsCloseGameRoleId))
+        var messageContent = fbsCloseGameRole.mention + " " + fcsCloseGameRole.mention + "\n\n"
+        messageContent += "**CLOSE GAME ALERT**\n"
+        messageContent +=
+            if (game.homeScore == game.awayScore) {
+                if (game.quarter >= 5) {
+                    "The game is tied at ${game.homeScore}-${game.awayScore} in overtime."
+                } else {
+                    "The game is tied at ${game.homeScore}-${game.awayScore} with ${game.clock} left in regulation."
+                }
+            } else {
+                val winningTeam = if (game.homeScore > game.awayScore) game.homeTeam else game.awayTeam
+                val losingTeam = if (game.homeScore > game.awayScore) game.awayTeam else game.homeTeam
+                if (game.quarter >= 5) {
+                    "The game is close with $winningTeam leading $losingTeam ${game.homeScore}-${game.awayScore} in overtime."
+                } else {
+                    "The game is close with $winningTeam leading $losingTeam ${game.homeScore}-${game.awayScore} with " +
+                        "${game.clock} left in regulation."
+                }
+            }
+
+        try {
+            val message = discordMessageHandler.sendGeneralMessage(client, game, messageContent)
+            gameClient.markCloseGamePinged(game.gameId)
+            return message
+        } catch (e: Exception) {
+            Logger.error("Error sending close game message: ${e.message}")
+            return null
+        }
+    }
+}
