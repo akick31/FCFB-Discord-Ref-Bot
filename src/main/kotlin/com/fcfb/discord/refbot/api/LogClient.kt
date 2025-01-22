@@ -7,12 +7,14 @@ import com.fcfb.discord.refbot.utils.Logger
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.cio.CIO
 import io.ktor.client.engine.cio.endpoint
+import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.client.statement.HttpResponse
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.ContentType
 import io.ktor.http.contentType
+import io.ktor.serialization.jackson.jackson
 import java.util.Properties
 
 class LogClient {
@@ -26,6 +28,10 @@ class LogClient {
                     connectTimeout = 10_000
                     requestTimeout = 60_000
                 }
+            }
+
+            install(ContentNegotiation) {
+                jackson {}
             }
         }
 
@@ -43,20 +49,18 @@ class LogClient {
      * @param gameId
      */
     internal suspend fun logRequestMessage(
+        messageType: MessageType,
         gameId: Int,
         playId: Int?,
         messageId: ULong,
-        messageContent: String,
         messageLocation: String?,
-        messageType: MessageType,
     ): RequestMessageLog? {
         val body =
             RequestMessageLog(
                 messageType = messageType,
                 gameId = gameId,
                 playId = playId,
-                messageId = messageId.toInt(),
-                messageContent = messageContent,
+                messageId = messageId.toLong(),
                 messageLocation = messageLocation,
                 messageTs = System.currentTimeMillis().toString(),
             )
@@ -75,7 +79,7 @@ class LogClient {
                     setBody(body)
                 }
             val jsonResponse = response.bodyAsText()
-            val objectMapper = JacksonConfig().configureGameMapping()
+            val objectMapper = JacksonConfig().configureRequestMessageLogMapping()
             objectMapper.readValue(jsonResponse, RequestMessageLog::class.java)
         } catch (e: Exception) {
             Logger.error(

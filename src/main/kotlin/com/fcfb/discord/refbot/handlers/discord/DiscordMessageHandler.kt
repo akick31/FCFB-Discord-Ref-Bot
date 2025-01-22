@@ -166,12 +166,11 @@ class DiscordMessageHandler(
             gameClient.updateLastMessageTimestamp(game.gameId)
             for (message in numberRequestMessage) {
                 logClient.logRequestMessage(
-                    MessageType.DEFENSE,
+                    MessageType.PRIVATE_MESSAGE,
                     game.gameId,
                     play?.playId ?: 0,
-                    message?.id?.value,
-                    messageContent,
-                    defensiveCoaches.toString(),
+                    message?.id?.value ?: 0.toULong(),
+                    defensiveCoaches.map { it?.username }.toString(),
                 )
             }
             return true
@@ -222,12 +221,11 @@ class DiscordMessageHandler(
         try {
             gameClient.updateRequestMessageId(game.gameId, listOf(numberRequestMessage))
             gameClient.updateLastMessageTimestamp(game.gameId)
-            playClient.logOffensiveNumberRequest(
-                MessageType.OFFENSE,
+            logClient.logRequestMessage(
+                MessageType.GAME_THREAD,
                 game.gameId,
                 play?.playId ?: 0,
-                numberRequestMessage.id.value.toString(),
-                numberRequestMessage.content,
+                numberRequestMessage.id.value,
                 numberRequestMessage.getJumpUrl(),
             )
             return true
