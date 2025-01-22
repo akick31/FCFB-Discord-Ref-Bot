@@ -4,6 +4,7 @@ import com.fcfb.discord.refbot.FCFBDiscordRefBot
 import com.fcfb.discord.refbot.api.AuthClient
 import com.fcfb.discord.refbot.api.GameClient
 import com.fcfb.discord.refbot.api.GameWriteupClient
+import com.fcfb.discord.refbot.api.LogClient
 import com.fcfb.discord.refbot.api.PlayClient
 import com.fcfb.discord.refbot.api.ScorebugClient
 import com.fcfb.discord.refbot.api.TeamClient
@@ -56,6 +57,7 @@ val appModule =
         single { GameClient() }
         single { GameWriteupClient() }
         single { PlayClient() }
+        single { LogClient() }
         single { ScorebugClient() }
         single { TeamClient() }
         single { UserClient() }
@@ -100,5 +102,5 @@ val appModule =
             )
         }
         single { FCFBDiscordRefBot(get(), get(), get(), get()) }
-        single { DiscordMessageHandler(get(), get(), get(), get(), get(), get(), get(), get()) }
+        single { DiscordMessageHandler(get(), get(), get(), get(), get(), get(), get(), get(), get()) }
     }

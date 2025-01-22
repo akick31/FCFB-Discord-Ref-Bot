@@ -79,6 +79,7 @@ class GameHandler(
             discordMessageHandler.sendRequestForOffensiveNumber(
                 client,
                 game,
+                currentPlay,
                 false,
                 message,
             )
@@ -185,12 +186,12 @@ class GameHandler(
         val timeoutCalled = gameUtils.parseTimeoutFromMessage(message)
         val defensiveSubmitter = message.author?.username ?: return errorHandler.invalidDefensiveSubmitter(message)
 
-        // Submit the defensive number and get the play outcome
-        playClient.submitDefensiveNumber(game.gameId, defensiveSubmitter, number, timeoutCalled)
-            ?: return errorHandler.invalidDefensiveNumberSubmission(message)
+        val play =
+            playClient.submitDefensiveNumber(game.gameId, defensiveSubmitter, number, timeoutCalled)
+                ?: return errorHandler.invalidDefensiveNumberSubmission(message)
 
         discordMessageHandler.sendNumberConfirmationMessage(game, number, timeoutCalled, message)
-        discordMessageHandler.sendRequestForOffensiveNumber(client, game, timeoutCalled, message)
+        discordMessageHandler.sendRequestForOffensiveNumber(client, game, play, timeoutCalled, message)
     }
 
     /**
