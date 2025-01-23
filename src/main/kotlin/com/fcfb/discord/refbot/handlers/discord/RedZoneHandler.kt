@@ -122,12 +122,8 @@ class RedZoneHandler(
                         "$awayTeam makes the field goal!"
                     } else if (play.possession == TeamSide.HOME && play.playCall == PlayCall.PAT) {
                         "$homeTeam makes the extra point!"
-                    } else if (play.possession == TeamSide.AWAY && play.playCall == PlayCall.PAT) {
-                        "$awayTeam makes the extra point!"
-                    } else if (play.possession == TeamSide.HOME && play.playCall == PlayCall.TWO_POINT) {
-                        "$homeTeam makes the two point conversion!"
                     } else {
-                        "$awayTeam makes the two point conversion!"
+                        "$awayTeam makes the extra point!"
                     }
                 }
                 ActualResult.NO_GOOD -> {
@@ -137,9 +133,19 @@ class RedZoneHandler(
                         "$awayTeam misses the field goal!"
                     } else if (play.possession == TeamSide.HOME && play.playCall == PlayCall.PAT) {
                         "$homeTeam misses the extra point!"
-                    } else if (play.possession == TeamSide.AWAY && play.playCall == PlayCall.PAT) {
+                    } else {
                         "$awayTeam misses the extra point!"
-                    } else if (play.possession == TeamSide.HOME && play.playCall == PlayCall.TWO_POINT) {
+                    }
+                }
+                ActualResult.SUCCESS -> {
+                    if (play.possession == TeamSide.HOME && play.playCall == PlayCall.TWO_POINT) {
+                        "$homeTeam makes the two point conversion!"
+                    } else {
+                        "$awayTeam makes the two point conversion!"
+                    }
+                }
+                ActualResult.FAILED -> {
+                    if (play.possession == TeamSide.HOME && play.playCall == PlayCall.TWO_POINT) {
                         "$homeTeam fails the two point conversion!"
                     } else {
                         "$awayTeam fails the two point conversion!"
