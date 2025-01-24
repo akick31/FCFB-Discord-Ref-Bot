@@ -144,8 +144,8 @@ class GameHandler(
         val gameThread = textChannelThreadHandler.getTextChannelThread(message)
         textChannelThreadHandler.updateThread(gameThread, updatedGame)
         redZoneHandler.handleRedZone(client, playOutcome, updatedGame, playOutcomeMessage)
-        closeGameHandler.handleCloseGame(client, updatedGame)
-        upsetAlertHandler.handleUpsetAlert(client, updatedGame)
+        closeGameHandler.handleCloseGame(client, updatedGame, playOutcomeMessage)
+        upsetAlertHandler.handleUpsetAlert(client, updatedGame, playOutcomeMessage)
 
         when (updatedGame.gameStatus) {
             GameStatus.FINAL -> {

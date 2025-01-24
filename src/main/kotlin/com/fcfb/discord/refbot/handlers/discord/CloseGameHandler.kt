@@ -5,9 +5,11 @@ import com.fcfb.discord.refbot.model.fcfb.game.Game
 import com.fcfb.discord.refbot.model.fcfb.game.GameType
 import com.fcfb.discord.refbot.utils.Logger
 import com.fcfb.discord.refbot.utils.Properties
+import com.kotlindiscord.kord.extensions.utils.getJumpUrl
 import dev.kord.common.entity.Snowflake
 import dev.kord.core.Kord
 import dev.kord.core.entity.Message
+import dev.kord.core.entity.channel.MessageChannel
 
 class CloseGameHandler(
     private val gameClient: GameClient,
@@ -22,6 +24,7 @@ class CloseGameHandler(
     suspend fun handleCloseGame(
         client: Kord,
         game: Game,
+        playMessage: Message?,
     ): Message? {
         if (game.gameType == GameType.SCRIMMAGE || !game.closeGame || game.closeGamePinged) {
             return null
@@ -30,8 +33,7 @@ class CloseGameHandler(
         val guild = client.getGuild(Snowflake(properties.getDiscordProperties().guildId))
         val fbsCloseGameRole = guild.getRole(Snowflake(properties.getDiscordProperties().fbsCloseGameRoleId))
         val fcsCloseGameRole = guild.getRole(Snowflake(properties.getDiscordProperties().fcsCloseGameRoleId))
-        var messageContent = fbsCloseGameRole.mention + " " + fcsCloseGameRole.mention + "\n\n"
-        messageContent += "**CLOSE GAME ALERT**\n"
+        var messageContent = fbsCloseGameRole.mention + " " + fcsCloseGameRole.mention + "\n"
         messageContent +=
             if (game.homeScore == game.awayScore) {
                 if (game.quarter >= 5) {
@@ -51,7 +53,11 @@ class CloseGameHandler(
             }
 
         try {
-            val message = discordMessageHandler.sendGeneralMessage(client, game, messageContent)
+            if (playMessage != null) {
+                messageContent += "\n\nFollow the action at " + playMessage.getJumpUrl()
+            }
+            val redZoneChannel = client.getChannel(Snowflake(properties.getDiscordProperties().redzoneChannelId)) as MessageChannel
+            val message = discordMessageHandler.sendRedZoneMessage(game, redZoneChannel, messageContent, playMessage)
             gameClient.markCloseGamePinged(game.gameId)
             return message
         } catch (e: Exception) {

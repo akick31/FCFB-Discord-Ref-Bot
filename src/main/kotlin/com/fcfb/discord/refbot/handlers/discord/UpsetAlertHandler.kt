@@ -6,9 +6,11 @@ import com.fcfb.discord.refbot.model.fcfb.game.Game
 import com.fcfb.discord.refbot.model.fcfb.game.GameType
 import com.fcfb.discord.refbot.utils.Logger
 import com.fcfb.discord.refbot.utils.Properties
+import com.kotlindiscord.kord.extensions.utils.getJumpUrl
 import dev.kord.common.entity.Snowflake
 import dev.kord.core.Kord
 import dev.kord.core.entity.Message
+import dev.kord.core.entity.channel.MessageChannel
 
 class UpsetAlertHandler(
     private val gameClient: GameClient,
@@ -24,6 +26,7 @@ class UpsetAlertHandler(
     suspend fun handleUpsetAlert(
         client: Kord,
         game: Game,
+        playMessage: Message?,
     ): Message? {
         if (game.gameType == GameType.SCRIMMAGE || !game.upsetAlert || game.upsetAlertPinged) {
             return null
@@ -39,8 +42,7 @@ class UpsetAlertHandler(
 
         val guild = client.getGuild(Snowflake(properties.getDiscordProperties().guildId))
         val upsetAlertRole = guild.getRole(Snowflake(properties.getDiscordProperties().upsetAlertRoleId))
-        var messageContent = upsetAlertRole.mention + "\n\n"
-        messageContent += "**UPSET ALERT**\n"
+        var messageContent = upsetAlertRole.mention + "\n"
         messageContent += "#${if (teamOnUpsetAlert.name == homeTeam.name) homeTeamRanking else awayTeamRanking} " +
             "${teamOnUpsetAlert.name} is at risk of losing to " +
             "${if (teamOnUpsetAlert.name == homeTeam.name) awayTeam.name else homeTeam.name} late in the game.\n\n"
@@ -62,7 +64,11 @@ class UpsetAlertHandler(
             }
 
         try {
-            val message = discordMessageHandler.sendGeneralMessage(client, game, messageContent)
+            if (playMessage != null) {
+                messageContent += "\n\nFollow the action at " + playMessage.getJumpUrl()
+            }
+            val redZoneChannel = client.getChannel(Snowflake(properties.getDiscordProperties().redzoneChannelId)) as MessageChannel
+            val message = discordMessageHandler.sendRedZoneMessage(game, redZoneChannel, messageContent, playMessage)
             gameClient.markUpsetAlertPinged(game.gameId)
             return message
         } catch (e: Exception) {
