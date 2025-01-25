@@ -4,7 +4,10 @@ import com.fcfb.discord.refbot.utils.Logger
 
 class MessageConstants {
     enum class Error(val message: String) {
-        NO_GAME_FOUND("Could not find a game associated with this number request message."),
+        NO_GAME_FOUND(
+            "Could not find a game associated with this number request message. " +
+                "Please try to regenerate the play message with `/ping`",
+        ),
         WAITING_FOR_NUMBER_IN_DMS("This game is currently waiting on a number from you in your DMs"),
         WAITING_FOR_COIN_TOSS("This game is currently waiting on the away coach to call **heads** or **tails**"),
         WAITING_FOR_COIN_TOSS_CHOICE("This game is currently waiting on the coin toss winning coach to call **receive** or **defer**"),
