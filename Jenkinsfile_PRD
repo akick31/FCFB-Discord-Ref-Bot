@@ -4,7 +4,7 @@ pipeline {
     environment {
         IMAGE_NAME = 'fcfb-discord-ref-bot-prd'
         CONTAINER_NAME = 'FCFB-Discord-Ref-Bot-PRD'
-        DOCKERFILE = 'Dockerfile'
+        DOCKERFILE = 'Dockerfile_PRD'
         APP_PROPERTIES = "${env.WORKSPACE}/src/main/resources/application.properties"
         DISCORD_TOKEN = credentials('REFBOT_DISCORD_TOKEN')
         DISCORD_GUILD_ID = credentials('DISCORD_GUILD_ID')
@@ -75,7 +75,7 @@ pipeline {
                         discord.upset_alert.role.id=1330664603734118513
 
                         # Domain configuration
-                        api.url=http://51.81.32.234:1212/arceus
+                        api.url=https://api.fakecollegefootball.com/arceus
 
                         # Server configuration
                         server.port=1211
@@ -94,7 +94,7 @@ pipeline {
                 script {
                     echo 'Building the new Ref Bot Docker image...'
                     sh """
-                        docker build -t ${IMAGE_NAME}:${DOCKERFILE} .
+                        docker build -f ${DOCKERFILE} -t ${IMAGE_NAME}:${DOCKERFILE} .
                     """
                 }
             }
