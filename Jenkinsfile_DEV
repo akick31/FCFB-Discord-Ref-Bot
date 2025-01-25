@@ -61,13 +61,18 @@ pipeline {
                         # Discord configuration
                         discord.bot.token=${env.DISCORD_TOKEN}
                         discord.guild.id=${env.DISCORD_GUILD_ID}
-                        discord.bot.id=1156052929858502678
+                        discord.bot.id=1299106631627444315
 
                         # Channel IDs
                         discord.game.forum.id=1299099384163598397
                         discord.postgame.forum.id=1309027145489842207
                         discord.redzone.channel.id=1309027165228109824
                         discord.scores.channel.id=1309027178780033074
+
+                        # Role IDs
+                        discord.fbs.close_game.role.id=1330667771452723332
+                        discord.fcs.close_game.role.id=1330667813207277748
+                        discord.upset_alert.role.id=1330667830873559171
 
                         # Domain configuration
                         api.url=https://dev.api.fakecollegefootball.com/arceus
