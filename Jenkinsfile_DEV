@@ -4,7 +4,7 @@ pipeline {
     environment {
         IMAGE_NAME = 'fcfb-discord-ref-bot-dev'
         CONTAINER_NAME = 'FCFB-Discord-Ref-Bot-DEV'
-        DOCKERFILE = 'Dockerfile'
+        DOCKERFILE = 'Dockerfile_DEV'
         APP_PROPERTIES = "${env.WORKSPACE}/src/main/resources/application.properties"
         DISCORD_TOKEN = credentials('DEV_REFBOT_DISCORD_TOKEN')
         DISCORD_GUILD_ID = credentials('DEV_DISCORD_GUILD_ID')
@@ -89,7 +89,7 @@ pipeline {
                 script {
                     echo 'Building the new Ref Bot Docker image...'
                     sh """
-                        docker build -t ${IMAGE_NAME}:${DOCKERFILE} .
+                        docker build -f ${DOCKERFILE} -t ${IMAGE_NAME}:${DOCKERFILE} .
                     """
                 }
             }
