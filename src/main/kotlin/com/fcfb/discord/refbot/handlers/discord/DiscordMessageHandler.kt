@@ -2,6 +2,7 @@ package com.fcfb.discord.refbot.handlers.discord
 
 import com.fcfb.discord.refbot.api.GameClient
 import com.fcfb.discord.refbot.api.GameWriteupClient
+import com.fcfb.discord.refbot.api.LogClient
 import com.fcfb.discord.refbot.api.ScorebugClient
 import com.fcfb.discord.refbot.handlers.FileHandler
 import com.fcfb.discord.refbot.model.discord.MessageConstants.Error
@@ -16,6 +17,7 @@ import com.fcfb.discord.refbot.model.fcfb.game.PlayCall
 import com.fcfb.discord.refbot.model.fcfb.game.PlayType
 import com.fcfb.discord.refbot.model.fcfb.game.Scenario
 import com.fcfb.discord.refbot.model.fcfb.game.TeamSide
+import com.fcfb.discord.refbot.model.log.MessageType
 import com.fcfb.discord.refbot.utils.GameUtils
 import com.fcfb.discord.refbot.utils.Logger
 import com.fcfb.discord.refbot.utils.Properties
@@ -39,6 +41,7 @@ class DiscordMessageHandler(
     private val gameClient: GameClient,
     private val gameWriteupClient: GameWriteupClient,
     private val scorebugClient: ScorebugClient,
+    private val logClient: LogClient,
     private val gameUtils: GameUtils,
     private val fileHandler: FileHandler,
     private val textChannelThreadHandler: TextChannelThreadHandler,
@@ -46,6 +49,9 @@ class DiscordMessageHandler(
 ) {
     /**
      * Send an announcement to a game
+     * @param client The Discord client
+     * @param game The game object
+     * @param messageContent The message content
      */
     suspend fun sendGameAnnouncement(
         client: Kord,
@@ -132,10 +138,19 @@ class DiscordMessageHandler(
             }
         val (messageContent, embedData) = gameMessage.first
         val defensiveCoaches = gameMessage.second
-        val numberRequestMessage = sendPrivateMessage(defensiveCoaches, embedData, messageContent, previousMessage)
         try {
+            val numberRequestMessage = sendPrivateMessage(defensiveCoaches, embedData, messageContent, previousMessage)
             gameClient.updateRequestMessageId(game.gameId, numberRequestMessage)
             gameClient.updateLastMessageTimestamp(game.gameId)
+            for (message in numberRequestMessage) {
+                logClient.logRequestMessage(
+                    MessageType.PRIVATE_MESSAGE,
+                    game.gameId,
+                    play?.playId ?: 0,
+                    message?.id?.value ?: 0.toULong(),
+                    defensiveCoaches.map { it?.username }.toString(),
+                )
+            }
             return true
         } catch (e: Exception) {
             sendErrorMessage(previousMessage ?: return false, Error.FAILED_TO_SEND_NUMBER_REQUEST_MESSAGE)
@@ -153,6 +168,7 @@ class DiscordMessageHandler(
     suspend fun sendRequestForOffensiveNumber(
         client: Kord,
         game: Game,
+        play: Play?,
         timeoutCalled: Boolean,
         previousMessage: Message? = null,
     ): Boolean {
@@ -183,6 +199,13 @@ class DiscordMessageHandler(
         try {
             gameClient.updateRequestMessageId(game.gameId, listOf(numberRequestMessage))
             gameClient.updateLastMessageTimestamp(game.gameId)
+            logClient.logRequestMessage(
+                MessageType.GAME_THREAD,
+                game.gameId,
+                play?.playId ?: 0,
+                numberRequestMessage.id.value,
+                numberRequestMessage.getJumpUrl(),
+            )
             return true
         } catch (e: Exception) {
             sendErrorMessage(previousMessage ?: return false, Error.FAILED_TO_SEND_NUMBER_REQUEST_MESSAGE)
@@ -521,6 +544,7 @@ class DiscordMessageHandler(
                 "{defensive_team}" to defensiveTeam,
                 "{play_writeup}" to playWriteup,
                 "{clock_info}" to gameUtils.getClockInfo(game),
+                "{play_time}" to gameUtils.getPlayTimeInfo(game, play),
                 "{clock}" to game.clock,
                 "{quarter}" to gameUtils.toOrdinal(game.quarter),
                 "{offensive_number}" to play?.offensiveNumber.toString(),
@@ -535,6 +559,7 @@ class DiscordMessageHandler(
                 "{play_options}" to gameUtils.getPlayOptions(game),
                 "{outcome}" to gameUtils.getOutcomeMessage(game),
                 "{offending_team}" to gameUtils.getOffendingTeam(game),
+                "{previous_play}" to gameUtils.getPreviousPlayInfo(play),
                 "<br>" to "\n",
             )
 

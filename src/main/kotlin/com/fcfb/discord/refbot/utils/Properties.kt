@@ -16,6 +16,9 @@ class Properties {
         val postgameChannelId = properties.getProperty("discord.postgame.forum.id")
         val redzoneChannelId = properties.getProperty("discord.redzone.channel.id")
         val scoresChannelId = properties.getProperty("discord.scores.channel.id")
+        val fbsCloseGameRoleId = properties.getProperty("discord.fbs.close_game.role.id")
+        val fcsCloseGameRoleId = properties.getProperty("discord.fcs.close_game.role.id")
+        val upsetAlertRoleId = properties.getProperty("discord.upset_alert.role.id")
         val botId = properties.getProperty("discord.bot.id")
         return DiscordProperties(
             token,
@@ -24,6 +27,9 @@ class Properties {
             postgameChannelId,
             redzoneChannelId,
             scoresChannelId,
+            fbsCloseGameRoleId,
+            fcsCloseGameRoleId,
+            upsetAlertRoleId,
             botId,
         )
     }

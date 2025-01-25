@@ -4,6 +4,7 @@ import com.fcfb.discord.refbot.FCFBDiscordRefBot
 import com.fcfb.discord.refbot.api.AuthClient
 import com.fcfb.discord.refbot.api.GameClient
 import com.fcfb.discord.refbot.api.GameWriteupClient
+import com.fcfb.discord.refbot.api.LogClient
 import com.fcfb.discord.refbot.api.PlayClient
 import com.fcfb.discord.refbot.api.ScorebugClient
 import com.fcfb.discord.refbot.api.TeamClient
@@ -15,6 +16,7 @@ import com.fcfb.discord.refbot.commands.EndGameCommand
 import com.fcfb.discord.refbot.commands.FireCoachCommand
 import com.fcfb.discord.refbot.commands.GameInfoCommand
 import com.fcfb.discord.refbot.commands.GetRoleCommand
+import com.fcfb.discord.refbot.commands.GetTeamCoachesCommand
 import com.fcfb.discord.refbot.commands.HelpCommand
 import com.fcfb.discord.refbot.commands.HireCoachCommand
 import com.fcfb.discord.refbot.commands.HireInterimCoachCommand
@@ -32,9 +34,11 @@ import com.fcfb.discord.refbot.config.ServerConfig
 import com.fcfb.discord.refbot.handlers.ErrorHandler
 import com.fcfb.discord.refbot.handlers.FileHandler
 import com.fcfb.discord.refbot.handlers.GameHandler
+import com.fcfb.discord.refbot.handlers.discord.CloseGameHandler
 import com.fcfb.discord.refbot.handlers.discord.DiscordMessageHandler
 import com.fcfb.discord.refbot.handlers.discord.RedZoneHandler
 import com.fcfb.discord.refbot.handlers.discord.TextChannelThreadHandler
+import com.fcfb.discord.refbot.handlers.discord.UpsetAlertHandler
 import com.fcfb.discord.refbot.requests.DelayOfGameRequest
 import com.fcfb.discord.refbot.requests.StartGameRequest
 import com.fcfb.discord.refbot.utils.GameUtils
@@ -53,6 +57,7 @@ val appModule =
         single { GameClient() }
         single { GameWriteupClient() }
         single { PlayClient() }
+        single { LogClient() }
         single { ScorebugClient() }
         single { TeamClient() }
         single { UserClient() }
@@ -67,9 +72,11 @@ val appModule =
         single { ErrorHandler(get()) }
         single { StartGameRequest(get(), get()) }
         single { ServerConfig(get(), get(), get()) }
-        single { GameHandler(get(), get(), get(), get(), get(), get(), get()) }
+        single { GameHandler(get(), get(), get(), get(), get(), get(), get(), get(), get()) }
         single { DelayOfGameRequest(get(), get(), get()) }
         single { RedZoneHandler(get(), get()) }
+        single { CloseGameHandler(get(), get(), get()) }
+        single { UpsetAlertHandler(get(), get(), get(), get()) }
         single { ChewGameCommand(get(), get(), get()) }
         single { DeleteGameCommand(get()) }
         single { RestartGameCommand(get()) }
@@ -86,13 +93,14 @@ val appModule =
         single { StartScrimmageCommand(get()) }
         single { SubCoachCommand(get(), get(), get()) }
         single { GetRoleCommand(get()) }
+        single { GetTeamCoachesCommand(get()) }
         single { RollbackCommand(get(), get(), get(), get(), get(), get()) }
         single {
             CommandRegistry(
                 get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(),
-                get(), get(), get(), get(), get(), get(), get(), get(),
+                get(), get(), get(), get(), get(), get(), get(), get(), get(),
             )
         }
         single { FCFBDiscordRefBot(get(), get(), get(), get()) }
-        single { DiscordMessageHandler(get(), get(), get(), get(), get(), get(), get(), get()) }
+        single { DiscordMessageHandler(get(), get(), get(), get(), get(), get(), get(), get(), get()) }
     }

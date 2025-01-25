@@ -82,19 +82,28 @@ class PlayClient {
     internal suspend fun submitOffensiveNumber(
         gameId: Int,
         offensiveSubmitter: String,
-        offensiveNumber: Int,
+        offensiveNumber: Int?,
         playCall: PlayCall,
         runoffType: RunoffType,
         offensiveTimeoutCalled: Boolean,
     ): Play? {
         val endpointUrl =
-            "$baseUrl/play/submit_offense?" +
-                "gameId=$gameId&" +
-                "offensiveSubmitter=$offensiveSubmitter&" +
-                "offensiveNumber=$offensiveNumber&" +
-                "playCall=$playCall&" +
-                "runoffType=$runoffType&" +
-                "timeoutCalled=$offensiveTimeoutCalled"
+            if (offensiveNumber == null) {
+                "$baseUrl/play/submit_offense?" +
+                    "gameId=$gameId&" +
+                    "offensiveSubmitter=$offensiveSubmitter&" +
+                    "playCall=$playCall&" +
+                    "runoffType=$runoffType&" +
+                    "timeoutCalled=$offensiveTimeoutCalled"
+            } else {
+                "$baseUrl/play/submit_offense?" +
+                    "gameId=$gameId&" +
+                    "offensiveSubmitter=$offensiveSubmitter&" +
+                    "offensiveNumber=$offensiveNumber&" +
+                    "playCall=$playCall&" +
+                    "runoffType=$runoffType&" +
+                    "timeoutCalled=$offensiveTimeoutCalled"
+            }
 
         return putRequest(endpointUrl)
     }

@@ -60,6 +60,10 @@ data class Game(
     @JsonProperty("game_type") val gameType: GameType?,
     @JsonProperty("game_mode") val gameMode: GameMode?,
     @JsonProperty("overtime_half") val overtimeHalf: Int?,
+    @JsonProperty("close_game") val closeGame: Boolean,
+    @JsonProperty("close_game_pinged") val closeGamePinged: Boolean,
+    @JsonProperty("upset_alert") val upsetAlert: Boolean,
+    @JsonProperty("upset_alert_pinged") val upsetAlertPinged: Boolean,
 )
 
 enum class GameStatus(val description: String) {
@@ -114,7 +118,6 @@ enum class TVChannel(val description: String) {
 
 enum class Platform(val description: String) {
     DISCORD("DISCORD"),
-    REDDIT("REDDIT"),
 }
 
 enum class PlayCall(val description: String) {

@@ -2,9 +2,11 @@ package com.fcfb.discord.refbot.handlers
 
 import com.fcfb.discord.refbot.api.GameClient
 import com.fcfb.discord.refbot.api.PlayClient
+import com.fcfb.discord.refbot.handlers.discord.CloseGameHandler
 import com.fcfb.discord.refbot.handlers.discord.DiscordMessageHandler
 import com.fcfb.discord.refbot.handlers.discord.RedZoneHandler
 import com.fcfb.discord.refbot.handlers.discord.TextChannelThreadHandler
+import com.fcfb.discord.refbot.handlers.discord.UpsetAlertHandler
 import com.fcfb.discord.refbot.model.discord.MessageConstants.Error
 import com.fcfb.discord.refbot.model.fcfb.game.Game
 import com.fcfb.discord.refbot.model.fcfb.game.GameStatus
@@ -22,6 +24,8 @@ class GameHandler(
     private val gameClient: GameClient,
     private val playClient: PlayClient,
     private val gameUtils: GameUtils,
+    private val closeGameHandler: CloseGameHandler,
+    private val upsetAlertHandler: UpsetAlertHandler,
     private val redZoneHandler: RedZoneHandler,
     private val errorHandler: ErrorHandler,
 ) {
@@ -75,6 +79,7 @@ class GameHandler(
             discordMessageHandler.sendRequestForOffensiveNumber(
                 client,
                 game,
+                currentPlay,
                 false,
                 message,
             )
@@ -92,13 +97,17 @@ class GameHandler(
         game: Game,
         message: Message,
     ) {
-        val number =
-            when (val messageNumber = gameUtils.parseValidNumberFromMessage(message)) {
-                -1 -> return errorHandler.multipleNumbersFoundError(message)
-                -2 -> return errorHandler.invalidNumberError(message)
-                else -> messageNumber
-            }
         val playCall = gameUtils.parsePlayCallFromMessage(message) ?: return errorHandler.invalidPlayCall(message)
+        val number =
+            if (playCall == PlayCall.KNEEL || playCall == PlayCall.SPIKE) {
+                null
+            } else {
+                when (val messageNumber = gameUtils.parseValidNumberFromMessage(message)) {
+                    -1 -> return errorHandler.multipleNumbersFoundError(message)
+                    -2 -> return errorHandler.invalidNumberError(message)
+                    else -> messageNumber
+                }
+            }
         val runoffType = gameUtils.parseRunoffTypeFromMessage(game, message)
         val timeoutCalled = gameUtils.parseTimeoutFromMessage(message)
         val offensiveSubmitter = message.author?.username ?: return errorHandler.invalidOffensiveSubmitter(message)
@@ -132,8 +141,11 @@ class GameHandler(
 
         val playOutcomeMessage = discordMessageHandler.sendPlayOutcomeMessage(client, updatedGame, playOutcome, message)
 
-        textChannelThreadHandler.updateThread(textChannelThreadHandler.getTextChannelThread(message), updatedGame)
+        val gameThread = textChannelThreadHandler.getTextChannelThread(message)
+        textChannelThreadHandler.updateThread(gameThread, updatedGame)
         redZoneHandler.handleRedZone(client, playOutcome, updatedGame, playOutcomeMessage)
+        closeGameHandler.handleCloseGame(client, updatedGame, playOutcomeMessage)
+        upsetAlertHandler.handleUpsetAlert(client, updatedGame, playOutcomeMessage)
 
         when (updatedGame.gameStatus) {
             GameStatus.FINAL -> {
@@ -174,12 +186,12 @@ class GameHandler(
         val timeoutCalled = gameUtils.parseTimeoutFromMessage(message)
         val defensiveSubmitter = message.author?.username ?: return errorHandler.invalidDefensiveSubmitter(message)
 
-        // Submit the defensive number and get the play outcome
-        playClient.submitDefensiveNumber(game.gameId, defensiveSubmitter, number, timeoutCalled)
-            ?: return errorHandler.invalidDefensiveNumberSubmission(message)
+        val play =
+            playClient.submitDefensiveNumber(game.gameId, defensiveSubmitter, number, timeoutCalled)
+                ?: return errorHandler.invalidDefensiveNumberSubmission(message)
 
         discordMessageHandler.sendNumberConfirmationMessage(game, number, timeoutCalled, message)
-        discordMessageHandler.sendRequestForOffensiveNumber(client, game, timeoutCalled, message)
+        discordMessageHandler.sendRequestForOffensiveNumber(client, game, play, timeoutCalled, message)
     }
 
     /**

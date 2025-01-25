@@ -17,7 +17,6 @@ data class FCFBUser(
     @JsonProperty("email") var email: String?,
     @JsonProperty("password") var password: String?,
     @JsonProperty("position") var position: CoachPosition,
-    @JsonProperty("reddit_username") var redditUsername: String? = null,
     @JsonProperty("role") var role: Role = USER,
     @JsonProperty("salt") var salt: String?,
     @JsonProperty("team") var team: String? = null,

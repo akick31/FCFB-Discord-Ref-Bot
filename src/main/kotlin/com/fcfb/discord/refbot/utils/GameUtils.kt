@@ -421,9 +421,57 @@ class GameUtils {
             else -> number.toString()
         }
 
+    /**
+     * Get the previous play info for a game
+     * @param previousPlay The play object
+     */
+    fun getPreviousPlayInfo(previousPlay: Play?): String {
+        return if (previousPlay != null) {
+            "\n\n**Previous Play**\n" +
+                "Offensive Number: ${previousPlay.offensiveNumber}\n" +
+                "Defensive Number: ${previousPlay.defensiveNumber}\n" +
+                "Difference: ${previousPlay.difference}\n" +
+                "Play Call: ${previousPlay.playCall}\n" +
+                "Result: ${previousPlay.result}\n" +
+                "Actual Result: ${previousPlay.actualResult}\n"
+        } else {
+            ""
+        }
+    }
+
+    /**
+     * Get the clock info for a game
+     * @param game The game object
+     */
     fun getClockInfo(game: Game): String {
+        val quarter =
+            if (game.quarter >= 5) {
+                4
+            } else {
+                game.quarter
+            }
         return if (game.gameStatus != GameStatus.OVERTIME) {
-            " ${game.clock} left in the ${toOrdinal(game.quarter)}."
+            " ${game.clock} left in the ${toOrdinal(quarter)}."
+        } else {
+            ""
+        }
+    }
+
+    /***
+     * Get the play time info for a game
+     * @param game The game object
+     * @param play The play object
+     */
+    fun getPlayTimeInfo(
+        game: Game,
+        play: Play?,
+    ): String {
+        return if (game.gameStatus != GameStatus.OVERTIME) {
+            if (play?.playCall != PlayCall.PAT && play?.playCall != PlayCall.TWO_POINT) {
+                "The play took ${(play?.playTime ?: 0) + (play?.runoffTime ?: 0)} seconds. "
+            } else {
+                ""
+            }
         } else {
             ""
         }

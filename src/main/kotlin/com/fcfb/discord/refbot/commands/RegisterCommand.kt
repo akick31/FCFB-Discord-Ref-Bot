@@ -59,9 +59,6 @@ class RegisterCommand(
                     choice("3-3-5", DefensivePlaybook.THREE_THREE_FIVE.toString()),
                 )
             }
-            string("reddit_username", "Reddit Username") {
-                required = false
-            }
         }
     }
 
@@ -80,7 +77,6 @@ class RegisterCommand(
         val email = command.options["email"]!!.value.toString()
         val password = command.options["password"]!!.value.toString()
         val positionString = command.options["position"]!!.value.toString()
-        val redditUsername = command.options["reddit_username"]?.value.toString()
         val offensivePlaybookString = command.options["offensive_playbook"]!!.value.toString()
         val defensivePlaybookString = command.options["defensive_playbook"]!!.value.toString()
 
@@ -137,7 +133,6 @@ class RegisterCommand(
                 password = password,
                 salt = "",
                 position = position,
-                redditUsername = redditUsername,
                 offensivePlaybook = offensivePlaybook,
                 defensivePlaybook = defensivePlaybook,
                 verificationToken = "",

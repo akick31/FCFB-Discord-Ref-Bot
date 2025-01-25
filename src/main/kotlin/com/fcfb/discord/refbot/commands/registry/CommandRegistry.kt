@@ -8,6 +8,7 @@ import com.fcfb.discord.refbot.commands.EndGameCommand
 import com.fcfb.discord.refbot.commands.FireCoachCommand
 import com.fcfb.discord.refbot.commands.GameInfoCommand
 import com.fcfb.discord.refbot.commands.GetRoleCommand
+import com.fcfb.discord.refbot.commands.GetTeamCoachesCommand
 import com.fcfb.discord.refbot.commands.HelpCommand
 import com.fcfb.discord.refbot.commands.HireCoachCommand
 import com.fcfb.discord.refbot.commands.HireInterimCoachCommand
@@ -36,6 +37,7 @@ class CommandRegistry(
     private val endAllGamesCommand: EndAllGamesCommand,
     private val fireCoachCommand: FireCoachCommand,
     private val gameInfoCommand: GameInfoCommand,
+    private val getTeamCoachesCommand: GetTeamCoachesCommand,
     private val helpCommand: HelpCommand,
     private val hireCoachCommand: HireCoachCommand,
     private val hireInterimCoachCommand: HireInterimCoachCommand,
@@ -73,6 +75,7 @@ class CommandRegistry(
         subCoachCommand.register(client)
         getRoleCommand.register(client)
         rollbackCommand.register(client)
+        getTeamCoachesCommand.register(client)
     }
 
     suspend fun executeCommand(interaction: ChatInputCommandInteraction) {
@@ -100,6 +103,7 @@ class CommandRegistry(
             "end_all" -> endAllGamesCommand.execute(interaction)
             "fire_coach" -> fireCoachCommand.execute(interaction)
             "game_info" -> gameInfoCommand.execute(interaction)
+            "get_team_coaches" -> getTeamCoachesCommand.execute(interaction)
             "help" -> helpCommand.execute(userRole, interaction)
             "hire_coach" -> hireCoachCommand.execute(interaction)
             "hire_interim_coach" -> hireInterimCoachCommand.execute(interaction)

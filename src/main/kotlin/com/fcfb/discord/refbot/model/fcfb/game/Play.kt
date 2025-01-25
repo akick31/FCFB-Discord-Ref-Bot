@@ -23,7 +23,7 @@ data class Play(
     @JsonProperty("offensive_submitter") val offensiveSubmitter: String?,
     @JsonProperty("play_call") val playCall: PlayCall?,
     @JsonProperty("result") val result: Scenario?,
-    @JsonProperty("difference") val difference: Int,
+    @JsonProperty("difference") val difference: Int?,
     @JsonProperty("actual_result") val actualResult: ActualResult?,
     @JsonProperty("yards") val yards: Int,
     @JsonProperty("play_time") val playTime: Int,

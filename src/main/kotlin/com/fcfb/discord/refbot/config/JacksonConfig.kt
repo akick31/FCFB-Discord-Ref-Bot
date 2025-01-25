@@ -11,6 +11,7 @@ import com.fcfb.discord.refbot.config.deserializers.DefensivePlaybookDeserialize
 import com.fcfb.discord.refbot.config.deserializers.GameModeDeserializer
 import com.fcfb.discord.refbot.config.deserializers.GameStatusDeserializer
 import com.fcfb.discord.refbot.config.deserializers.GameTypeDeserializer
+import com.fcfb.discord.refbot.config.deserializers.MessageTypeDeserializer
 import com.fcfb.discord.refbot.config.deserializers.OffensivePlaybookDeserializer
 import com.fcfb.discord.refbot.config.deserializers.PlatformDeserializer
 import com.fcfb.discord.refbot.config.deserializers.PlayCallDeserializer
@@ -38,6 +39,7 @@ import com.fcfb.discord.refbot.model.fcfb.game.Scenario
 import com.fcfb.discord.refbot.model.fcfb.game.Subdivision
 import com.fcfb.discord.refbot.model.fcfb.game.TVChannel
 import com.fcfb.discord.refbot.model.fcfb.game.TeamSide
+import com.fcfb.discord.refbot.model.log.MessageType
 
 class JacksonConfig {
     private fun customGameModule(): SimpleModule {
@@ -70,7 +72,7 @@ class JacksonConfig {
         }
     }
 
-    fun customFCFBUserModule(): SimpleModule {
+    private fun customFCFBUserModule(): SimpleModule {
         return SimpleModule().apply {
             addDeserializer(CoachPosition::class.java, CoachPositionDeserializer())
             addDeserializer(Role::class.java, RoleDeserializer())
@@ -85,7 +87,7 @@ class JacksonConfig {
         }
     }
 
-    fun customTeamModule(): SimpleModule {
+    private fun customTeamModule(): SimpleModule {
         return SimpleModule().apply {
             addDeserializer(Conference::class.java, ConferenceDeserializer())
         }
@@ -96,6 +98,20 @@ class JacksonConfig {
             registerModule(KotlinModule.Builder().build())
             registerModule(customTeamModule())
             propertyNamingStrategy = PropertyNamingStrategies.SNAKE_CASE
+        }
+    }
+
+    fun configureRequestMessageLogMapping(): ObjectMapper {
+        return ObjectMapper().apply {
+            registerModule(KotlinModule.Builder().build())
+            registerModule(customRequestMessageLogModule())
+            propertyNamingStrategy = PropertyNamingStrategies.SNAKE_CASE
+        }
+    }
+
+    private fun customRequestMessageLogModule(): SimpleModule {
+        return SimpleModule().apply {
+            addDeserializer(MessageType::class.java, MessageTypeDeserializer())
         }
     }
 }
