@@ -70,7 +70,7 @@ pipeline {
                         discord.scores.channel.id=1309027178780033074
 
                         # Domain configuration
-                        api.url=http://51.81.32.234:1313/arceus
+                        api.url=https://dev.api.fakecollegefootball.com/arceus
 
                         # Server configuration
                         server.port=1312
