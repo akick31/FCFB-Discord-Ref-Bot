@@ -40,9 +40,7 @@ class UpsetAlertHandler(
 
         val teamOnUpsetAlert = if (homeTeamRanking < awayTeamRanking) homeTeam else awayTeam
 
-        val guild = client.getGuild(Snowflake(properties.getDiscordProperties().guildId))
-        val upsetAlertRole = guild.getRole(Snowflake(properties.getDiscordProperties().upsetAlertRoleId))
-        var messageContent = upsetAlertRole.mention + "\n"
+        var messageContent = "**UPSET ALERT**\n"
         messageContent += "#${if (teamOnUpsetAlert.name == homeTeam.name) homeTeamRanking else awayTeamRanking} " +
             "${teamOnUpsetAlert.name} is at risk of losing to " +
             "${if (teamOnUpsetAlert.name == homeTeam.name) awayTeam.name else homeTeam.name} late in the game.\n\n"

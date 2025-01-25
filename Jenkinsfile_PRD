@@ -69,11 +69,6 @@ pipeline {
                         discord.redzone.channel.id=1309026273372274739
                         discord.scores.channel.id=1309026439001280552
 
-                        # Role IDs
-                        discord.fbs.close_game.role.id=1182500660441256006
-                        discord.fcs.close_game.role.id=1182501996645855243
-                        discord.upset_alert.role.id=1330664603734118513
-
                         # Domain configuration
                         api.url=https://api.fakecollegefootball.com/arceus
 

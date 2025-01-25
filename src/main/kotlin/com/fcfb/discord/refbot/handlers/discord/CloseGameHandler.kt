@@ -30,10 +30,7 @@ class CloseGameHandler(
             return null
         }
 
-        val guild = client.getGuild(Snowflake(properties.getDiscordProperties().guildId))
-        val fbsCloseGameRole = guild.getRole(Snowflake(properties.getDiscordProperties().fbsCloseGameRoleId))
-        val fcsCloseGameRole = guild.getRole(Snowflake(properties.getDiscordProperties().fcsCloseGameRoleId))
-        var messageContent = fbsCloseGameRole.mention + " " + fcsCloseGameRole.mention + "\n"
+        var messageContent = "**CLOSE GAME ALERT**\n"
         messageContent +=
             if (game.homeScore == game.awayScore) {
                 if (game.quarter >= 5) {
