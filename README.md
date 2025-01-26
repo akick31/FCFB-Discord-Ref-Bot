@@ -43,7 +43,7 @@ To get the required application.properties file:
 
 Once you have the file:
 1.	Place it in the src/main/resources directory.
-2.	Double-check the values for correctness, especially if you’re running a local instance of FCFB-Arceus.
+2. Double check the values for correctness, especially if you’re running a local instance of FCFB-Arceus.
 
 # 4. Build the Project
 
