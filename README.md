@@ -16,7 +16,7 @@ The bot handles user commands and is the frontend for the game that the user int
 
 ## Reporting Bugs or Issues
 To report bugs or submit feature requests:
-- **Preferred Method**: Use the Jira board at [https://fakecollegefootball.atlassian.net/jira/software/projects/FCFB/boards/1](https://fakecollegefootball.atlassian.net/jira/software/projects/FCFB/boards/1). You’ll need to sign up for access.
+- **Preferred Method**: Use the Jira board at [https://fakecollegefootball.atlassian.net/jira/software/projects/FCFB/boards/1](https://fakecollegefootball.atlassian.net/jira/software/projects/FCFB/boards/1). You'll need to sign up for access.
 - **Alternative Method**: If Jira isn’t your thing, feel free to submit an issue directly.
 
 ---
