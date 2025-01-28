@@ -108,4 +108,10 @@ class ErrorHandler(
      * Handle invalid number error
      */
     internal suspend fun invalidNumberError(message: Message) = discordMessageHandler.sendErrorMessage(message, Error.INVALID_NUMBER)
+
+    /**
+     * Handle invalid defensive submission location
+     */
+    internal suspend fun invalidDefensiveSubmissionLocation(message: Message) =
+        discordMessageHandler.sendErrorMessage(message, Error.INVALID_DEFENSIVE_SUBMISSION_LOCATION)
 }

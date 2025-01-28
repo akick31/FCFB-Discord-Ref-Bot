@@ -35,6 +35,7 @@ class MessageConstants {
         GAME_OVER("This game is already over"),
         INVALID_GAME_STATUS("Invalid game status"),
         TEAM_NOT_FOUND("Could not find a team associated with this game"),
+        INVALID_DEFENSIVE_SUBMISSION_LOCATION("Please submit your defensive number in private messages, this is the game thread"),
         ;
 
         fun logError() {

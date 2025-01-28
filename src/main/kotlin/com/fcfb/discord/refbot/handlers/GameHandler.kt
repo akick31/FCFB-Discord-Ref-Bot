@@ -51,8 +51,8 @@ class GameHandler(
             gameUtils.isPreGameAfterCoinToss(game) -> handleCoinTossChoice(client, game, message)
             gameUtils.isOvertimeBeforeCoinToss(game) -> handleCoinToss(client, game, message)
             gameUtils.isOvertimeAfterCoinToss(game) -> handleOvertimeCoinTossChoice(client, game, message)
-            gameUtils.isWaitingOnOffensiveNumber(game, message) -> handleOffensiveNumberSubmission(client, game, message)
             gameUtils.isWaitingOnDefensiveNumber(game, message) -> handleDefensiveNumberSubmission(client, game, message)
+            gameUtils.isWaitingOnOffensiveNumber(game, message) -> handleOffensiveNumberSubmission(client, game, message)
             !gameUtils.isGameWaitingOnUser(game, message) -> return errorHandler.notWaitingForUserError(message)
         }
     }
@@ -177,6 +177,13 @@ class GameHandler(
         game: Game,
         message: Message,
     ) {
+        // If the guild is null, it is not a direct message
+        if (message.getGuildOrNull() != null) {
+            return errorHandler.invalidDefensiveSubmissionLocation(message)
+        }
+        if (!gameUtils.isGameWaitingOnUser(game, message)) {
+            return errorHandler.waitingOnUserError(message)
+        }
         val number =
             when (val messageNumber = gameUtils.parseValidNumberFromMessage(message)) {
                 -1 -> return errorHandler.multipleNumbersFoundError(message)

@@ -30,7 +30,7 @@ To report bugs or submit feature requests:
 ### 2. Clone the Repository
 Clone the project to your local machine:
 ```bash
-git clone https://github.com/fakecollegefootball/fcfb-discord-bot.git
+git clone https://github.com/akick31/fcfb-discord-bot.git
 cd fcfb-discord-bot
 ```
 
