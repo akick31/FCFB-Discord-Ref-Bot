@@ -36,6 +36,7 @@ data class FCFBUser(
     @JsonProperty("national_championship_losses") var nationalChampionshipLosses: Int = 0,
     @JsonProperty("offensive_playbook") var offensivePlaybook: OffensivePlaybook?,
     @JsonProperty("defensive_playbook") var defensivePlaybook: DefensivePlaybook?,
+    @JsonProperty("average_response_time") var averageResponseTime: Double = 0.0,
     @JsonProperty("approved") var approved: Byte?,
     @JsonProperty("verification_token") var verificationToken: String?,
 )

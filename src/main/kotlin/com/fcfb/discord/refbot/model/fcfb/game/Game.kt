@@ -181,6 +181,7 @@ enum class RunoffType(val description: String) {
     CHEW("CHEW"),
     HURRY("HURRY"),
     NORMAL("NORMAL"),
+    NONE("NONE"),
 }
 
 enum class Scenario(val description: String) {
