@@ -280,7 +280,7 @@ class GameUtils {
      * Parse the runoff type from a message
      * @param message The message object
      */
-    fun =parseRunoffTypeFromMessage(
+    fun parseRunoffTypeFromMessage(
         game: Game,
         message: Message,
     ): RunoffType {
