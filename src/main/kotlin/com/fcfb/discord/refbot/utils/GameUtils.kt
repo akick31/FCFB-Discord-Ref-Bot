@@ -84,7 +84,10 @@ class GameUtils {
      * @param message The message object
      * @return The play call
      */
-    fun parsePlayCallFromMessage(message: Message): PlayCall? {
+    fun parsePlayCallFromMessage(
+        game: Game,
+        message: Message,
+    ): PlayCall? {
         // Check if "run" (case-insensitive) is present in the message content
         val containsRun = message.content.contains("run", ignoreCase = true)
         val containsPass = message.content.contains("pass", ignoreCase = true)
@@ -94,9 +97,14 @@ class GameUtils {
         val containsPunt = message.content.contains("punt", ignoreCase = true)
         val containsPAT = message.content.contains("pat", ignoreCase = true)
         val containsTwoPoint = message.content.contains("two point", ignoreCase = true)
-        val containsNormal = message.content.contains("normal", ignoreCase = true)
-        val containsSquib = message.content.contains("squib", ignoreCase = true)
-        val containsOnside = message.content.contains("onside", ignoreCase = true)
+        var containsNormal = false
+        var containsSquib = false
+        var containsOnside = false
+        if (game.currentPlayType == PlayType.KICKOFF) {
+            containsNormal = message.content.contains("normal", ignoreCase = true)
+            containsSquib = message.content.contains("squib", ignoreCase = true)
+            containsOnside = message.content.contains("onside", ignoreCase = true)
+        }
 
         return if (
             containsRun &&
@@ -272,7 +280,7 @@ class GameUtils {
      * Parse the runoff type from a message
      * @param message The message object
      */
-    fun parseRunoffTypeFromMessage(
+    fun =parseRunoffTypeFromMessage(
         game: Game,
         message: Message,
     ): RunoffType {
@@ -280,23 +288,27 @@ class GameUtils {
         val containsHurry = message.content.contains("hurry", ignoreCase = true)
         val containsChew = message.content.contains("chew", ignoreCase = true)
         val containsFinal = message.content.contains("final", ignoreCase = true)
+        val containsNormal = message.content.contains("normal", ignoreCase = true)
 
-        return if (containsHurry && !containsChew && !containsFinal) {
+        return if (containsHurry && !containsChew && !containsFinal && !containsNormal) {
             Info.MESSAGE_CONTAINS_HURRY.logInfo()
             RunoffType.HURRY
-        } else if (!containsHurry && containsChew && !containsFinal) {
+        } else if (!containsHurry && containsChew && !containsFinal && !containsNormal) {
             Info.MESSAGE_CONTAINS_CHEW.logInfo()
             RunoffType.CHEW
-        } else if (!containsHurry && !containsChew && containsFinal) {
+        } else if (!containsHurry && !containsChew && containsFinal && !containsNormal) {
             Info.MESSAGE_CONTAINS_FINAL.logInfo()
             RunoffType.FINAL
+        } else if (!containsHurry && !containsChew && !containsFinal && containsNormal) {
+            Info.MESSAGE_CONTAINS_NORMAL.logInfo()
+            RunoffType.NORMAL
         } else {
             if (game.gameMode == GameMode.CHEW) {
                 RunoffType.CHEW
             } else {
-                RunoffType.NORMAL
+                RunoffType.NONE
             }
-            RunoffType.NORMAL
+            RunoffType.NONE
         }
     }
 

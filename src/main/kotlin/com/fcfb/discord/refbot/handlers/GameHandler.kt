@@ -97,7 +97,7 @@ class GameHandler(
         game: Game,
         message: Message,
     ) {
-        val playCall = gameUtils.parsePlayCallFromMessage(message) ?: return errorHandler.invalidPlayCall(message)
+        val playCall = gameUtils.parsePlayCallFromMessage(game, message) ?: return errorHandler.invalidPlayCall(message)
         val number =
             if (playCall == PlayCall.KNEEL || playCall == PlayCall.SPIKE) {
                 null
