@@ -221,7 +221,7 @@ class GameClient {
      * @return List<Game>
      */
     internal suspend fun getAllOngoingGames(): List<Game>? {
-        val endpointUrl = "$baseUrl/game/all/ongoing"
+        val endpointUrl = "$baseUrl/game/filtered?category=ONGOING"
         return getRequestList(endpointUrl)
     }
 
