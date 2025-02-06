@@ -43,6 +43,7 @@ data class Team(
     @JsonProperty("playoff_losses") var playoffLosses: Int = 0,
     @JsonProperty("national_championship_wins") var nationalChampionshipWins: Int = 0,
     @JsonProperty("national_championship_losses") var nationalChampionshipLosses: Int = 0,
+    @JsonProperty("is_taken") var isTaken: Boolean = false,
     @JsonProperty("active") var active: Boolean = true,
 )
 
