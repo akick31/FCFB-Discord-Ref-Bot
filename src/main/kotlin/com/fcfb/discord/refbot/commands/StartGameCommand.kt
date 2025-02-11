@@ -166,7 +166,12 @@ class StartGameCommand(
                 else -> GameType.SCRIMMAGE
             }
 
-        val startedGame = gameClient.startGame(subdivision, homeTeam, awayTeam, tvChannel, gameType)
+        val apiResponse = gameClient.startGame(subdivision, homeTeam, awayTeam, tvChannel, gameType)
+        if (apiResponse.keys.firstOrNull() == null) {
+            response.respond { this.content = apiResponse.values.firstOrNull() ?: "Could not determine error" }
+            return
+        }
+        val startedGame = apiResponse.keys.firstOrNull()
         if (startedGame == null) {
             response.respond { this.content = "Start game failed!" }
             Logger.error("${interaction.user.username} failed to start a game between $homeTeam and $awayTeam")
@@ -174,6 +179,5 @@ class StartGameCommand(
             response.respond { this.content = "Started game between $homeTeam and $awayTeam" }
             Logger.info("${interaction.user.username} successfully started a game between $homeTeam and $awayTeam")
         }
-        // TODO add option to check db if game WAS created and remove it
     }
 }

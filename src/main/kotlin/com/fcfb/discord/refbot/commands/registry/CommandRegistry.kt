@@ -81,7 +81,12 @@ class CommandRegistry(
     suspend fun executeCommand(interaction: ChatInputCommandInteraction) {
         val userRole =
             try {
-                userClient.getUserByDiscordId(interaction.user.id.toString())?.role ?: Role.USER
+                val response = userClient.getUserByDiscordId(interaction.user.id.toString())
+                if (response.keys.firstOrNull() == null) {
+                    Role.USER
+                } else {
+                    response.keys.firstOrNull()?.role ?: Role.USER
+                }
             } catch (e: Exception) {
                 Role.USER
             }

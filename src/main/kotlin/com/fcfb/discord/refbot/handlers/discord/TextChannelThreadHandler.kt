@@ -7,6 +7,7 @@ import com.fcfb.discord.refbot.model.fcfb.game.GameStatus
 import com.fcfb.discord.refbot.model.fcfb.game.GameType
 import com.fcfb.discord.refbot.model.fcfb.game.TeamSide
 import com.fcfb.discord.refbot.utils.GameUtils
+import com.fcfb.discord.refbot.utils.NoMessageContentFoundException
 import com.fcfb.discord.refbot.utils.Properties
 import com.kotlindiscord.kord.extensions.utils.getJumpUrl
 import dev.kord.common.entity.Snowflake
@@ -21,11 +22,12 @@ import dev.kord.rest.builder.message.EmbedBuilder
 import dev.kord.rest.builder.message.addFile
 import kotlin.io.path.Path
 
-class TextChannelThreadHandler {
-    private val properties = Properties()
-    private val gameUtils = GameUtils()
-    private val teamClient = TeamClient()
-
+class TextChannelThreadHandler(
+    private val gameUtils: GameUtils,
+    private val properties: Properties,
+    private val teamClient: TeamClient,
+    private val scorebugClient: ScorebugClient,
+) {
     /**
      * Get the text channel thread by ID
      * @param client The Discord client
@@ -105,8 +107,8 @@ class TextChannelThreadHandler {
         val threadContent = getPostgameInformation(game, lastMessage)
         val tags = getTagsForThread(game, gameChannel)
 
-        val scorebug = ScorebugClient().getScorebugByGameId(game.gameId)
-        val embedData = GameUtils().getScorebugEmbed(scorebug, game, threadContent)
+        val scorebug = scorebugClient.getScorebugByGameId(game.gameId)
+        val embedData = gameUtils.getScorebugEmbed(scorebug, game, threadContent)
 
         return gameChannel.startPublicThread(threadName) {
             name = threadName
@@ -197,8 +199,8 @@ class TextChannelThreadHandler {
 
     /**
      * Get the tags to apply to the thread
-     * @param client The Discord client
      * @param game The game object
+     * @param channel The forum channel
      */
     private fun getTagsForThread(
         game: Game,
@@ -265,8 +267,12 @@ class TextChannelThreadHandler {
                 return "BOWL || $teamMatchup"
             }
             GameType.CONFERENCE_CHAMPIONSHIP -> {
-                val conference =
-                    teamClient.getTeamByName(game.homeTeam)?.conference?.description?.uppercase()
+                val apiResponse = teamClient.getTeamByName(game.homeTeam)
+                if (apiResponse.keys.firstOrNull() == null) {
+                    throw Exception(apiResponse.values.firstOrNull())
+                }
+                val team = apiResponse.keys.firstOrNull()
+                val conference = team?.conference?.description?.uppercase()
                         ?: return "CONFERENCE CHAMPIONSHIP || $teamMatchup"
                 return "$conference CHAMPIONSHIP || $teamMatchup"
             }
@@ -308,8 +314,12 @@ class TextChannelThreadHandler {
                 return "BOWL || $teamMatchup"
             }
             GameType.CONFERENCE_CHAMPIONSHIP -> {
-                val conference =
-                    teamClient.getTeamByName(game.homeTeam)?.conference?.description?.uppercase()
+                val apiResponse = teamClient.getTeamByName(game.homeTeam)
+                if (apiResponse.keys.firstOrNull() == null) {
+                    throw Exception(apiResponse.values.firstOrNull())
+                }
+                val team = apiResponse.keys.firstOrNull()
+                val conference = team?.conference?.description?.uppercase()
                         ?: return "CONFERENCE CHAMPIONSHIP || $teamMatchup"
                 return "$conference CHAMPIONSHIP || $teamMatchup"
             }

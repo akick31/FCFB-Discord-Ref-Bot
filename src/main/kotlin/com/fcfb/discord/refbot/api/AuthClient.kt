@@ -16,7 +16,9 @@ import io.ktor.http.contentType
 import io.ktor.serialization.jackson.jackson
 import java.util.Properties
 
-class AuthClient {
+class AuthClient(
+    private val apiUtils: ApiUtils
+) {
     private val baseUrl: String
     private val httpClient =
         HttpClient(CIO) {
@@ -48,7 +50,7 @@ class AuthClient {
      * @param user
      * @return OngoingGame
      */
-    internal suspend fun registerUser(user: FCFBUser): FCFBUser? {
+    internal suspend fun registerUser(user: FCFBUser): Map<FCFBUser?, String?> {
         val endpointUrl = "$baseUrl/auth/register"
         return postRequestWithBody(endpointUrl, user)
     }
@@ -61,19 +63,22 @@ class AuthClient {
     private suspend fun postRequestWithBody(
         endpointUrl: String,
         body: Any,
-    ): FCFBUser? {
+    ): Map<FCFBUser?, String?> {
         return try {
-            val response: HttpResponse =
-                httpClient.post(endpointUrl) {
-                    contentType(ContentType.Application.Json)
-                    setBody(body)
-                }
-            val jsonResponse: String = response.bodyAsText()
+            val response = httpClient.post(endpointUrl) {
+                contentType(ContentType.Application.Json)
+                setBody(body)
+            }
+            val jsonResponse = response.bodyAsText()
+            if (jsonResponse.contains("error")) {
+                val error = apiUtils.readError(jsonResponse)
+                return mapOf(null to error)
+            }
             val objectMapper = JacksonConfig().configureFCFBUserMapping()
-            return objectMapper.readValue(jsonResponse, FCFBUser::class.java)
+            mapOf(objectMapper.readValue(jsonResponse, FCFBUser::class.java) to null)
         } catch (e: Exception) {
             Logger.error(e.message!!)
-            null
+            mapOf(null to e.message)
         }
     }
 }

@@ -65,7 +65,6 @@ class RegisterCommand(
     /**
      * Register a new user
      * @param interaction The interaction object
-     * @param command The command object
      */
     suspend fun execute(interaction: ChatInputCommandInteraction) {
         Logger.info("${interaction.user.username} is registering a new user")
@@ -136,7 +135,12 @@ class RegisterCommand(
                 offensivePlaybook = offensivePlaybook,
                 defensivePlaybook = defensivePlaybook,
             )
-        val registeredUser = authClient.registerUser(user)
+        val apiResponse = authClient.registerUser(user)
+        if (apiResponse.keys.firstOrNull() == null) {
+            response.respond { this.content = apiResponse.values.firstOrNull() ?: "Could not determine error" }
+            return
+        }
+        val registeredUser = apiResponse.keys.firstOrNull()
         if (registeredUser == null) {
             response.respond { this.content = "User registration failed!" }
             Logger.error("${interaction.user.username} failed to register a new user")

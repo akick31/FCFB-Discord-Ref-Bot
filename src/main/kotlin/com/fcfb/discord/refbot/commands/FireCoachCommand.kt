@@ -34,7 +34,12 @@ class FireCoachCommand(
 
         val team = command.options["team"]!!.value.toString()
 
-        val updatedTeam = teamClient.fireCoach(team, interaction.user.username)
+        val apiResponse = teamClient.fireCoach(team, interaction.user.username)
+        if (apiResponse.keys.firstOrNull() == null) {
+            response.respond { this.content = apiResponse.values.firstOrNull() ?: "Could not determine error" }
+            return
+        }
+        val updatedTeam = apiResponse.keys.firstOrNull()
         if (updatedTeam == null) {
             response.respond { this.content = "Team fire failed!" }
             Logger.error("${interaction.user.username} failed to fire a coach for ${command.options["team"]!!.value}")

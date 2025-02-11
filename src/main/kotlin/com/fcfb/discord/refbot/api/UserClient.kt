@@ -15,7 +15,9 @@ import io.ktor.http.ContentType
 import io.ktor.http.contentType
 import java.util.Properties
 
-class UserClient {
+class UserClient(
+    private val apiUtils: ApiUtils
+) {
     private val baseUrl: String
     private val httpClient =
         HttpClient(CIO) {
@@ -40,39 +42,47 @@ class UserClient {
 
     /**
      * Get a user by ID
-     * @param userId
+     * @param discordId
      * @return User
      */
-    internal suspend fun getUserByDiscordId(discordId: String): FCFBUser? {
+    internal suspend fun getUserByDiscordId(discordId: String): Map<FCFBUser?, String?> {
         val endpointUrl = "$baseUrl/user/discord?id=$discordId"
         return getRequest(endpointUrl)
     }
 
     /**
      * Get a user by ID
-     * @param userId
+     * @param discordId
+     * @param role
      * @return User
      */
     internal suspend fun updateUserRoleByDiscordId(
         discordId: String,
         role: Role,
-    ): FCFBUser? {
+    ): Map<FCFBUser?, String?> {
         val endpointUrl = "$baseUrl/user/update/role?discord_id=$discordId&role=$role"
         return putRequest(endpointUrl)
     }
 
-    private suspend fun getRequest(endpointUrl: String): FCFBUser? {
+    /**
+     * Call a get request to the user endpoint and return a user
+     * @param endpointUrl
+     */
+    private suspend fun getRequest(endpointUrl: String): Map<FCFBUser?, String?> {
         return try {
-            val response: HttpResponse =
-                httpClient.get(endpointUrl) {
-                    contentType(ContentType.Application.Json)
-                }
-            val jsonResponse: String = response.bodyAsText()
+            val response = httpClient.get(endpointUrl) {
+                contentType(ContentType.Application.Json)
+            }
+            val jsonResponse = response.bodyAsText()
+            if (jsonResponse.contains("error")) {
+                val error = apiUtils.readError(jsonResponse)
+                return mapOf(null to error)
+            }
             val objectMapper = JacksonConfig().configureFCFBUserMapping()
-            objectMapper.readValue(jsonResponse, FCFBUser::class.java)
+            mapOf(objectMapper.readValue(jsonResponse, FCFBUser::class.java) to null)
         } catch (e: Exception) {
             Logger.error(e.message ?: "Unknown error occurred while making a get request to the user endpoint")
-            null
+            mapOf(null to e.message)
         }
     }
 
@@ -80,16 +90,19 @@ class UserClient {
      * Make a put request to the user endpoint
      * @param endpointUrl
      */
-    private suspend fun putRequest(endpointUrl: String): FCFBUser? {
+    private suspend fun putRequest(endpointUrl: String): Map<FCFBUser?, String?> {
         return try {
-            val response: HttpResponse =
-                httpClient.put(endpointUrl)
-            val jsonResponse: String = response.bodyAsText()
+            val response = httpClient.put(endpointUrl)
+            val jsonResponse = response.bodyAsText()
+            if (jsonResponse.contains("error")) {
+                val error = apiUtils.readError(jsonResponse)
+                return mapOf(null to error)
+            }
             val objectMapper = JacksonConfig().configureFCFBUserMapping()
-            objectMapper.readValue(jsonResponse, FCFBUser::class.java)
+            mapOf(objectMapper.readValue(jsonResponse, FCFBUser::class.java) to null)
         } catch (e: Exception) {
             Logger.error(e.message ?: "Unknown error occurred while making a put request to the user endpoint")
-            null
+            mapOf(null to e.message)
         }
     }
 }

@@ -1,6 +1,7 @@
 package com.fcfb.discord.refbot.utils
 
 import com.fcfb.discord.refbot.api.TeamClient
+import com.fcfb.discord.refbot.handlers.ErrorHandler
 import com.fcfb.discord.refbot.model.discord.MessageConstants.Info
 import com.fcfb.discord.refbot.model.fcfb.Team
 import com.fcfb.discord.refbot.model.fcfb.game.ActualResult
@@ -24,8 +25,9 @@ import java.io.File
 import java.nio.file.Files
 import java.nio.file.StandardOpenOption
 
-class GameUtils {
-    private val teamClient = TeamClient()
+class GameUtils(
+    private val teamClient: TeamClient
+) {
 
     /**
      * Parse a valid number from a message
@@ -71,10 +73,8 @@ class GameUtils {
         val containsTimeout = message.content.contains("timeout", ignoreCase = true)
 
         return if (containsTimeout) {
-            Info.MESSAGE_CONTAINS_TIMEOUT.logInfo()
             true
         } else {
-            Info.MESSAGE_DOES_NOT_CONTAIN_TIMEOUT.logInfo()
             false
         }
     }
@@ -84,232 +84,49 @@ class GameUtils {
      * @param message The message object
      * @return The play call
      */
-    fun parsePlayCallFromMessage(
-        game: Game,
-        message: Message,
-    ): PlayCall? {
-        // Check if "run" (case-insensitive) is present in the message content
-        val containsRun = message.content.contains("run", ignoreCase = true)
-        val containsPass = message.content.contains("pass", ignoreCase = true)
-        val containsSpike = message.content.contains("spike", ignoreCase = true)
-        val containsKneel = message.content.contains("kneel", ignoreCase = true)
-        val containsFieldGoal = message.content.contains("field goal", ignoreCase = true)
-        val containsPunt = message.content.contains("punt", ignoreCase = true)
-        val containsPAT = message.content.contains("pat", ignoreCase = true)
-        val containsTwoPoint = message.content.contains("two point", ignoreCase = true)
-        var containsNormal = false
-        var containsSquib = false
-        var containsOnside = false
-        if (game.currentPlayType == PlayType.KICKOFF) {
-            containsNormal = message.content.contains("normal", ignoreCase = true)
-            containsSquib = message.content.contains("squib", ignoreCase = true)
-            containsOnside = message.content.contains("onside", ignoreCase = true)
-        }
+    fun parsePlayCallFromMessage(game: Game, message: Message): PlayCall {
+        val content = message.content.lowercase()
 
-        return if (
-            containsRun &&
-            !containsPass &&
-            !containsSpike &&
-            !containsKneel &&
-            !containsFieldGoal &&
-            !containsPunt &&
-            !containsPAT &&
-            !containsTwoPoint &&
-            !containsNormal &&
-            !containsSquib &&
-            !containsOnside
-        ) {
-            Info.MESSAGE_CONTAINS_RUN.logInfo()
-            PlayCall.RUN
-        } else if (
-            !containsRun &&
-            containsPass &&
-            !containsSpike &&
-            !containsKneel &&
-            !containsFieldGoal &&
-            !containsPunt &&
-            !containsPAT &&
-            !containsTwoPoint &&
-            !containsNormal &&
-            !containsSquib &&
-            !containsOnside
-        ) {
-            Info.MESSAGE_CONTAINS_PASS.logInfo()
-            PlayCall.PASS
-        } else if (
-            !containsRun &&
-            !containsPass &&
-            containsSpike &&
-            !containsKneel &&
-            !containsFieldGoal &&
-            !containsPunt &&
-            !containsPAT &&
-            !containsTwoPoint &&
-            !containsNormal &&
-            !containsSquib &&
-            !containsOnside
-        ) {
-            Info.MESSAGE_CONTAINS_SPIKE.logInfo()
-            PlayCall.SPIKE
-        } else if (
-            !containsRun &&
-            !containsPass &&
-            !containsSpike &&
-            containsKneel &&
-            !containsFieldGoal &&
-            !containsPunt &&
-            !containsPAT &&
-            !containsTwoPoint &&
-            !containsNormal &&
-            !containsSquib &&
-            !containsOnside
-        ) {
-            Info.MESSAGE_CONTAINS_KNEEL.logInfo()
-            PlayCall.KNEEL
-        } else if (
-            !containsRun &&
-            !containsPass &&
-            !containsSpike &&
-            !containsKneel &&
-            containsFieldGoal &&
-            !containsPunt &&
-            !containsPAT &&
-            !containsTwoPoint &&
-            !containsNormal &&
-            !containsSquib &&
-            !containsOnside
-        ) {
-            Info.MESSAGE_CONTAINS_FIELD_GOAL.logInfo()
-            PlayCall.FIELD_GOAL
-        } else if (
-            !containsRun &&
-            !containsPass &&
-            !containsSpike &&
-            !containsKneel &&
-            !containsFieldGoal &&
-            containsPunt &&
-            !containsPAT &&
-            !containsTwoPoint &&
-            !containsNormal &&
-            !containsSquib &&
-            !containsOnside
-        ) {
-            Info.MESSAGE_CONTAINS_PUNT.logInfo()
-            PlayCall.PUNT
-        } else if (
-            !containsRun &&
-            !containsPass &&
-            !containsSpike &&
-            !containsKneel &&
-            !containsFieldGoal &&
-            !containsPunt &&
-            containsPAT &&
-            !containsTwoPoint &&
-            !containsNormal &&
-            !containsSquib &&
-            !containsOnside
-        ) {
-            Info.MESSAGE_CONTAINS_PAT.logInfo()
-            PlayCall.PAT
-        } else if (
-            !containsRun &&
-            !containsPass &&
-            !containsSpike &&
-            !containsKneel &&
-            !containsFieldGoal &&
-            !containsPunt &&
-            !containsPAT &&
-            containsTwoPoint &&
-            !containsNormal &&
-            !containsSquib &&
-            !containsOnside
-        ) {
-            Info.MESSAGE_CONTAINS_TWO_POINT.logInfo()
-            PlayCall.TWO_POINT
-        } else if (
-            !containsRun &&
-            !containsPass &&
-            !containsSpike &&
-            !containsKneel &&
-            !containsFieldGoal &&
-            !containsPunt &&
-            !containsPAT &&
-            !containsTwoPoint &&
-            containsNormal &&
-            !containsSquib &&
-            !containsOnside
-        ) {
-            Info.MESSAGE_CONTAINS_NORMAL.logInfo()
-            PlayCall.KICKOFF_NORMAL
-        } else if (
-            !containsRun &&
-            !containsPass &&
-            !containsSpike &&
-            !containsKneel &&
-            !containsFieldGoal &&
-            !containsPunt &&
-            !containsPAT &&
-            !containsTwoPoint &&
-            !containsNormal &&
-            containsSquib &&
-            !containsOnside
-        ) {
-            Info.MESSAGE_CONTAINS_SQUIB.logInfo()
-            PlayCall.KICKOFF_SQUIB
-        } else if (
-            !containsRun &&
-            !containsPass &&
-            !containsSpike &&
-            !containsKneel &&
-            !containsFieldGoal &&
-            !containsPunt &&
-            !containsPAT &&
-            !containsTwoPoint &&
-            !containsNormal &&
-            !containsSquib &&
-            containsOnside
-        ) {
-            Info.MESSAGE_CONTAINS_ONSIDE.logInfo()
-            PlayCall.KICKOFF_ONSIDE
-        } else {
-            null
-        }
+        val playCalls = mapOf(
+            "run" to PlayCall.RUN,
+            "pass" to PlayCall.PASS,
+            "spike" to PlayCall.SPIKE,
+            "kneel" to PlayCall.KNEEL,
+            "field goal" to PlayCall.FIELD_GOAL,
+            "punt" to PlayCall.PUNT,
+            "pat" to PlayCall.PAT,
+            "two point" to PlayCall.TWO_POINT
+        )
+
+        val kickoffPlays = mapOf(
+            "normal" to PlayCall.KICKOFF_NORMAL,
+            "squib" to PlayCall.KICKOFF_SQUIB,
+            "onside" to PlayCall.KICKOFF_ONSIDE
+        )
+
+        val validPlayCalls = if (game.currentPlayType == PlayType.KICKOFF) kickoffPlays else playCalls
+        val matchedCalls = validPlayCalls.filterKeys { it in content }.values
+
+        return matchedCalls.singleOrNull() ?: throw InvalidPlayCallException(message.content)
     }
 
     /**
      * Parse the runoff type from a message
      * @param message The message object
      */
-    fun parseRunoffTypeFromMessage(
-        game: Game,
-        message: Message,
-    ): RunoffType {
-        // Check if "runoff" (case-insensitive) is present in the message content
-        val containsHurry = message.content.contains("hurry", ignoreCase = true)
-        val containsChew = message.content.contains("chew", ignoreCase = true)
-        val containsFinal = message.content.contains("final", ignoreCase = true)
-        val containsNormal = message.content.contains("normal", ignoreCase = true)
+    fun parseRunoffTypeFromMessage(game: Game, message: Message): RunoffType {
+        val content = message.content.lowercase()
 
-        return if (containsHurry && !containsChew && !containsFinal && !containsNormal) {
-            Info.MESSAGE_CONTAINS_HURRY.logInfo()
-            RunoffType.HURRY
-        } else if (!containsHurry && containsChew && !containsFinal && !containsNormal) {
-            Info.MESSAGE_CONTAINS_CHEW.logInfo()
-            RunoffType.CHEW
-        } else if (!containsHurry && !containsChew && containsFinal && !containsNormal) {
-            Info.MESSAGE_CONTAINS_FINAL.logInfo()
-            RunoffType.FINAL
-        } else if (!containsHurry && !containsChew && !containsFinal && containsNormal) {
-            Info.MESSAGE_CONTAINS_NORMAL.logInfo()
-            RunoffType.NORMAL
-        } else {
-            if (game.gameMode == GameMode.CHEW) {
-                RunoffType.CHEW
-            } else {
-                RunoffType.NONE
-            }
-            RunoffType.NONE
-        }
+        val runoffTypes = mapOf(
+            "hurry" to RunoffType.HURRY,
+            "chew" to RunoffType.CHEW,
+            "final" to RunoffType.FINAL,
+            "normal" to RunoffType.NORMAL
+        )
+
+        val matchedTypes = runoffTypes.filterKeys { it in content }.values
+
+        return matchedTypes.singleOrNull() ?: if (game.gameMode == GameMode.CHEW) RunoffType.CHEW else RunoffType.NONE
     }
 
     /**
@@ -320,7 +137,7 @@ class GameUtils {
     internal suspend fun getCoinTossWinners(
         client: Kord,
         game: Game,
-    ): List<User?>? {
+    ): List<User?> {
         return when (game.coinTossWinner) {
             TeamSide.HOME ->
                 game.homeCoachDiscordIds.map {
@@ -328,13 +145,17 @@ class GameUtils {
                         Snowflake(it),
                     )
                 }
+
             TeamSide.AWAY ->
                 game.awayCoachDiscordIds.map {
                     client.getUser(
                         Snowflake(it),
                     )
                 }
-            else -> null
+
+            else -> {
+                throw InvalidCoinTossWinnerException(game.gameId)
+            }
         }
     }
 
@@ -738,9 +559,17 @@ class GameUtils {
      * Get the teams for a game
      * @param game The game object
      */
-    suspend fun getTeams(game: Game): Pair<Team?, Team?> {
-        val homeTeam = teamClient.getTeamByName(game.homeTeam)
-        val awayTeam = teamClient.getTeamByName(game.awayTeam)
+    private suspend fun getTeams(game: Game): Pair<Team?, Team?> {
+        val homeTeamApiResponse = teamClient.getTeamByName(game.homeTeam)
+        if (homeTeamApiResponse.keys.firstOrNull() == null) {
+            Logger.error("Error getting home team for upset alert: ${homeTeamApiResponse.values.firstOrNull()}")
+        }
+        val homeTeam = homeTeamApiResponse.keys.firstOrNull()
+        val awayTeamApiResponse = teamClient.getTeamByName(game.awayTeam)
+        if (awayTeamApiResponse.keys.firstOrNull() == null) {
+            Logger.error("Error getting away team for upset alert: ${awayTeamApiResponse.values.firstOrNull()}")
+        }
+        val awayTeam = awayTeamApiResponse.keys.firstOrNull()
         return Pair(homeTeam, awayTeam)
     }
 

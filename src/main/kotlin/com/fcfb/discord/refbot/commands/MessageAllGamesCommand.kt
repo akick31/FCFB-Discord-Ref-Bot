@@ -36,11 +36,12 @@ class MessageAllGamesCommand(
         val messageContent = "**ANNOUNCEMENT**\n${command.options["message"]!!.value}"
         val response = interaction.deferPublicResponse()
 
-        val gameList =
-            gameClient.getAllOngoingGames() ?: run {
-                response.respond { this.content = "Failed to get all ongoing games!" }
-                return
-            }
+        val apiResponse = gameClient.getAllOngoingGames()
+        if (apiResponse.keys.firstOrNull() == null) {
+            response.respond { this.content = apiResponse.values.firstOrNull() ?: "Could not determine error" }
+            return
+        }
+        val gameList = apiResponse.keys.firstOrNull() ?: emptyList()
 
         try {
             for (game in gameList) {

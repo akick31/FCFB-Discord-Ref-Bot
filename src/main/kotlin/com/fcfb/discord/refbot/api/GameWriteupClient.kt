@@ -10,7 +10,9 @@ import io.ktor.client.request.get
 import io.ktor.client.statement.bodyAsText
 import java.util.Properties
 
-class GameWriteupClient {
+class GameWriteupClient(
+    private val apiUtils: ApiUtils
+) {
     private val baseUrl: String
     private val httpClient =
         HttpClient(CIO) {
@@ -41,7 +43,7 @@ class GameWriteupClient {
     internal suspend fun getGameMessageByScenario(
         scenario: Scenario,
         passOrRun: PlayCall?,
-    ): String? {
+    ): Map<String?, String?> {
         val endpointUrl =
             if (passOrRun != null && (passOrRun == PlayCall.PASS || passOrRun == PlayCall.RUN)) {
                 "$baseUrl/game_writeup/${scenario.name}/$passOrRun"
@@ -57,13 +59,18 @@ class GameWriteupClient {
      * @param endpointUrl
      * @return String
      */
-    private suspend fun getRequest(endpointUrl: String): String? {
+    private suspend fun getRequest(endpointUrl: String): Map<String?, String?> {
         return try {
             val response = httpClient.get(endpointUrl)
-            return response.bodyAsText()
+            val jsonResponse = response.bodyAsText()
+            if (jsonResponse.contains("error")) {
+                val error = apiUtils.readError(jsonResponse)
+                return mapOf(null to error)
+            }
+            mapOf(jsonResponse to null)
         } catch (e: Exception) {
             Logger.error(e.message ?: "Unknown error occurred while making a get request to the game writeup endpoint")
-            null
+            mapOf(null to e.message)
         }
     }
 }

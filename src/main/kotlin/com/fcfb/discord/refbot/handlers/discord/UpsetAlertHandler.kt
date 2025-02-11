@@ -31,8 +31,16 @@ class UpsetAlertHandler(
         if (game.gameType == GameType.SCRIMMAGE || !game.upsetAlert || game.upsetAlertPinged) {
             return null
         }
-        val homeTeam = teamClient.getTeamByName(game.homeTeam) ?: return null
-        val awayTeam = teamClient.getTeamByName(game.awayTeam) ?: return null
+        val homeTeamApiResponse = teamClient.getTeamByName(game.homeTeam)
+        if (homeTeamApiResponse.keys.firstOrNull() == null) {
+            Logger.error("Error getting home team for upset alert: ${homeTeamApiResponse.values.firstOrNull()}")
+        }
+        val homeTeam = homeTeamApiResponse.keys.firstOrNull() ?: return null
+        val awayTeamApiResponse = teamClient.getTeamByName(game.awayTeam)
+        if (awayTeamApiResponse.keys.firstOrNull() == null) {
+            Logger.error("Error getting away team for upset alert: ${awayTeamApiResponse.values.firstOrNull()}")
+        }
+        val awayTeam = awayTeamApiResponse.keys.firstOrNull() ?: return null
         var homeTeamRanking = if (homeTeam.playoffCommitteeRanking == 0) homeTeam.coachesPollRanking else homeTeam.playoffCommitteeRanking
         var awayTeamRanking = if (awayTeam.playoffCommitteeRanking == 0) awayTeam.coachesPollRanking else awayTeam.playoffCommitteeRanking
         homeTeamRanking = if (homeTeamRanking == 0 || homeTeamRanking == null) 100 else homeTeamRanking

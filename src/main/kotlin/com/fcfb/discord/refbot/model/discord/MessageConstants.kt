@@ -37,36 +37,12 @@ class MessageConstants {
         TEAM_NOT_FOUND("Could not find a team associated with this game"),
         INVALID_DEFENSIVE_SUBMISSION_LOCATION("Please submit your defensive number in private messages, this is the game thread"),
         ;
-
-        fun logError() {
-            Logger.error(message)
-        }
     }
 
     enum class Info(val message: String) {
         COIN_TOSS_OUTCOME("%s won the coin toss! Please reply to this message with **receive** or **defer**."),
         OVERTIME_COIN_TOSS_OUTCOME("%s won the coin toss! Please reply to this message with **offense** or **defense**."),
         SUCCESSFUL_NUMBER_SUBMISSION("I've got %s as your number"),
-        MESSAGE_CONTAINS_TIMEOUT("The message contains 'timeout'"),
-        MESSAGE_DOES_NOT_CONTAIN_TIMEOUT("The message does not contain 'timeout'"),
-        MESSAGE_CONTAINS_RUN("The message contains 'run'"),
-        MESSAGE_CONTAINS_PASS("The message contains 'pass'"),
-        MESSAGE_CONTAINS_SPIKE("The message contains 'spike'"),
-        MESSAGE_CONTAINS_KNEEL("The message contains 'kneel'"),
-        MESSAGE_CONTAINS_PUNT("The message contains 'punt'"),
-        MESSAGE_CONTAINS_FIELD_GOAL("The message contains 'field goal'"),
-        MESSAGE_CONTAINS_PAT("The message contains 'pat'"),
-        MESSAGE_CONTAINS_TWO_POINT("The message contains 'two point'"),
-        MESSAGE_CONTAINS_NORMAL("The message contains 'normal'"),
-        MESSAGE_CONTAINS_SQUIB("The message contains 'squib'"),
-        MESSAGE_CONTAINS_ONSIDE("The message contains 'onside'"),
-        MESSAGE_CONTAINS_HURRY("The message contains 'hurry'"),
-        MESSAGE_CONTAINS_CHEW("The message contains 'chew'"),
-        MESSAGE_CONTAINS_FINAL("The message contains 'final'"),
         ;
-
-        fun logInfo() {
-            Logger.info(message)
-        }
     }
 }

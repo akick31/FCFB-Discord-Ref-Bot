@@ -40,30 +40,50 @@ class SubCoachCommand(
 
         val coach = command.users["coach"]!!
         val team = command.options["team"]!!.value.toString()
-        val game =
-            gameClient.getGameByPlatformId(interaction.channelId.value.toString()) ?: run {
-                response.respond { this.content = "No game found. Sub coach failed!" }
-                Logger.error("${interaction.user.username} failed to sub a new coach for ${command.options["team"]!!.value}")
-                return
-            }
+        val apiResponse =
+            gameClient.getGameByPlatformId(interaction.channelId.value.toString())
+        if (apiResponse.keys.firstOrNull() == null) {
+            response.respond { this.content = apiResponse.values.firstOrNull() ?: "Could not determine error" }
+            return
+        }
+        val game = apiResponse.keys.firstOrNull() ?: run {
+            response.respond { this.content = "No game found. Sub coach failed!" }
+            Logger.error("${interaction.user.username} failed to sub a new coach for ${command.options["team"]!!.value}")
+            return
+        }
 
-        val updatedGame = gameClient.subCoach(team, coach.id.value.toString(), game.gameId)
+        val subResponse = gameClient.subCoach(team, coach.id.value.toString(), game.gameId)
+        if (subResponse.keys.firstOrNull() == null) {
+            response.respond { this.content = subResponse.values.firstOrNull() ?: "Could not determine error" }
+            return
+        }
+        val updatedGame = subResponse.keys.firstOrNull()
         if (updatedGame == null) {
             response.respond { this.content = "Sub coach failed!" }
             Logger.error("${interaction.user.username} failed to sub a new coach for ${command.options["team"]!!.value}")
         } else {
             Logger.info("${interaction.user.username} successfully subbed a new coach for ${command.options["team"]!!.value}")
             val message = interaction.channel.createMessage("Subbed ${coach.username} for $team")
-            val previousPlay =
-                playClient.getPreviousPlay(game.gameId) ?: run {
+            val previousPlayApiResponse = playClient.getPreviousPlay(game.gameId)
+            if (previousPlayApiResponse.keys.firstOrNull() == null) {
+                response.respond { this.content = previousPlayApiResponse.values.firstOrNull() ?: "Could not determine error" }
+                return
+            }
+            val previousPlay = previousPlayApiResponse.keys.firstOrNull()
+                ?: run {
                     response.respond { this.content = "No previous play found. Ping failed!" }
-                    Logger.error(
-                        "${interaction.user.username} failed to ping a game in channel ${interaction.channelId.value}" +
-                            " because no previous play was found",
-                    )
                     return
                 }
-            val currentPlay = playClient.getCurrentPlay(game.gameId)
+            val currentPlayApiResponse = playClient.getCurrentPlay(game.gameId)
+            if (currentPlayApiResponse.keys.firstOrNull() == null) {
+                response.respond { this.content = currentPlayApiResponse.values.firstOrNull() ?: "Could not determine error" }
+                return
+            }
+            val currentPlay = currentPlayApiResponse.keys.firstOrNull()
+                ?: run {
+                    response.respond { this.content = "No current play found. Ping failed!" }
+                    return
+                }
             gameHandler.sendGamePing(interaction.kord, updatedGame, previousPlay, currentPlay, message)
         }
     }

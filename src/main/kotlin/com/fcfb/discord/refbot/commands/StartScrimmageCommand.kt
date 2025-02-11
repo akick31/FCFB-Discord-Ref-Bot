@@ -38,7 +38,12 @@ class StartScrimmageCommand(
         val awayTeam = command.options["away_team"]!!.value.toString()
         val gameType = GameType.SCRIMMAGE
 
-        val startedGame = gameClient.startGame(Subdivision.FCFB, homeTeam, awayTeam, null, gameType)
+        val apiResponse = gameClient.startGame(Subdivision.FCFB, homeTeam, awayTeam, null, gameType)
+        if (apiResponse.keys.firstOrNull() == null) {
+            response.respond { this.content = apiResponse.values.firstOrNull() ?: "Could not determine error" }
+            return
+        }
+        val startedGame = apiResponse.keys.firstOrNull()
         if (startedGame == null) {
             response.respond { this.content = "Start scrimmage failed!" }
             Logger.error("${interaction.user.username} failed to start a scrimmage between $homeTeam and $awayTeam")
@@ -46,6 +51,5 @@ class StartScrimmageCommand(
             response.respond { this.content = "Started game between $homeTeam and $awayTeam" }
             Logger.info("${interaction.user.username} successfully started a scrimmage between $homeTeam and $awayTeam")
         }
-        // TODO add option to check db if game WAS created and remove it
     }
 }

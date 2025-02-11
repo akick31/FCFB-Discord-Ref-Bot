@@ -31,7 +31,12 @@ class EndAllGamesCommand(
         )
         val response = interaction.deferPublicResponse()
 
-        val endedGames = gameClient.endAllGames() ?: emptyList()
+        val apiResponse = gameClient.endAllGames()
+        if (apiResponse.keys.firstOrNull() == null) {
+            response.respond { this.content = apiResponse.values.firstOrNull() ?: "Could not determine error" }
+            return
+        }
+        val endedGames = apiResponse.keys.firstOrNull() ?: emptyList()
         for (game in endedGames) {
             try {
                 val channel = interaction.kord.getChannel(Snowflake(game.homePlatformId ?: continue)) as MessageChannelBehavior
