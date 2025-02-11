@@ -4,7 +4,6 @@ import com.fcfb.discord.refbot.api.GameClient
 import com.fcfb.discord.refbot.handlers.discord.DiscordMessageHandler
 import com.fcfb.discord.refbot.handlers.discord.TextChannelThreadHandler
 import com.fcfb.discord.refbot.model.fcfb.game.Scenario
-import com.fcfb.discord.refbot.utils.GameMessageFailedException
 import com.fcfb.discord.refbot.utils.Logger
 import dev.kord.core.Kord
 import dev.kord.core.behavior.interaction.response.respond
@@ -47,7 +46,7 @@ class ChewGameCommand(
                 Scenario.CHEW_MODE_ENABLED,
                 null,
                 null,
-                channel
+                channel,
             )
             Logger.info("${interaction.user.username} successfully chewed a game at channel ${interaction.channelId.value}")
         } else {

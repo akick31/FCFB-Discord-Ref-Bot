@@ -14,14 +14,7 @@ import com.fcfb.discord.refbot.model.fcfb.game.Play
 import com.fcfb.discord.refbot.model.fcfb.game.PlayCall
 import com.fcfb.discord.refbot.model.fcfb.game.PlayType
 import com.fcfb.discord.refbot.model.fcfb.game.Scenario
-import com.fcfb.discord.refbot.utils.DefensiveNumberRequestFailedException
-import com.fcfb.discord.refbot.utils.GameMessageFailedException
 import com.fcfb.discord.refbot.utils.GameUtils
-import com.fcfb.discord.refbot.utils.InvalidDefensiveNumberSubmissionException
-import com.fcfb.discord.refbot.utils.InvalidOffensiveNumberSubmissionException
-import com.fcfb.discord.refbot.utils.NoGameFoundException
-import com.fcfb.discord.refbot.utils.NumberConfirmationMessageFailedException
-import com.fcfb.discord.refbot.utils.OffensiveNumberRequestFailedException
 import dev.kord.core.Kord
 import dev.kord.core.entity.Message
 import dev.kord.core.entity.User
@@ -93,7 +86,7 @@ class GameHandler(
                     currentPlay,
                     false,
                     message,
-                )
+                ),
             )
         }
     }
@@ -109,11 +102,12 @@ class GameHandler(
         game: Game,
         message: Message,
     ) {
-        val playCall = try {
-            gameUtils.parsePlayCallFromMessage(game, message)
-        } catch (e: Exception) {
-            return errorHandler.invalidPlayCall(message)
-        }
+        val playCall =
+            try {
+                gameUtils.parsePlayCallFromMessage(game, message)
+            } catch (e: Exception) {
+                return errorHandler.invalidPlayCall(message)
+            }
         val number =
             if (playCall == PlayCall.KNEEL || playCall == PlayCall.SPIKE) {
                 null
@@ -141,7 +135,8 @@ class GameHandler(
         }
 
         // Submit the offensive number and get the play outcome
-        val playApiResponse = playClient.submitOffensiveNumber(
+        val playApiResponse =
+            playClient.submitOffensiveNumber(
                 game.gameId,
                 offensiveSubmitter,
                 number,
@@ -154,9 +149,10 @@ class GameHandler(
         }
         val playOutcome = playApiResponse.keys.firstOrNull() ?: return errorHandler.invalidOffensiveNumberSubmission(message)
 
-        val gameApiResponse = gameClient.getGameByRequestMessageId(
-            message.referencedMessage?.id?.value.toString()
-        )
+        val gameApiResponse =
+            gameClient.getGameByRequestMessageId(
+                message.referencedMessage?.id?.value.toString(),
+            )
         if (gameApiResponse.keys.firstOrNull() == null) {
             return errorHandler.customErrorMessage(message, gameApiResponse.values.firstOrNull() ?: "Could not determine error")
         }
@@ -178,7 +174,7 @@ class GameHandler(
                 discordMessageHandler.sendOvertimeCoinTossRequest(
                     client,
                     updatedGame,
-                    message
+                    message,
                 )
             }
             else -> {
@@ -220,12 +216,13 @@ class GameHandler(
         val timeoutCalled = gameUtils.parseTimeoutFromMessage(message)
         val defensiveSubmitter = message.author?.username ?: return errorHandler.invalidDefensiveSubmitter(message)
 
-        val playApiResponse = playClient.submitDefensiveNumber(
-            game.gameId,
-            defensiveSubmitter,
-            number,
-            timeoutCalled
-        )
+        val playApiResponse =
+            playClient.submitDefensiveNumber(
+                game.gameId,
+                defensiveSubmitter,
+                number,
+                timeoutCalled,
+            )
         if (playApiResponse.keys.firstOrNull() == null) {
             return errorHandler.customErrorMessage(message, playApiResponse.values.firstOrNull() ?: "Could not determine error")
         }
@@ -234,14 +231,14 @@ class GameHandler(
             game,
             number,
             timeoutCalled,
-            message
+            message,
         )
         discordMessageHandler.sendRequestForOffensiveNumber(
             client,
             game,
             play,
             timeoutCalled,
-            message
+            message,
         )
     }
 

@@ -50,21 +50,23 @@ class RollbackCommand(
                     response.respond { this.content = currentPlayApiResponse.values.firstOrNull() ?: "Could not determine error" }
                     return
                 }
-                val currentPlay = currentPlayApiResponse.keys.firstOrNull()
-                    ?: run {
-                        response.respond { this.content = "No current play found. Ping failed!" }
-                        return
-                    }
+                val currentPlay =
+                    currentPlayApiResponse.keys.firstOrNull()
+                        ?: run {
+                            response.respond { this.content = "No current play found. Ping failed!" }
+                            return
+                        }
                 val previousPlayApiResponse = playClient.getPreviousPlay(game.gameId)
                 if (previousPlayApiResponse.keys.firstOrNull() == null) {
                     response.respond { this.content = previousPlayApiResponse.values.firstOrNull() ?: "Could not determine error" }
                     return
                 }
-                val previousPlay = previousPlayApiResponse.keys.firstOrNull()
-                    ?: run {
-                        response.respond { this.content = "No previous play found. Ping failed!" }
-                        return
-                    }
+                val previousPlay =
+                    previousPlayApiResponse.keys.firstOrNull()
+                        ?: run {
+                            response.respond { this.content = "No previous play found. Ping failed!" }
+                            return
+                        }
                 gameHandler.sendGamePing(interaction.kord, game, previousPlay, currentPlay, message)
                 response.respond { this.content = "Play rollback successful" }
                 // Post scorebug

@@ -1,8 +1,6 @@
 package com.fcfb.discord.refbot.utils
 
 import com.fcfb.discord.refbot.api.TeamClient
-import com.fcfb.discord.refbot.handlers.ErrorHandler
-import com.fcfb.discord.refbot.model.discord.MessageConstants.Info
 import com.fcfb.discord.refbot.model.fcfb.Team
 import com.fcfb.discord.refbot.model.fcfb.game.ActualResult
 import com.fcfb.discord.refbot.model.fcfb.game.Game
@@ -26,9 +24,8 @@ import java.nio.file.Files
 import java.nio.file.StandardOpenOption
 
 class GameUtils(
-    private val teamClient: TeamClient
+    private val teamClient: TeamClient,
 ) {
-
     /**
      * Parse a valid number from a message
      * @param message The message object
@@ -84,25 +81,30 @@ class GameUtils(
      * @param message The message object
      * @return The play call
      */
-    fun parsePlayCallFromMessage(game: Game, message: Message): PlayCall {
+    fun parsePlayCallFromMessage(
+        game: Game,
+        message: Message,
+    ): PlayCall {
         val content = message.content.lowercase()
 
-        val playCalls = mapOf(
-            "run" to PlayCall.RUN,
-            "pass" to PlayCall.PASS,
-            "spike" to PlayCall.SPIKE,
-            "kneel" to PlayCall.KNEEL,
-            "field goal" to PlayCall.FIELD_GOAL,
-            "punt" to PlayCall.PUNT,
-            "pat" to PlayCall.PAT,
-            "two point" to PlayCall.TWO_POINT
-        )
+        val playCalls =
+            mapOf(
+                "run" to PlayCall.RUN,
+                "pass" to PlayCall.PASS,
+                "spike" to PlayCall.SPIKE,
+                "kneel" to PlayCall.KNEEL,
+                "field goal" to PlayCall.FIELD_GOAL,
+                "punt" to PlayCall.PUNT,
+                "pat" to PlayCall.PAT,
+                "two point" to PlayCall.TWO_POINT,
+            )
 
-        val kickoffPlays = mapOf(
-            "normal" to PlayCall.KICKOFF_NORMAL,
-            "squib" to PlayCall.KICKOFF_SQUIB,
-            "onside" to PlayCall.KICKOFF_ONSIDE
-        )
+        val kickoffPlays =
+            mapOf(
+                "normal" to PlayCall.KICKOFF_NORMAL,
+                "squib" to PlayCall.KICKOFF_SQUIB,
+                "onside" to PlayCall.KICKOFF_ONSIDE,
+            )
 
         val validPlayCalls = if (game.currentPlayType == PlayType.KICKOFF) kickoffPlays else playCalls
         val matchedCalls = validPlayCalls.filterKeys { it in content }.values
@@ -114,15 +116,19 @@ class GameUtils(
      * Parse the runoff type from a message
      * @param message The message object
      */
-    fun parseRunoffTypeFromMessage(game: Game, message: Message): RunoffType {
+    fun parseRunoffTypeFromMessage(
+        game: Game,
+        message: Message,
+    ): RunoffType {
         val content = message.content.lowercase()
 
-        val runoffTypes = mapOf(
-            "hurry" to RunoffType.HURRY,
-            "chew" to RunoffType.CHEW,
-            "final" to RunoffType.FINAL,
-            "normal" to RunoffType.NORMAL
-        )
+        val runoffTypes =
+            mapOf(
+                "hurry" to RunoffType.HURRY,
+                "chew" to RunoffType.CHEW,
+                "final" to RunoffType.FINAL,
+                "normal" to RunoffType.NORMAL,
+            )
 
         val matchedTypes = runoffTypes.filterKeys { it in content }.values
 

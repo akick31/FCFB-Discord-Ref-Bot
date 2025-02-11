@@ -3,14 +3,12 @@ package com.fcfb.discord.refbot.api
 import com.fcfb.discord.refbot.config.JacksonConfig
 import com.fcfb.discord.refbot.model.fcfb.CoachPosition
 import com.fcfb.discord.refbot.model.fcfb.Team
-import com.fcfb.discord.refbot.model.fcfb.game.Game
 import com.fcfb.discord.refbot.utils.Logger
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.cio.CIO
 import io.ktor.client.engine.cio.endpoint
 import io.ktor.client.request.get
 import io.ktor.client.request.post
-import io.ktor.client.statement.HttpResponse
 import io.ktor.client.statement.bodyAsText
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -19,7 +17,7 @@ import java.nio.charset.StandardCharsets
 import java.util.Properties
 
 class TeamClient(
-    private val apiUtils: ApiUtils
+    private val apiUtils: ApiUtils,
 ) {
     private val baseUrl: String
     private val httpClient =

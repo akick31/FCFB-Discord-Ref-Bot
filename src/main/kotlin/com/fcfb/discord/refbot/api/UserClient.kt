@@ -9,14 +9,13 @@ import io.ktor.client.engine.cio.CIO
 import io.ktor.client.engine.cio.endpoint
 import io.ktor.client.request.get
 import io.ktor.client.request.put
-import io.ktor.client.statement.HttpResponse
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.ContentType
 import io.ktor.http.contentType
 import java.util.Properties
 
 class UserClient(
-    private val apiUtils: ApiUtils
+    private val apiUtils: ApiUtils,
 ) {
     private val baseUrl: String
     private val httpClient =
@@ -70,9 +69,10 @@ class UserClient(
      */
     private suspend fun getRequest(endpointUrl: String): Map<FCFBUser?, String?> {
         return try {
-            val response = httpClient.get(endpointUrl) {
-                contentType(ContentType.Application.Json)
-            }
+            val response =
+                httpClient.get(endpointUrl) {
+                    contentType(ContentType.Application.Json)
+                }
             val jsonResponse = response.bodyAsText()
             if (jsonResponse.contains("error")) {
                 val error = apiUtils.readError(jsonResponse)

@@ -58,8 +58,7 @@ class ErrorHandler(
     internal suspend fun invalidDefensiveSubmitter(message: Message) =
         discordMessageHandler.sendErrorMessage(message, Error.INVALID_DEFENSIVE_SUBMITTER)
 
-    internal suspend fun invalidPlayCall(message: Message) =
-        discordMessageHandler.sendErrorMessage(message, Error.INVALID_PLAY)
+    internal suspend fun invalidPlayCall(message: Message) = discordMessageHandler.sendErrorMessage(message, Error.INVALID_PLAY)
 
     /**
      * Handle invalid point after play call
@@ -118,6 +117,8 @@ class ErrorHandler(
      * @param message The message object
      * @param error The error message
      */
-    internal suspend fun customErrorMessage(message: Message, error: String) =
-        discordMessageHandler.sendCustomErrorMessage(message, error)
+    internal suspend fun customErrorMessage(
+        message: Message,
+        error: String,
+    ) = discordMessageHandler.sendCustomErrorMessage(message, error)
 }

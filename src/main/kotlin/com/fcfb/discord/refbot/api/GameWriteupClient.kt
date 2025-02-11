@@ -11,7 +11,7 @@ import io.ktor.client.statement.bodyAsText
 import java.util.Properties
 
 class GameWriteupClient(
-    private val apiUtils: ApiUtils
+    private val apiUtils: ApiUtils,
 ) {
     private val baseUrl: String
     private val httpClient =

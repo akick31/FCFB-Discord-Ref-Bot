@@ -7,7 +7,6 @@ import com.fcfb.discord.refbot.model.fcfb.game.GameStatus
 import com.fcfb.discord.refbot.model.fcfb.game.GameType
 import com.fcfb.discord.refbot.model.fcfb.game.TeamSide
 import com.fcfb.discord.refbot.utils.GameUtils
-import com.fcfb.discord.refbot.utils.NoMessageContentFoundException
 import com.fcfb.discord.refbot.utils.Properties
 import com.kotlindiscord.kord.extensions.utils.getJumpUrl
 import dev.kord.common.entity.Snowflake
@@ -272,7 +271,8 @@ class TextChannelThreadHandler(
                     throw Exception(apiResponse.values.firstOrNull())
                 }
                 val team = apiResponse.keys.firstOrNull()
-                val conference = team?.conference?.description?.uppercase()
+                val conference =
+                    team?.conference?.description?.uppercase()
                         ?: return "CONFERENCE CHAMPIONSHIP || $teamMatchup"
                 return "$conference CHAMPIONSHIP || $teamMatchup"
             }
@@ -319,7 +319,8 @@ class TextChannelThreadHandler(
                     throw Exception(apiResponse.values.firstOrNull())
                 }
                 val team = apiResponse.keys.firstOrNull()
-                val conference = team?.conference?.description?.uppercase()
+                val conference =
+                    team?.conference?.description?.uppercase()
                         ?: return "CONFERENCE CHAMPIONSHIP || $teamMatchup"
                 return "$conference CHAMPIONSHIP || $teamMatchup"
             }

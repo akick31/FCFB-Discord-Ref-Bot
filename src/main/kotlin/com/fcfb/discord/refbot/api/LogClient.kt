@@ -10,7 +10,6 @@ import io.ktor.client.engine.cio.endpoint
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
-import io.ktor.client.statement.HttpResponse
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.ContentType
 import io.ktor.http.contentType
@@ -18,7 +17,7 @@ import io.ktor.serialization.jackson.jackson
 import java.util.Properties
 
 class LogClient(
-    private val apiUtils: ApiUtils
+    private val apiUtils: ApiUtils,
 ) {
     private val baseUrl: String
     private val httpClient =
@@ -75,10 +74,11 @@ class LogClient(
         body: Any,
     ): Map<RequestMessageLog?, String?> {
         return try {
-            val response = httpClient.post(endpointUrl) {
-                contentType(ContentType.Application.Json)
-                setBody(body)
-            }
+            val response =
+                httpClient.post(endpointUrl) {
+                    contentType(ContentType.Application.Json)
+                    setBody(body)
+                }
             val jsonResponse = response.bodyAsText()
             if (jsonResponse.contains("error")) {
                 val error = apiUtils.readError(jsonResponse)

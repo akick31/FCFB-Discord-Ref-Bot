@@ -48,7 +48,6 @@ import com.fcfb.discord.refbot.utils.Properties
 import dev.kord.common.annotation.KordPreview
 import dev.kord.rest.builder.message.EmbedBuilder
 import org.koin.dsl.module
-import kotlin.math.sin
 
 @OptIn(KordPreview::class)
 val appModule =

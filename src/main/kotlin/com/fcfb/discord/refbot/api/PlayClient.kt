@@ -15,7 +15,7 @@ import io.ktor.client.statement.bodyAsText
 import java.util.Properties
 
 class PlayClient(
-    private val apiUtils: ApiUtils
+    private val apiUtils: ApiUtils,
 ) {
     private val baseUrl: String
     private val httpClient =

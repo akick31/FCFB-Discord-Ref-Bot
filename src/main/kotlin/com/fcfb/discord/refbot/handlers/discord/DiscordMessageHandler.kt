@@ -169,24 +169,27 @@ class DiscordMessageHandler(
         timeoutCalled: Boolean,
         previousMessage: Message? = null,
     ): Message {
-        val gameThread = when {
-            game.homePlatform == Platform.DISCORD -> client.getChannel(Snowflake(game.homePlatformId.toString())) as TextChannelThread
-            game.awayPlatform == Platform.DISCORD -> client.getChannel(Snowflake(game.awayPlatformId.toString())) as TextChannelThread
-            else -> previousMessage?.let {
-                sendErrorMessage(it, Error.INVALID_GAME_THREAD)
-                throw InvalidGameThreadException(game.gameId)
+        val gameThread =
+            when {
+                game.homePlatform == Platform.DISCORD -> client.getChannel(Snowflake(game.homePlatformId.toString())) as TextChannelThread
+                game.awayPlatform == Platform.DISCORD -> client.getChannel(Snowflake(game.awayPlatformId.toString())) as TextChannelThread
+                else ->
+                    previousMessage?.let {
+                        sendErrorMessage(it, Error.INVALID_GAME_THREAD)
+                        throw InvalidGameThreadException(game.gameId)
+                    }
             }
-        }
 
-        val numberRequestMessage = sendGameMessage(
-            client,
-            game,
-            Scenario.NORMAL_NUMBER_REQUEST,
-            null,
-            null,
-            gameThread,
-            timeoutCalled
-        )
+        val numberRequestMessage =
+            sendGameMessage(
+                client,
+                game,
+                Scenario.NORMAL_NUMBER_REQUEST,
+                null,
+                null,
+                gameThread,
+                timeoutCalled,
+            )
 
         return try {
             gameClient.updateRequestMessageId(game.gameId, listOf(numberRequestMessage))
@@ -251,7 +254,7 @@ class DiscordMessageHandler(
             playOutcome,
             message,
             null,
-            false
+            false,
         )
     }
 
@@ -273,7 +276,7 @@ class DiscordMessageHandler(
             null,
             message,
             null,
-            false
+            false,
         )
         sendRequestForDefensiveNumber(
             client,
@@ -302,7 +305,7 @@ class DiscordMessageHandler(
             null,
             message,
             null,
-            false
+            false,
         )
         sendRequestForDefensiveNumber(
             client,
@@ -398,7 +401,7 @@ class DiscordMessageHandler(
             null,
             message,
             null,
-            false
+            false,
         )
 
         // No need to post scrimmage scores
@@ -523,60 +526,68 @@ class DiscordMessageHandler(
         timeoutCalled: Boolean = false,
     ): Pair<Pair<String, EmbedData?>, List<User?>> {
         // Get message content but not play result for number requests, game start, and coin toss
-        var (messageContent, playWriteup) = when {
-            scenario in listOf(
-                Scenario.DM_NUMBER_REQUEST, Scenario.KICKOFF_NUMBER_REQUEST,
-                Scenario.NORMAL_NUMBER_REQUEST, Scenario.GAME_START,
-                Scenario.COIN_TOSS_CHOICE, Scenario.OVERTIME_COIN_TOSS_CHOICE,
-                Scenario.OVERTIME_START, Scenario.GAME_OVER, Scenario.END_OF_HALF,
-                Scenario.DELAY_OF_GAME, Scenario.DELAY_OF_GAME_WARNING,
-                Scenario.DELAY_OF_GAME_NOTIFICATION, Scenario.CHEW_MODE_ENABLED
-            ) -> {
-                val messageContentApiResponse = gameWriteupClient.getGameMessageByScenario(scenario, null)
-                if (messageContentApiResponse.keys.firstOrNull() == null) {
-                    throw NoMessageContentFoundException(Scenario.PLAY_RESULT.description)
+        var (messageContent, playWriteup) =
+            when {
+                scenario in
+                    listOf(
+                        Scenario.DM_NUMBER_REQUEST, Scenario.KICKOFF_NUMBER_REQUEST,
+                        Scenario.NORMAL_NUMBER_REQUEST, Scenario.GAME_START,
+                        Scenario.COIN_TOSS_CHOICE, Scenario.OVERTIME_COIN_TOSS_CHOICE,
+                        Scenario.OVERTIME_START, Scenario.GAME_OVER, Scenario.END_OF_HALF,
+                        Scenario.DELAY_OF_GAME, Scenario.DELAY_OF_GAME_WARNING,
+                        Scenario.DELAY_OF_GAME_NOTIFICATION, Scenario.CHEW_MODE_ENABLED,
+                    )
+                -> {
+                    val messageContentApiResponse = gameWriteupClient.getGameMessageByScenario(scenario, null)
+                    if (messageContentApiResponse.keys.firstOrNull() == null) {
+                        throw NoMessageContentFoundException(Scenario.PLAY_RESULT.description)
+                    }
+                    val messageContent =
+                        messageContentApiResponse.keys.firstOrNull()
+                            ?: throw NoMessageContentFoundException(Scenario.PLAY_RESULT.description)
+                    messageContent to null
                 }
-                val messageContent = messageContentApiResponse.keys.firstOrNull()
-                    ?: throw NoMessageContentFoundException(Scenario.PLAY_RESULT.description)
-                messageContent to null
-            }
-            play?.playCall in listOf(PlayCall.PASS, PlayCall.RUN) -> {
-                // Get play result writeup
-                val playCallWriteupApiResponse = gameWriteupClient.getGameMessageByScenario(scenario, play?.playCall)
-                if (playCallWriteupApiResponse.keys.firstOrNull() == null) {
-                    throw NoMessageContentFoundException(scenario.description)
-                }
-                val writeup = playCallWriteupApiResponse.keys.firstOrNull()
-                    ?: throw NoMessageContentFoundException(scenario.description)
+                play?.playCall in listOf(PlayCall.PASS, PlayCall.RUN) -> {
+                    // Get play result writeup
+                    val playCallWriteupApiResponse = gameWriteupClient.getGameMessageByScenario(scenario, play?.playCall)
+                    if (playCallWriteupApiResponse.keys.firstOrNull() == null) {
+                        throw NoMessageContentFoundException(scenario.description)
+                    }
+                    val writeup =
+                        playCallWriteupApiResponse.keys.firstOrNull()
+                            ?: throw NoMessageContentFoundException(scenario.description)
 
-                // Get message content
-                val messageContentApiResponse = gameWriteupClient.getGameMessageByScenario(Scenario.PLAY_RESULT, null)
-                if (messageContentApiResponse.keys.firstOrNull() == null) {
-                    throw NoMessageContentFoundException(Scenario.PLAY_RESULT.description)
+                    // Get message content
+                    val messageContentApiResponse = gameWriteupClient.getGameMessageByScenario(Scenario.PLAY_RESULT, null)
+                    if (messageContentApiResponse.keys.firstOrNull() == null) {
+                        throw NoMessageContentFoundException(Scenario.PLAY_RESULT.description)
+                    }
+                    val messageContent =
+                        messageContentApiResponse.keys.firstOrNull()
+                            ?: throw NoMessageContentFoundException(Scenario.PLAY_RESULT.description)
+                    messageContent to writeup
                 }
-                val messageContent = messageContentApiResponse.keys.firstOrNull()
-                    ?: throw NoMessageContentFoundException(Scenario.PLAY_RESULT.description)
-                messageContent to writeup
-            }
-            else -> {
-                // Get play result writeup
-                val writeupApiResponse = gameWriteupClient.getGameMessageByScenario(scenario, null)
-                if (writeupApiResponse.keys.firstOrNull() == null) {
-                    throw NoMessageContentFoundException(scenario.description)
-                }
-                val writeup = writeupApiResponse.keys.firstOrNull()
-                    ?: throw NoMessageContentFoundException(scenario.description)
+                else -> {
+                    // Get play result writeup
+                    val writeupApiResponse = gameWriteupClient.getGameMessageByScenario(scenario, null)
+                    if (writeupApiResponse.keys.firstOrNull() == null) {
+                        throw NoMessageContentFoundException(scenario.description)
+                    }
+                    val writeup =
+                        writeupApiResponse.keys.firstOrNull()
+                            ?: throw NoMessageContentFoundException(scenario.description)
 
-                // Get message content
-                val messageContentApiResponse = gameWriteupClient.getGameMessageByScenario(Scenario.PLAY_RESULT, null)
-                if (messageContentApiResponse.keys.firstOrNull() == null) {
-                    throw NoMessageContentFoundException(Scenario.PLAY_RESULT.description)
+                    // Get message content
+                    val messageContentApiResponse = gameWriteupClient.getGameMessageByScenario(Scenario.PLAY_RESULT, null)
+                    if (messageContentApiResponse.keys.firstOrNull() == null) {
+                        throw NoMessageContentFoundException(Scenario.PLAY_RESULT.description)
+                    }
+                    val messageContent =
+                        messageContentApiResponse.keys.firstOrNull()
+                            ?: throw NoMessageContentFoundException(Scenario.PLAY_RESULT.description)
+                    messageContent to writeup
                 }
-                val messageContent = messageContentApiResponse.keys.firstOrNull()
-                    ?: throw NoMessageContentFoundException(Scenario.PLAY_RESULT.description)
-                messageContent to writeup
             }
-        }
 
         if (messageContent == "") {
             throw NoMessageContentFoundException(scenario.description)

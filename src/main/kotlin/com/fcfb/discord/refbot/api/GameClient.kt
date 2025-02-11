@@ -105,7 +105,7 @@ class GameClient(
                 }
                 2 -> {
                     "$baseUrl/game/request_message?gameId=$gameId&requestMessageId=${numberRequestMessageList[0]?.id?.value}" +
-                            ",${numberRequestMessageList[1]?.id?.value}"
+                        ",${numberRequestMessageList[1]?.id?.value}"
                 }
                 else -> {
                     throw IllegalArgumentException("Invalid number of request messages")
@@ -384,9 +384,10 @@ class GameClient(
      */
     private suspend fun getRequest(endpointUrl: String): Map<Game?, String?> {
         return try {
-            val response = httpClient.get(endpointUrl) {
-                contentType(ContentType.Application.Json)
-            }
+            val response =
+                httpClient.get(endpointUrl) {
+                    contentType(ContentType.Application.Json)
+                }
             val jsonResponse = response.bodyAsText()
             if (jsonResponse.contains("error")) {
                 val error = apiUtils.readError(jsonResponse)
@@ -407,9 +408,10 @@ class GameClient(
      */
     private suspend fun getRequestList(endpointUrl: String): Map<List<Game>?, String?> {
         return try {
-            val response = httpClient.get(endpointUrl) {
-                contentType(ContentType.Application.Json)
-            }
+            val response =
+                httpClient.get(endpointUrl) {
+                    contentType(ContentType.Application.Json)
+                }
             val jsonResponse = response.bodyAsText()
             if (jsonResponse.contains("error")) {
                 val error = apiUtils.readError(jsonResponse)

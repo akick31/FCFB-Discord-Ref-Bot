@@ -5,8 +5,6 @@ import com.fcfb.discord.refbot.handlers.GameHandler
 import com.fcfb.discord.refbot.handlers.discord.DiscordMessageHandler
 import com.fcfb.discord.refbot.model.fcfb.game.Game
 import com.fcfb.discord.refbot.model.fcfb.game.Scenario
-import com.fcfb.discord.refbot.utils.DefensiveNumberRequestFailedException
-import com.fcfb.discord.refbot.utils.GameMessageFailedException
 import com.fcfb.discord.refbot.utils.MissingPlatformIdException
 import dev.kord.common.entity.Snowflake
 import dev.kord.core.Kord
@@ -25,9 +23,10 @@ class DelayOfGameRequest(
         game: Game,
         isDelayOfGameOut: Boolean,
     ) {
-        val gameThread = client.getChannel(
-            Snowflake(game.homePlatformId ?: throw MissingPlatformIdException())
-        ) as TextChannelThread
+        val gameThread =
+            client.getChannel(
+                Snowflake(game.homePlatformId ?: throw MissingPlatformIdException()),
+            ) as TextChannelThread
         val message =
             discordMessageHandler.sendGameMessage(
                 client,
@@ -57,9 +56,10 @@ class DelayOfGameRequest(
         client: Kord,
         game: Game,
     ) {
-        val gameThread = client.getChannel(
-            Snowflake(game.homePlatformId ?: throw MissingPlatformIdException())
-        ) as TextChannelThread
+        val gameThread =
+            client.getChannel(
+                Snowflake(game.homePlatformId ?: throw MissingPlatformIdException()),
+            ) as TextChannelThread
         discordMessageHandler.sendGameMessage(
             client,
             game,

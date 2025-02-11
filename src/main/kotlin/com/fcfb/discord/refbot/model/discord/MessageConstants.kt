@@ -1,7 +1,5 @@
 package com.fcfb.discord.refbot.model.discord
 
-import com.fcfb.discord.refbot.utils.Logger
-
 class MessageConstants {
     enum class Error(val message: String) {
         NO_GAME_FOUND(
@@ -36,13 +34,11 @@ class MessageConstants {
         INVALID_GAME_STATUS("Invalid game status"),
         TEAM_NOT_FOUND("Could not find a team associated with this game"),
         INVALID_DEFENSIVE_SUBMISSION_LOCATION("Please submit your defensive number in private messages, this is the game thread"),
-        ;
     }
 
     enum class Info(val message: String) {
         COIN_TOSS_OUTCOME("%s won the coin toss! Please reply to this message with **receive** or **defer**."),
         OVERTIME_COIN_TOSS_OUTCOME("%s won the coin toss! Please reply to this message with **offense** or **defense**."),
         SUCCESSFUL_NUMBER_SUBMISSION("I've got %s as your number"),
-        ;
     }
 }
