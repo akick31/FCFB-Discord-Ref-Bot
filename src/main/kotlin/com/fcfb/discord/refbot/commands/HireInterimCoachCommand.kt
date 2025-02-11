@@ -37,7 +37,12 @@ class HireInterimCoachCommand(
         val coach = command.users["coach"]!!
         val team = command.options["team"]!!.value.toString()
 
-        val updatedTeam = teamClient.hireInterimCoach(team, coach.id.value.toString(), interaction.user.username)
+        val apiResponse = teamClient.hireInterimCoach(team, coach.id.value.toString(), interaction.user.username)
+        if (apiResponse.keys.firstOrNull() == null) {
+            response.respond { this.content = apiResponse.values.firstOrNull() ?: "Could not determine error" }
+            return
+        }
+        val updatedTeam = apiResponse.keys.firstOrNull()
         if (updatedTeam == null) {
             response.respond { this.content = "Team interim hire failed!" }
             Logger.error("${interaction.user.username} failed to hire a new coach for ${command.options["team"]!!.value}")

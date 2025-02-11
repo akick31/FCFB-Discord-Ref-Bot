@@ -28,7 +28,12 @@ class RestartGameCommand(
         )
         val response = interaction.deferPublicResponse()
 
-        val restartedGame = gameClient.restartGame(interaction.channelId.value)
+        val apiResponse = gameClient.restartGame(interaction.channelId.value)
+        if (apiResponse.keys.firstOrNull() == null) {
+            response.respond { this.content = apiResponse.values.firstOrNull() ?: "Could not determine error" }
+            return
+        }
+        val restartedGame = apiResponse.keys.firstOrNull()
         if (restartedGame != null) {
             response.respond { this.content = "Restart game successful" }
             withContext(Dispatchers.IO) {

@@ -27,7 +27,12 @@ class GameInfoCommand(
         )
         val response = interaction.deferPublicResponse()
 
-        val game = gameClient.getGameByPlatformId(interaction.channelId.value.toString())
+        val apiResponse = gameClient.getGameByPlatformId(interaction.channelId.value.toString())
+        if (apiResponse.keys.firstOrNull() == null) {
+            response.respond { this.content = apiResponse.values.firstOrNull() ?: "Could not determine error" }
+            return
+        }
+        val game = apiResponse.keys.firstOrNull()
 
         if (game != null) {
             val messageContent = getGameInformation(game)

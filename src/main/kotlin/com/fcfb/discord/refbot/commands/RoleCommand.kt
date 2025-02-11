@@ -9,7 +9,9 @@ import dev.kord.core.entity.interaction.ChatInputCommandInteraction
 import dev.kord.rest.builder.interaction.string
 import dev.kord.rest.builder.interaction.user
 
-class RoleCommand {
+class RoleCommand(
+    private val userClient: UserClient,
+) {
     suspend fun register(client: Kord) {
         client.createGlobalChatInputCommand(
             "role",
@@ -70,7 +72,12 @@ class RoleCommand {
             return
         }
 
-        val updatedRole = UserClient().updateUserRoleByDiscordId(user.id.value.toString(), role)
+        val apiResponse = userClient.updateUserRoleByDiscordId(user.id.value.toString(), role)
+        if (apiResponse.keys.firstOrNull() == null) {
+            response.respond { this.content = apiResponse.values.firstOrNull() ?: "Could not determine error" }
+            return
+        }
+        val updatedRole = apiResponse.keys.firstOrNull()
         if (updatedRole == null) {
             response.respond { this.content = "User role failed!" }
             Logger.error("${interaction.user.username} failed to assign user role for ${command.users["user"]!!.username}")

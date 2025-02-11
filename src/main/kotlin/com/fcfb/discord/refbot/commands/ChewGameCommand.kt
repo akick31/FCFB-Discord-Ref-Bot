@@ -30,12 +30,24 @@ class ChewGameCommand(
         )
         val response = interaction.deferEphemeralResponse()
 
-        val chewedGame = gameClient.chewGame(interaction.channelId.value)
+        val apiResponse = gameClient.chewGame(interaction.channelId.value)
+        if (apiResponse.keys.firstOrNull() == null) {
+            response.respond { this.content = apiResponse.values.firstOrNull() ?: "Could not determine error" }
+            return
+        }
+        val chewedGame = apiResponse.keys.firstOrNull()
         if (chewedGame != null) {
             response.respond { this.content = "Success" }
             val message = interaction.channel.createMessage("Chew game successful")
             val channel = textChannelThreadHandler.getTextChannelThread(message)
-            discordMessageHandler.sendGameMessage(interaction.kord, chewedGame, Scenario.CHEW_MODE_ENABLED, null, null, channel)
+            discordMessageHandler.sendGameMessage(
+                interaction.kord,
+                chewedGame,
+                Scenario.CHEW_MODE_ENABLED,
+                null,
+                null,
+                channel,
+            )
             Logger.info("${interaction.user.username} successfully chewed a game at channel ${interaction.channelId.value}")
         } else {
             response.respond { this.content = "Chew game failed!" }

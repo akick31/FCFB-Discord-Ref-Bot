@@ -9,7 +9,6 @@ import io.ktor.client.engine.cio.CIO
 import io.ktor.client.engine.cio.endpoint
 import io.ktor.client.request.get
 import io.ktor.client.request.post
-import io.ktor.client.statement.HttpResponse
 import io.ktor.client.statement.bodyAsText
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -17,7 +16,9 @@ import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 import java.util.Properties
 
-class TeamClient {
+class TeamClient(
+    private val apiUtils: ApiUtils,
+) {
     private val baseUrl: String
     private val httpClient =
         HttpClient(CIO) {
@@ -52,7 +53,7 @@ class TeamClient {
         discordId: String,
         coachPosition: CoachPosition,
         processedBy: String,
-    ): Team? {
+    ): Map<Team?, String?> {
         val endpointUrl =
             "$baseUrl/team/hire?" +
                 "team=${
@@ -77,7 +78,7 @@ class TeamClient {
         teamName: String,
         discordId: String,
         processedBy: String,
-    ): Team? {
+    ): Map<Team?, String?> {
         val endpointUrl =
             "$baseUrl/team/hire/interim?" +
                 "team=${
@@ -98,7 +99,7 @@ class TeamClient {
     internal suspend fun fireCoach(
         teamName: String,
         processedBy: String,
-    ): Team? {
+    ): Map<Team?, String?> {
         val endpointUrl =
             "$baseUrl/team/fire?" +
                 "team=${
@@ -113,7 +114,7 @@ class TeamClient {
     /**
      * Get a team by name
      */
-    internal suspend fun getTeamByName(teamName: String): Team? {
+    internal suspend fun getTeamByName(teamName: String): Map<Team?, String?> {
         val endpointUrl =
             "$baseUrl/team/name?" +
                 "name=${
@@ -128,23 +129,31 @@ class TeamClient {
      * Get all teams
      * @return List<Team>
      */
-    internal suspend fun getAllTeams(): List<Team>? {
+    internal suspend fun getAllTeams(): Map<List<Team>?, String?> {
         val endpointUrl = "$baseUrl/team"
         return getAllRequest(endpointUrl)
     }
 
-    private suspend fun getAllRequest(endpointUrl: String): List<Team>? {
+    /**
+     * Get all teams
+     * @param conference
+     * @return List<Team>
+     */
+    private suspend fun getAllRequest(endpointUrl: String): Map<List<Team>?, String?> {
         return try {
-            val response: HttpResponse = httpClient.get(endpointUrl)
-            val jsonResponse: String = response.bodyAsText()
+            val response = httpClient.get(endpointUrl)
+            val jsonResponse = response.bodyAsText()
+            if (jsonResponse.contains("error")) {
+                val error = apiUtils.readError(jsonResponse)
+                return mapOf(null to error)
+            }
             val objectMapper = JacksonConfig().configureTeamMapping()
-            return objectMapper.readValue(
-                jsonResponse,
-                objectMapper.typeFactory.constructCollectionType(List::class.java, Team::class.java),
-            )
+            val teamListType = objectMapper.typeFactory.constructCollectionType(List::class.java, Team::class.java)
+            val teams: List<Team> = objectMapper.readValue(jsonResponse, teamListType)
+            mapOf(teams to null)
         } catch (e: Exception) {
             Logger.error(e.message ?: "Unknown error occurred while making a get request to the team endpoint")
-            null
+            mapOf(null to e.message)
         }
     }
 
@@ -153,15 +162,19 @@ class TeamClient {
      * @param endpointUrl
      * @return Team
      */
-    private suspend fun getRequest(endpointUrl: String): Team? {
+    private suspend fun getRequest(endpointUrl: String): Map<Team?, String?> {
         return try {
-            val response: HttpResponse = httpClient.get(endpointUrl)
-            val jsonResponse: String = response.bodyAsText()
+            val response = httpClient.get(endpointUrl)
+            val jsonResponse = response.bodyAsText()
+            if (jsonResponse.contains("error")) {
+                val error = apiUtils.readError(jsonResponse)
+                return mapOf(null to error)
+            }
             val objectMapper = JacksonConfig().configureTeamMapping()
-            return objectMapper.readValue(jsonResponse, Team::class.java)
+            mapOf(objectMapper.readValue(jsonResponse, Team::class.java) to null)
         } catch (e: Exception) {
             Logger.error(e.message ?: "Unknown error occurred while making a get request to the team endpoint")
-            null
+            mapOf(null to e.message)
         }
     }
 
@@ -170,15 +183,19 @@ class TeamClient {
      * @param endpointUrl
      * @return Team
      */
-    private suspend fun postRequest(endpointUrl: String): Team? {
+    private suspend fun postRequest(endpointUrl: String): Map<Team?, String?> {
         return try {
-            val response: HttpResponse = httpClient.post(endpointUrl)
-            val jsonResponse: String = response.bodyAsText()
+            val response = httpClient.post(endpointUrl)
+            val jsonResponse = response.bodyAsText()
+            if (jsonResponse.contains("error")) {
+                val error = apiUtils.readError(jsonResponse)
+                return mapOf(null to error)
+            }
             val objectMapper = JacksonConfig().configureTeamMapping()
-            return objectMapper.readValue(jsonResponse, Team::class.java)
+            mapOf(objectMapper.readValue(jsonResponse, Team::class.java) to null)
         } catch (e: Exception) {
             Logger.error(e.message ?: "Unknown error occurred while making a post request to the team endpoint")
-            null
+            mapOf(null to e.message)
         }
     }
 }

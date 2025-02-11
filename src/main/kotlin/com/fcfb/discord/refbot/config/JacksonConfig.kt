@@ -72,6 +72,13 @@ class JacksonConfig {
         }
     }
 
+    fun configureApiResponseMapping(): ObjectMapper {
+        return ObjectMapper().apply {
+            registerModule(KotlinModule.Builder().build())
+            propertyNamingStrategy = PropertyNamingStrategies.SNAKE_CASE
+        }
+    }
+
     private fun customFCFBUserModule(): SimpleModule {
         return SimpleModule().apply {
             addDeserializer(CoachPosition::class.java, CoachPositionDeserializer())

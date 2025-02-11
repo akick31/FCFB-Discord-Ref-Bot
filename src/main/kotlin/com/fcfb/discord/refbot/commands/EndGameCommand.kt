@@ -29,7 +29,12 @@ class EndGameCommand(
         )
         val response = interaction.deferPublicResponse()
 
-        val endedGame = gameClient.endGame(interaction.channelId.value)
+        val apiResponse = gameClient.endGame(interaction.channelId.value)
+        if (apiResponse.keys.firstOrNull() == null) {
+            response.respond { this.content = apiResponse.values.firstOrNull() ?: "Could not determine error" }
+            return
+        }
+        val endedGame = apiResponse.keys.firstOrNull()
         if (endedGame != null) {
             response.respond { this.content = "End game successful" }
             val message = interaction.channel.createMessage("Game ended")

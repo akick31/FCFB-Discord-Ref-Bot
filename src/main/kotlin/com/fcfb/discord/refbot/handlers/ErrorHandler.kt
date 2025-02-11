@@ -58,16 +58,13 @@ class ErrorHandler(
     internal suspend fun invalidDefensiveSubmitter(message: Message) =
         discordMessageHandler.sendErrorMessage(message, Error.INVALID_DEFENSIVE_SUBMITTER)
 
+    internal suspend fun invalidPlayCall(message: Message) = discordMessageHandler.sendErrorMessage(message, Error.INVALID_PLAY)
+
     /**
      * Handle invalid point after play call
      */
     internal suspend fun invalidPointAfterPlayCall(message: Message) =
         discordMessageHandler.sendErrorMessage(message, Error.INVALID_POINT_AFTER_PLAY)
-
-    /**
-     * Handle invalid play call
-     */
-    internal suspend fun invalidPlayCall(message: Message) = discordMessageHandler.sendErrorMessage(message, Error.INVALID_PLAY)
 
     /**
      * Handle waiting for coin toss error
@@ -114,4 +111,14 @@ class ErrorHandler(
      */
     internal suspend fun invalidDefensiveSubmissionLocation(message: Message) =
         discordMessageHandler.sendErrorMessage(message, Error.INVALID_DEFENSIVE_SUBMISSION_LOCATION)
+
+    /**
+     * Custom error message
+     * @param message The message object
+     * @param error The error message
+     */
+    internal suspend fun customErrorMessage(
+        message: Message,
+        error: String,
+    ) = discordMessageHandler.sendCustomErrorMessage(message, error)
 }

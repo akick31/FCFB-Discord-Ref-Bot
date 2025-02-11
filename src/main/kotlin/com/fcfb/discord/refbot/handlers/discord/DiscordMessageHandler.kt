@@ -18,8 +18,16 @@ import com.fcfb.discord.refbot.model.fcfb.game.PlayType
 import com.fcfb.discord.refbot.model.fcfb.game.Scenario
 import com.fcfb.discord.refbot.model.fcfb.game.TeamSide
 import com.fcfb.discord.refbot.model.log.MessageType
+import com.fcfb.discord.refbot.utils.CouldNotDetermineCoachPossessionException
+import com.fcfb.discord.refbot.utils.CouldNotDetermineTeamPossessionException
+import com.fcfb.discord.refbot.utils.DefensiveNumberRequestFailedException
+import com.fcfb.discord.refbot.utils.GameMessageFailedException
 import com.fcfb.discord.refbot.utils.GameUtils
+import com.fcfb.discord.refbot.utils.InvalidGameThreadException
 import com.fcfb.discord.refbot.utils.Logger
+import com.fcfb.discord.refbot.utils.MissingPlatformIdException
+import com.fcfb.discord.refbot.utils.NoMessageContentFoundException
+import com.fcfb.discord.refbot.utils.OffensiveNumberRequestFailedException
 import com.fcfb.discord.refbot.utils.Properties
 import com.kotlindiscord.kord.extensions.utils.getJumpUrl
 import dev.kord.common.entity.Snowflake
@@ -57,12 +65,12 @@ class DiscordMessageHandler(
         client: Kord,
         game: Game,
         messageContent: String,
-    ): Message? {
+    ): Message {
         val channel =
             textChannelThreadHandler.getTextChannelThreadById(
                 client,
                 Snowflake(
-                    game.homePlatformId ?: game.awayPlatformId ?: throw Exception("No platform ID found for game ${game.gameId}"),
+                    game.homePlatformId ?: game.awayPlatformId ?: throw MissingPlatformIdException(),
                 ),
             )
 
@@ -94,26 +102,15 @@ class DiscordMessageHandler(
         message: Message?,
         gameThread: TextChannelThread?,
         timeoutCalled: Boolean = false,
-    ): Message? {
+    ): Message {
         if (message != null && gameThread == null) {
-            val gameMessage =
-                createGameMessage(client, game, scenario, play, timeoutCalled) ?: run {
-                    val submittedMessage = sendMessageFromMessageObject(message, Error.NO_WRITEUP_FOUND.message, null)
-                    Logger.error(Error.NO_WRITEUP_FOUND.message)
-                    return submittedMessage
-                }
+            val gameMessage = createGameMessage(client, game, scenario, play, timeoutCalled)
             return sendMessageFromMessageObject(message, gameMessage.first.first, gameMessage.first.second)
         } else if (message == null && gameThread != null) {
-            val gameMessage =
-                createGameMessage(client, game, scenario, play, timeoutCalled) ?: run {
-                    val submittedMessage = sendMessageFromTextChannelObject(gameThread, Error.NO_WRITEUP_FOUND.message, null)
-                    Logger.error(Error.NO_WRITEUP_FOUND.message)
-                    return submittedMessage
-                }
+            val gameMessage = createGameMessage(client, game, scenario, play, timeoutCalled)
             return sendMessageFromTextChannelObject(gameThread, gameMessage.first.first, gameMessage.first.second)
         } else {
-            Logger.error(Error.GAME_THREAD_MESSAGE_EXCEPTION.message)
-            return null
+            throw GameMessageFailedException(game.gameId)
         }
     }
 
@@ -130,31 +127,31 @@ class DiscordMessageHandler(
         scenario: Scenario,
         play: Play?,
         previousMessage: Message? = null,
-    ): Boolean {
-        val gameMessage =
-            createGameMessage(client, game, scenario, play, false) ?: run {
-                Logger.error(Error.NO_WRITEUP_FOUND.message)
-                return false
-            }
+    ): List<Message?> {
+        val gameMessage = createGameMessage(client, game, scenario, play, false)
+
         val (messageContent, embedData) = gameMessage.first
         val defensiveCoaches = gameMessage.second
-        try {
+
+        return try {
             val numberRequestMessage = sendPrivateMessage(defensiveCoaches, embedData, messageContent, previousMessage)
             gameClient.updateRequestMessageId(game.gameId, numberRequestMessage)
             gameClient.updateLastMessageTimestamp(game.gameId)
-            for (message in numberRequestMessage) {
+
+            numberRequestMessage.forEach { message ->
                 logClient.logRequestMessage(
                     MessageType.PRIVATE_MESSAGE,
                     game.gameId,
                     play?.playId ?: 0,
                     message?.id?.value ?: 0.toULong(),
-                    defensiveCoaches.map { it?.username }.toString(),
+                    defensiveCoaches.mapNotNull { it?.username }.toString(),
                 )
             }
-            return true
+
+            numberRequestMessage
         } catch (e: Exception) {
-            sendErrorMessage(previousMessage ?: return false, Error.FAILED_TO_SEND_NUMBER_REQUEST_MESSAGE)
-            return false
+            previousMessage?.let { sendErrorMessage(it, Error.FAILED_TO_SEND_NUMBER_REQUEST_MESSAGE) }
+            throw DefensiveNumberRequestFailedException(game.gameId)
         }
     }
 
@@ -171,15 +168,16 @@ class DiscordMessageHandler(
         play: Play?,
         timeoutCalled: Boolean,
         previousMessage: Message? = null,
-    ): Boolean {
+    ): Message {
         val gameThread =
-            if (game.homePlatform == Platform.DISCORD) {
-                client.getChannel(Snowflake(game.homePlatformId.toString())) as TextChannelThread
-            } else if (game.awayPlatform == Platform.DISCORD) {
-                client.getChannel(Snowflake(game.awayPlatformId.toString())) as TextChannelThread
-            } else {
-                sendErrorMessage(previousMessage ?: return false, Error.INVALID_GAME_THREAD)
-                return false
+            when {
+                game.homePlatform == Platform.DISCORD -> client.getChannel(Snowflake(game.homePlatformId.toString())) as TextChannelThread
+                game.awayPlatform == Platform.DISCORD -> client.getChannel(Snowflake(game.awayPlatformId.toString())) as TextChannelThread
+                else ->
+                    previousMessage?.let {
+                        sendErrorMessage(it, Error.INVALID_GAME_THREAD)
+                        throw InvalidGameThreadException(game.gameId)
+                    }
             }
 
         val numberRequestMessage =
@@ -191,12 +189,9 @@ class DiscordMessageHandler(
                 null,
                 gameThread,
                 timeoutCalled,
-            ) ?: run {
-                sendErrorMessage(previousMessage ?: return false, Error.FAILED_TO_SEND_NUMBER_REQUEST_MESSAGE)
-                return false
-            }
+            )
 
-        try {
+        return try {
             gameClient.updateRequestMessageId(game.gameId, listOf(numberRequestMessage))
             gameClient.updateLastMessageTimestamp(game.gameId)
             logClient.logRequestMessage(
@@ -206,10 +201,10 @@ class DiscordMessageHandler(
                 numberRequestMessage.id.value,
                 numberRequestMessage.getJumpUrl(),
             )
-            return true
+            numberRequestMessage
         } catch (e: Exception) {
-            sendErrorMessage(previousMessage ?: return false, Error.FAILED_TO_SEND_NUMBER_REQUEST_MESSAGE)
-            return false
+            previousMessage?.let { sendErrorMessage(it, Error.FAILED_TO_SEND_NUMBER_REQUEST_MESSAGE) }
+            throw OffensiveNumberRequestFailedException(game.gameId)
         }
     }
 
@@ -221,7 +216,7 @@ class DiscordMessageHandler(
         number: Int,
         timeoutCalled: Boolean,
         message: Message?,
-    ) {
+    ): Message {
         val baseMessage = Info.SUCCESSFUL_NUMBER_SUBMISSION.message.format(number)
         val messageContent =
             if (timeoutCalled) {
@@ -235,7 +230,7 @@ class DiscordMessageHandler(
             } else {
                 baseMessage
             }
-        sendMessageFromMessageObject(message, messageContent, null)
+        return sendMessageFromMessageObject(message, messageContent, null)
     }
 
     /**
@@ -250,9 +245,17 @@ class DiscordMessageHandler(
         game: Game,
         playOutcome: Play,
         message: Message?,
-    ): Message? {
+    ): Message {
         val scenario = if (playOutcome.actualResult == ActualResult.TOUCHDOWN) Scenario.TOUCHDOWN else playOutcome.result!!
-        return sendGameMessage(client, game, scenario, playOutcome, message, null, false)
+        return sendGameMessage(
+            client,
+            game,
+            scenario,
+            playOutcome,
+            message,
+            null,
+            false,
+        )
     }
 
     /**
@@ -266,7 +269,15 @@ class DiscordMessageHandler(
         game: Game,
         message: Message,
     ) {
-        sendGameMessage(client, game, Scenario.COIN_TOSS_CHOICE, null, message, null, false)
+        sendGameMessage(
+            client,
+            game,
+            Scenario.COIN_TOSS_CHOICE,
+            null,
+            message,
+            null,
+            false,
+        )
         sendRequestForDefensiveNumber(
             client,
             game,
@@ -287,7 +298,15 @@ class DiscordMessageHandler(
         game: Game,
         message: Message,
     ) {
-        sendGameMessage(client, game, Scenario.OVERTIME_COIN_TOSS_CHOICE, null, message, null, false)
+        sendGameMessage(
+            client,
+            game,
+            Scenario.OVERTIME_COIN_TOSS_CHOICE,
+            null,
+            message,
+            null,
+            false,
+        )
         sendRequestForDefensiveNumber(
             client,
             game,
@@ -307,9 +326,12 @@ class DiscordMessageHandler(
         game: Game,
         message: Message,
     ) {
-        val coinTossWinningCoachList =
-            gameUtils.getCoinTossWinners(client, game)
-                ?: return sendErrorMessage(message, Error.INVALID_COIN_TOSS_WINNER)
+        val coinTossWinningCoachList: List<User?>
+        try {
+            coinTossWinningCoachList = gameUtils.getCoinTossWinners(client, game)
+        } catch (e: Exception) {
+            return sendErrorMessage(message, Error.INVALID_COIN_TOSS_WINNER)
+        }
 
         val coinTossOutcomeMessage =
             when (game.gameStatus) {
@@ -318,14 +340,14 @@ class DiscordMessageHandler(
                         message,
                         Info.COIN_TOSS_OUTCOME.message.format(joinMentions(coinTossWinningCoachList)),
                         null,
-                    ) ?: return sendErrorMessage(message, Error.FAILED_TO_SEND_NUMBER_REQUEST_MESSAGE)
+                    )
                 }
                 GameStatus.END_OF_REGULATION -> {
                     sendMessageFromMessageObject(
                         message,
                         Info.OVERTIME_COIN_TOSS_OUTCOME.message.format(joinMentions(coinTossWinningCoachList)),
                         null,
-                    ) ?: return sendErrorMessage(message, Error.FAILED_TO_SEND_NUMBER_REQUEST_MESSAGE)
+                    )
                 }
                 else -> {
                     return sendErrorMessage(message, Error.INVALID_GAME_STATUS)
@@ -372,7 +394,15 @@ class DiscordMessageHandler(
         game: Game,
         message: Message,
     ) {
-        sendGameMessage(client, game, Scenario.GAME_OVER, null, message, null, false)
+        sendGameMessage(
+            client,
+            game,
+            Scenario.GAME_OVER,
+            null,
+            message,
+            null,
+            false,
+        )
 
         // No need to post scrimmage scores
         if (game.gameType != GameType.SCRIMMAGE) {
@@ -420,8 +450,19 @@ class DiscordMessageHandler(
         message: Message?,
         error: Error,
     ) {
-        error.logError()
         sendMessageFromMessageObject(message, error.message, null)
+    }
+
+    /**
+     * Send a custom error message to a user
+     * @param message The message object
+     * @param errorMessage The error message
+     */
+    suspend fun sendCustomErrorMessage(
+        message: Message?,
+        errorMessage: String,
+    ) {
+        sendMessageFromMessageObject(message, errorMessage, null)
     }
 
     /**
@@ -483,28 +524,73 @@ class DiscordMessageHandler(
         scenario: Scenario,
         play: Play?,
         timeoutCalled: Boolean = false,
-    ): Pair<Pair<String, EmbedData?>, List<User?>>? {
-        var playWriteup: String? = null
-        var messageContent: String?
-
+    ): Pair<Pair<String, EmbedData?>, List<User?>> {
         // Get message content but not play result for number requests, game start, and coin toss
-        if (scenario == Scenario.DM_NUMBER_REQUEST || scenario == Scenario.KICKOFF_NUMBER_REQUEST ||
-            scenario == Scenario.NORMAL_NUMBER_REQUEST || scenario == Scenario.GAME_START ||
-            scenario == Scenario.COIN_TOSS_CHOICE || scenario == Scenario.OVERTIME_COIN_TOSS_CHOICE ||
-            scenario == Scenario.OVERTIME_START || scenario == Scenario.GAME_OVER || scenario == Scenario.END_OF_HALF ||
-            scenario == Scenario.DELAY_OF_GAME || scenario == Scenario.DELAY_OF_GAME_WARNING ||
-            scenario == Scenario.DELAY_OF_GAME_NOTIFICATION || scenario == Scenario.CHEW_MODE_ENABLED
-        ) {
-            messageContent = gameWriteupClient.getGameMessageByScenario(scenario, null) ?: return null
-        } else if (play?.playCall == PlayCall.PASS || play?.playCall == PlayCall.RUN) {
-            playWriteup = gameWriteupClient.getGameMessageByScenario(scenario, play.playCall) ?: return null
-            messageContent = gameWriteupClient.getGameMessageByScenario(Scenario.PLAY_RESULT, null) ?: return null
-        } else {
-            playWriteup = gameWriteupClient.getGameMessageByScenario(scenario, null) ?: return null
-            messageContent = gameWriteupClient.getGameMessageByScenario(Scenario.PLAY_RESULT, null) ?: return null
-        }
+        var (messageContent, playWriteup) =
+            when {
+                scenario in
+                    listOf(
+                        Scenario.DM_NUMBER_REQUEST, Scenario.KICKOFF_NUMBER_REQUEST,
+                        Scenario.NORMAL_NUMBER_REQUEST, Scenario.GAME_START,
+                        Scenario.COIN_TOSS_CHOICE, Scenario.OVERTIME_COIN_TOSS_CHOICE,
+                        Scenario.OVERTIME_START, Scenario.GAME_OVER, Scenario.END_OF_HALF,
+                        Scenario.DELAY_OF_GAME, Scenario.DELAY_OF_GAME_WARNING,
+                        Scenario.DELAY_OF_GAME_NOTIFICATION, Scenario.CHEW_MODE_ENABLED,
+                    )
+                -> {
+                    val messageContentApiResponse = gameWriteupClient.getGameMessageByScenario(scenario, null)
+                    if (messageContentApiResponse.keys.firstOrNull() == null) {
+                        throw NoMessageContentFoundException(Scenario.PLAY_RESULT.description)
+                    }
+                    val messageContent =
+                        messageContentApiResponse.keys.firstOrNull()
+                            ?: throw NoMessageContentFoundException(Scenario.PLAY_RESULT.description)
+                    messageContent to null
+                }
+                play?.playCall in listOf(PlayCall.PASS, PlayCall.RUN) -> {
+                    // Get play result writeup
+                    val playCallWriteupApiResponse = gameWriteupClient.getGameMessageByScenario(scenario, play?.playCall)
+                    if (playCallWriteupApiResponse.keys.firstOrNull() == null) {
+                        throw NoMessageContentFoundException(scenario.description)
+                    }
+                    val writeup =
+                        playCallWriteupApiResponse.keys.firstOrNull()
+                            ?: throw NoMessageContentFoundException(scenario.description)
+
+                    // Get message content
+                    val messageContentApiResponse = gameWriteupClient.getGameMessageByScenario(Scenario.PLAY_RESULT, null)
+                    if (messageContentApiResponse.keys.firstOrNull() == null) {
+                        throw NoMessageContentFoundException(Scenario.PLAY_RESULT.description)
+                    }
+                    val messageContent =
+                        messageContentApiResponse.keys.firstOrNull()
+                            ?: throw NoMessageContentFoundException(Scenario.PLAY_RESULT.description)
+                    messageContent to writeup
+                }
+                else -> {
+                    // Get play result writeup
+                    val writeupApiResponse = gameWriteupClient.getGameMessageByScenario(scenario, null)
+                    if (writeupApiResponse.keys.firstOrNull() == null) {
+                        throw NoMessageContentFoundException(scenario.description)
+                    }
+                    val writeup =
+                        writeupApiResponse.keys.firstOrNull()
+                            ?: throw NoMessageContentFoundException(scenario.description)
+
+                    // Get message content
+                    val messageContentApiResponse = gameWriteupClient.getGameMessageByScenario(Scenario.PLAY_RESULT, null)
+                    if (messageContentApiResponse.keys.firstOrNull() == null) {
+                        throw NoMessageContentFoundException(Scenario.PLAY_RESULT.description)
+                    }
+                    val messageContent =
+                        messageContentApiResponse.keys.firstOrNull()
+                            ?: throw NoMessageContentFoundException(Scenario.PLAY_RESULT.description)
+                    messageContent to writeup
+                }
+            }
+
         if (messageContent == "") {
-            return null
+            throw NoMessageContentFoundException(scenario.description)
         }
 
         // Fetch Discord users
@@ -520,7 +606,7 @@ class DiscordMessageHandler(
                 game.possession == TeamSide.AWAY && game.currentPlayType == PlayType.KICKOFF -> awayCoaches to homeCoaches
                 game.possession == TeamSide.HOME -> homeCoaches to awayCoaches
                 game.possession == TeamSide.AWAY -> awayCoaches to homeCoaches
-                else -> return null
+                else -> throw CouldNotDetermineCoachPossessionException(game.gameId)
             }
 
         val (offensiveTeam, defensiveTeam) =
@@ -529,7 +615,7 @@ class DiscordMessageHandler(
                 game.possession == TeamSide.AWAY && game.currentPlayType == PlayType.KICKOFF -> game.homeTeam to game.awayTeam
                 game.possession == TeamSide.HOME -> game.homeTeam to game.awayTeam
                 game.possession == TeamSide.AWAY -> game.awayTeam to game.homeTeam
-                else -> return null
+                else -> throw CouldNotDetermineTeamPossessionException(game.gameId)
             }
 
         // Build placeholders for message replacement
@@ -565,8 +651,8 @@ class DiscordMessageHandler(
 
         // Replace placeholders with actual values
         replacements.forEach { (placeholder, replacement) ->
-            if (placeholder in (messageContent ?: "")) {
-                messageContent = messageContent?.replace(placeholder, replacement ?: "")
+            if (placeholder in messageContent) {
+                messageContent = messageContent.replace(placeholder, replacement ?: "")
             }
         }
 
@@ -731,9 +817,10 @@ class DiscordMessageHandler(
 
     /**
      * Send a private message to a user via a user object
-     * @param user The user object
+     * @param userList The list of user objects
      * @param embedData The embed data
      * @param messageContent The message content
+     * @param previousMessage The previous message object
      */
     private suspend fun sendPrivateMessage(
         userList: List<User?>,
@@ -803,49 +890,53 @@ class DiscordMessageHandler(
         message: Message?,
         messageContent: String,
         embedData: EmbedData?,
-    ): Message? {
-        val submittedMessage =
-            message?.let {
-                it.getChannel().createMessage {
-                    embedData?.let { embed ->
-                        if (embed.image.value?.url?.value == null) {
-                            embeds =
-                                mutableListOf(
-                                    embedBuilder.apply {
-                                        title = embed.title.value
-                                        description = embed.description.value
-                                        footer {
-                                            text = embed.footer.value?.text ?: ""
-                                        }
-                                    },
-                                )
-                        } else {
-                            val file = addFile(Path(embed.image.value?.url?.value.toString()))
-                            embeds =
-                                mutableListOf(
-                                    embedBuilder.apply {
-                                        title = embed.title.value
-                                        description = embed.description.value
-                                        image = file.url
-                                        footer {
-                                            text = embed.footer.value?.text ?: ""
-                                        }
-                                    },
-                                )
+    ): Message {
+        try {
+            val submittedMessage =
+                message?.let {
+                    it.getChannel().createMessage {
+                        embedData?.let { embed ->
+                            if (embed.image.value?.url?.value == null) {
+                                embeds =
+                                    mutableListOf(
+                                        embedBuilder.apply {
+                                            title = embed.title.value
+                                            description = embed.description.value
+                                            footer {
+                                                text = embed.footer.value?.text ?: ""
+                                            }
+                                        },
+                                    )
+                            } else {
+                                val file = addFile(Path(embed.image.value?.url?.value.toString()))
+                                embeds =
+                                    mutableListOf(
+                                        embedBuilder.apply {
+                                            title = embed.title.value
+                                            description = embed.description.value
+                                            image = file.url
+                                            footer {
+                                                text = embed.footer.value?.text ?: ""
+                                            }
+                                        },
+                                    )
+                            }
                         }
+                        content = messageContent
                     }
-                    content = messageContent
+                } ?: run {
+                    throw GameMessageFailedException()
                 }
-            } ?: run {
-                Logger.error(Error.GAME_THREAD_MESSAGE_EXCEPTION.message)
-                null
+
+            if (embedData != null) {
+                fileHandler.deleteFile(embedData.image.value?.url?.value.toString())
             }
 
-        if (embedData != null) {
-            fileHandler.deleteFile(embedData.image.value?.url?.value.toString())
+            return submittedMessage
+        } catch (e: Exception) {
+            Logger.error("Failed to send message to channel ${message?.channelId?.value}: ${e.message}", e)
+            throw e
         }
-
-        return submittedMessage
     }
 
     /**
@@ -859,59 +950,9 @@ class DiscordMessageHandler(
         messageContent: String,
         embedData: EmbedData?,
     ): Message {
-        val submittedMessage =
-            channel.createMessage {
-                embedData?.let { embed ->
-                    if (embed.image.value?.url?.value == null) {
-                        embeds =
-                            mutableListOf(
-                                embedBuilder.apply {
-                                    title = embed.title.value
-                                    description = embed.description.value
-                                    footer {
-                                        text = embed.footer.value?.text ?: ""
-                                    }
-                                },
-                            )
-                    } else {
-                        val file = addFile(Path(embed.image.value?.url?.value.toString()))
-                        embeds =
-                            mutableListOf(
-                                embedBuilder.apply {
-                                    title = embed.title.value
-                                    description = embed.description.value
-                                    image = file.url
-                                    footer {
-                                        text = embed.footer.value?.text ?: ""
-                                    }
-                                },
-                            )
-                    }
-                }
-                content = messageContent
-            }
-
-        if (embedData != null) {
-            fileHandler.deleteFile(embedData.image.value?.url?.value.toString())
-        }
-
-        return submittedMessage
-    }
-
-    /**
-     * Send a message to a game thread via a text channel object
-     * @param textChannel The text channel object
-     * @param messageContent The message content
-     * @param embedData The embed data
-     */
-    private suspend fun sendMessageFromTextChannelObject(
-        textChannel: TextChannelThread?,
-        messageContent: String,
-        embedData: EmbedData?,
-    ): Message? {
-        val submittedMessage =
-            textChannel?.let {
-                it.createMessage {
+        try {
+            val submittedMessage =
+                channel.createMessage {
                     embedData?.let { embed ->
                         if (embed.image.value?.url?.value == null) {
                             embeds =
@@ -941,16 +982,75 @@ class DiscordMessageHandler(
                     }
                     content = messageContent
                 }
-            } ?: run {
-                Logger.error(Error.GAME_THREAD_MESSAGE_EXCEPTION.message)
-                null
+
+            if (embedData != null) {
+                fileHandler.deleteFile(embedData.image.value?.url?.value.toString())
             }
 
-        if (embedData != null) {
-            fileHandler.deleteFile(embedData.image.value?.url?.value.toString())
+            return submittedMessage
+        } catch (e: Exception) {
+            Logger.error("Failed to send message to channel ${channel.id.value}: ${e.message}", e)
+            throw e
         }
+    }
 
-        return submittedMessage
+    /**
+     * Send a message to a game thread via a text channel object
+     * @param textChannel The text channel object
+     * @param messageContent The message content
+     * @param embedData The embed data
+     */
+    private suspend fun sendMessageFromTextChannelObject(
+        textChannel: TextChannelThread?,
+        messageContent: String,
+        embedData: EmbedData?,
+    ): Message {
+        try {
+            val submittedMessage =
+                textChannel?.let {
+                    it.createMessage {
+                        embedData?.let { embed ->
+                            if (embed.image.value?.url?.value == null) {
+                                embeds =
+                                    mutableListOf(
+                                        embedBuilder.apply {
+                                            title = embed.title.value
+                                            description = embed.description.value
+                                            footer {
+                                                text = embed.footer.value?.text ?: ""
+                                            }
+                                        },
+                                    )
+                            } else {
+                                val file = addFile(Path(embed.image.value?.url?.value.toString()))
+                                embeds =
+                                    mutableListOf(
+                                        embedBuilder.apply {
+                                            title = embed.title.value
+                                            description = embed.description.value
+                                            image = file.url
+                                            footer {
+                                                text = embed.footer.value?.text ?: ""
+                                            }
+                                        },
+                                    )
+                            }
+                        }
+                        content = messageContent
+                    }
+                } ?: run {
+                    throw GameMessageFailedException()
+                }
+
+            if (embedData != null) {
+                fileHandler.deleteFile(embedData.image.value?.url?.value.toString())
+            }
+
+            return submittedMessage
+        } catch (e: Exception) {
+            Logger.error("Failed to send message to channel ${textChannel?.id?.value}: ${e.message}", e)
+            throw e
+        }
     }
 
     /**

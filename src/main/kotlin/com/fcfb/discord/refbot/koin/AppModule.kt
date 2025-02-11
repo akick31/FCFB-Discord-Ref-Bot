@@ -1,6 +1,7 @@
 package com.fcfb.discord.refbot.koin
 
 import com.fcfb.discord.refbot.FCFBDiscordRefBot
+import com.fcfb.discord.refbot.api.ApiUtils
 import com.fcfb.discord.refbot.api.AuthClient
 import com.fcfb.discord.refbot.api.GameClient
 import com.fcfb.discord.refbot.api.GameWriteupClient
@@ -52,24 +53,25 @@ import org.koin.dsl.module
 val appModule =
     module {
         single { EmbedBuilder() }
-        single { TextChannelThreadHandler() }
-        single { AuthClient() }
-        single { GameClient() }
-        single { GameWriteupClient() }
-        single { PlayClient() }
-        single { LogClient() }
+        single { ApiUtils() }
         single { ScorebugClient() }
-        single { TeamClient() }
-        single { UserClient() }
         single { FileHandler() }
         single { HelpCommand() }
-        single { RoleCommand() }
-        single { GameUtils() }
         single { HealthChecks() }
         single { Properties() }
 
         // Classes with dependencies
+        single { AuthClient(get()) }
+        single { GameClient(get()) }
+        single { GameWriteupClient(get()) }
+        single { PlayClient(get()) }
+        single { LogClient(get()) }
+        single { TeamClient(get()) }
+        single { UserClient(get()) }
+        single { RoleCommand(get()) }
         single { ErrorHandler(get()) }
+        single { TextChannelThreadHandler(get(), get(), get(), get()) }
+        single { GameUtils(get()) }
         single { StartGameRequest(get(), get()) }
         single { ServerConfig(get(), get(), get()) }
         single { GameHandler(get(), get(), get(), get(), get(), get(), get(), get(), get()) }

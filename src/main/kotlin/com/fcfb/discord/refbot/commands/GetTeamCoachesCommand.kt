@@ -35,7 +35,12 @@ class GetTeamCoachesCommand(
 
         val command = interaction.command
         val teamName = command.options["team"]!!.value.toString()
-        val team = teamClient.getTeamByName(teamName)
+        val apiResponse = teamClient.getTeamByName(teamName)
+        if (apiResponse.keys.firstOrNull() == null) {
+            response.respond { this.content = apiResponse.values.firstOrNull() ?: "Could not determine error" }
+            return
+        }
+        val team = apiResponse.keys.firstOrNull()
 
         if (team != null) {
             val coachList = team.coachDiscordIds.map { interaction.kord.getUser(Snowflake(it)) }

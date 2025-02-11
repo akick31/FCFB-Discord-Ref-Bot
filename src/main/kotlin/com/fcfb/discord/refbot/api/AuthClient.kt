@@ -9,14 +9,15 @@ import io.ktor.client.engine.cio.endpoint
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
-import io.ktor.client.statement.HttpResponse
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.ContentType
 import io.ktor.http.contentType
 import io.ktor.serialization.jackson.jackson
 import java.util.Properties
 
-class AuthClient {
+class AuthClient(
+    private val apiUtils: ApiUtils,
+) {
     private val baseUrl: String
     private val httpClient =
         HttpClient(CIO) {
@@ -48,7 +49,7 @@ class AuthClient {
      * @param user
      * @return OngoingGame
      */
-    internal suspend fun registerUser(user: FCFBUser): FCFBUser? {
+    internal suspend fun registerUser(user: FCFBUser): Map<FCFBUser?, String?> {
         val endpointUrl = "$baseUrl/auth/register"
         return postRequestWithBody(endpointUrl, user)
     }
@@ -61,19 +62,23 @@ class AuthClient {
     private suspend fun postRequestWithBody(
         endpointUrl: String,
         body: Any,
-    ): FCFBUser? {
+    ): Map<FCFBUser?, String?> {
         return try {
-            val response: HttpResponse =
+            val response =
                 httpClient.post(endpointUrl) {
                     contentType(ContentType.Application.Json)
                     setBody(body)
                 }
-            val jsonResponse: String = response.bodyAsText()
+            val jsonResponse = response.bodyAsText()
+            if (jsonResponse.contains("error")) {
+                val error = apiUtils.readError(jsonResponse)
+                return mapOf(null to error)
+            }
             val objectMapper = JacksonConfig().configureFCFBUserMapping()
-            return objectMapper.readValue(jsonResponse, FCFBUser::class.java)
+            mapOf(objectMapper.readValue(jsonResponse, FCFBUser::class.java) to null)
         } catch (e: Exception) {
             Logger.error(e.message!!)
-            null
+            mapOf(null to e.message)
         }
     }
 }

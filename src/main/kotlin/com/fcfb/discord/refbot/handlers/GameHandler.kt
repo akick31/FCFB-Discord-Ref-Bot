@@ -17,6 +17,7 @@ import com.fcfb.discord.refbot.model.fcfb.game.Scenario
 import com.fcfb.discord.refbot.utils.GameUtils
 import dev.kord.core.Kord
 import dev.kord.core.entity.Message
+import dev.kord.core.entity.User
 
 class GameHandler(
     private val discordMessageHandler: DiscordMessageHandler,
@@ -39,9 +40,11 @@ class GameHandler(
         message: Message,
     ) {
         val requestMessageId = message.referencedMessage?.id?.value.toString()
-        val game =
-            gameClient.getGameByRequestMessageId(requestMessageId)
-                ?: return errorHandler.noGameFoundError(message)
+        val response = gameClient.getGameByRequestMessageId(requestMessageId)
+        if (response.keys.firstOrNull() == null) {
+            return errorHandler.customErrorMessage(message, response.values.firstOrNull() ?: "Could not determine error")
+        }
+        val game = response.keys.firstOrNull() ?: return errorHandler.noGameFoundError(message)
         if (game.gameStatus == GameStatus.FINAL) {
             return discordMessageHandler.sendErrorMessage(message, Error.GAME_OVER)
         }
@@ -66,7 +69,7 @@ class GameHandler(
         previousPlay: Play,
         currentPlay: Play?,
         message: Message,
-    ): Boolean {
+    ): List<Message?> {
         return if (game.waitingOn != game.possession || currentPlay == null) {
             discordMessageHandler.sendRequestForDefensiveNumber(
                 client,
@@ -76,12 +79,14 @@ class GameHandler(
                 message,
             )
         } else {
-            discordMessageHandler.sendRequestForOffensiveNumber(
-                client,
-                game,
-                currentPlay,
-                false,
-                message,
+            listOf(
+                discordMessageHandler.sendRequestForOffensiveNumber(
+                    client,
+                    game,
+                    currentPlay,
+                    false,
+                    message,
+                ),
             )
         }
     }
@@ -97,7 +102,12 @@ class GameHandler(
         game: Game,
         message: Message,
     ) {
-        val playCall = gameUtils.parsePlayCallFromMessage(game, message) ?: return errorHandler.invalidPlayCall(message)
+        val playCall =
+            try {
+                gameUtils.parsePlayCallFromMessage(game, message)
+            } catch (e: Exception) {
+                return errorHandler.invalidPlayCall(message)
+            }
         val number =
             if (playCall == PlayCall.KNEEL || playCall == PlayCall.SPIKE) {
                 null
@@ -125,7 +135,7 @@ class GameHandler(
         }
 
         // Submit the offensive number and get the play outcome
-        val playOutcome =
+        val playApiResponse =
             playClient.submitOffensiveNumber(
                 game.gameId,
                 offensiveSubmitter,
@@ -133,11 +143,20 @@ class GameHandler(
                 playCall,
                 runoffType,
                 timeoutCalled,
-            ) ?: return errorHandler.invalidOffensiveNumberSubmission(message)
+            )
+        if (playApiResponse.keys.firstOrNull() == null) {
+            return errorHandler.customErrorMessage(message, playApiResponse.values.firstOrNull() ?: "Could not determine error")
+        }
+        val playOutcome = playApiResponse.keys.firstOrNull() ?: return errorHandler.invalidOffensiveNumberSubmission(message)
 
-        val updatedGame =
-            gameClient.getGameByRequestMessageId(message.referencedMessage?.id?.value.toString())
-                ?: return errorHandler.noGameFoundError(message)
+        val gameApiResponse =
+            gameClient.getGameByRequestMessageId(
+                message.referencedMessage?.id?.value.toString(),
+            )
+        if (gameApiResponse.keys.firstOrNull() == null) {
+            return errorHandler.customErrorMessage(message, gameApiResponse.values.firstOrNull() ?: "Could not determine error")
+        }
+        val updatedGame = gameApiResponse.keys.firstOrNull() ?: return errorHandler.noGameFoundError(message)
 
         val playOutcomeMessage = discordMessageHandler.sendPlayOutcomeMessage(client, updatedGame, playOutcome, message)
 
@@ -152,7 +171,11 @@ class GameHandler(
                 endGame(client, updatedGame, message)
             }
             GameStatus.END_OF_REGULATION -> {
-                discordMessageHandler.sendOvertimeCoinTossRequest(client, updatedGame, message)
+                discordMessageHandler.sendOvertimeCoinTossRequest(
+                    client,
+                    updatedGame,
+                    message,
+                )
             }
             else -> {
                 discordMessageHandler.sendRequestForDefensiveNumber(
@@ -193,12 +216,30 @@ class GameHandler(
         val timeoutCalled = gameUtils.parseTimeoutFromMessage(message)
         val defensiveSubmitter = message.author?.username ?: return errorHandler.invalidDefensiveSubmitter(message)
 
-        val play =
-            playClient.submitDefensiveNumber(game.gameId, defensiveSubmitter, number, timeoutCalled)
-                ?: return errorHandler.invalidDefensiveNumberSubmission(message)
-
-        discordMessageHandler.sendNumberConfirmationMessage(game, number, timeoutCalled, message)
-        discordMessageHandler.sendRequestForOffensiveNumber(client, game, play, timeoutCalled, message)
+        val playApiResponse =
+            playClient.submitDefensiveNumber(
+                game.gameId,
+                defensiveSubmitter,
+                number,
+                timeoutCalled,
+            )
+        if (playApiResponse.keys.firstOrNull() == null) {
+            return errorHandler.customErrorMessage(message, playApiResponse.values.firstOrNull() ?: "Could not determine error")
+        }
+        val play = playApiResponse.keys.firstOrNull() ?: return errorHandler.invalidDefensiveNumberSubmission(message)
+        discordMessageHandler.sendNumberConfirmationMessage(
+            game,
+            number,
+            timeoutCalled,
+            message,
+        )
+        discordMessageHandler.sendRequestForOffensiveNumber(
+            client,
+            game,
+            play,
+            timeoutCalled,
+            message,
+        )
     }
 
     /**
@@ -218,9 +259,11 @@ class GameHandler(
             return errorHandler.waitingForCoinTossError(message)
         }
 
-        val updatedGame =
-            gameClient.callCoinToss(game.gameId, coinTossResponse.uppercase())
-                ?: return errorHandler.invalidCoinToss(message)
+        val response = gameClient.callCoinToss(game.gameId, coinTossResponse.uppercase())
+        if (response.keys.firstOrNull() == null) {
+            return errorHandler.customErrorMessage(message, response.values.firstOrNull() ?: "Could not determine error")
+        }
+        val updatedGame = response.keys.firstOrNull() ?: return errorHandler.invalidCoinToss(message)
 
         discordMessageHandler.sendCoinTossOutcomeMessage(client, updatedGame, message)
     }
@@ -236,15 +279,22 @@ class GameHandler(
         game: Game,
         message: Message,
     ) {
-        val coinTossWinningCoachList = gameUtils.getCoinTossWinners(client, game) ?: return errorHandler.invalidCoinTossWinner(message)
+        val coinTossWinningCoachList: List<User?>
+        try {
+            coinTossWinningCoachList = gameUtils.getCoinTossWinners(client, game)
+        } catch (e: Exception) {
+            return errorHandler.invalidCoinTossWinner(message)
+        }
         val coinTossChoice = message.content
         if (message.author !in coinTossWinningCoachList && !gameUtils.isValidCoinTossChoice(coinTossChoice)) {
             return errorHandler.waitingOnCoinTossChoiceError(message)
         }
 
-        val updatedGame =
-            gameClient.makeCoinTossChoice(game.gameId, coinTossChoice.uppercase())
-                ?: return errorHandler.invalidCoinTossChoice(message)
+        val response = gameClient.makeCoinTossChoice(game.gameId, coinTossChoice.uppercase())
+        if (response.keys.firstOrNull() == null) {
+            return errorHandler.customErrorMessage(message, response.values.firstOrNull() ?: "Could not determine error")
+        }
+        val updatedGame = response.keys.firstOrNull() ?: return errorHandler.invalidCoinTossChoice(message)
 
         discordMessageHandler.sendCoinTossChoiceMessage(client, updatedGame, message)
     }
@@ -260,15 +310,23 @@ class GameHandler(
         game: Game,
         message: Message,
     ) {
-        val coinTossWinningCoachList = gameUtils.getCoinTossWinners(client, game) ?: return errorHandler.invalidCoinTossWinner(message)
+        val coinTossWinningCoachList: List<User?>
+        try {
+            coinTossWinningCoachList = gameUtils.getCoinTossWinners(client, game)
+        } catch (e: Exception) {
+            return errorHandler.invalidCoinTossWinner(message)
+        }
         val coinTossChoice = message.content
         if (message.author !in coinTossWinningCoachList && !gameUtils.isValidOvertimeCoinTossChoice(coinTossChoice)) {
             return errorHandler.waitingOnCoinTossChoiceError(message)
         }
 
-        val updatedGame =
-            gameClient.makeOvertimeCoinTossChoice(game.gameId, coinTossChoice.uppercase())
-                ?: return errorHandler.invalidCoinTossChoice(message)
+        val response = gameClient.makeOvertimeCoinTossChoice(game.gameId, coinTossChoice.uppercase())
+
+        if (response.keys.firstOrNull() == null) {
+            return errorHandler.customErrorMessage(message, response.values.firstOrNull() ?: "Could not determine error")
+        }
+        val updatedGame = response.keys.firstOrNull() ?: return errorHandler.invalidCoinTossChoice(message)
 
         discordMessageHandler.sendOvertimeCoinTossChoiceMessage(client, updatedGame, message)
     }

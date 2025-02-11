@@ -24,7 +24,12 @@ class GetRoleCommand(
             "${interaction.user.username} is getting user role in channel ${interaction.channelId.value}",
         )
         val response = interaction.deferPublicResponse()
-        val user = userClient.getUserByDiscordId(interaction.user.id.value.toString())
+        val apiResponse = userClient.getUserByDiscordId(interaction.user.id.value.toString())
+        if (apiResponse.keys.firstOrNull() == null) {
+            response.respond { this.content = apiResponse.values.firstOrNull() ?: "Could not determine error" }
+            return
+        }
+        val user = apiResponse.keys.firstOrNull()
 
         if (user != null) {
             val messageContent = "User role: ${user.role}"

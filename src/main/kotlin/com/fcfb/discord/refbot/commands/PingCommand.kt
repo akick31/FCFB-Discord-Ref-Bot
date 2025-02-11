@@ -29,19 +29,37 @@ class PingCommand(
         )
         val response = interaction.deferPublicResponse()
 
-        val game = gameClient.getGameByPlatformId(interaction.channelId.value.toString())
+        val apiResponse = gameClient.getGameByPlatformId(interaction.channelId.value.toString())
+        if (apiResponse.keys.firstOrNull() == null) {
+            response.respond { this.content = apiResponse.values.firstOrNull() ?: "Could not determine error" }
+            return
+        }
+        val game = apiResponse.keys.firstOrNull()
 
         if (game != null) {
+            val previousPlayApiResponse = playClient.getPreviousPlay(game.gameId)
+            if (previousPlayApiResponse.keys.firstOrNull() == null) {
+                response.respond { this.content = previousPlayApiResponse.values.firstOrNull() ?: "Could not determine error" }
+                return
+            }
             val previousPlay =
-                playClient.getPreviousPlay(game.gameId) ?: run {
-                    response.respond { this.content = "No previous play found. Ping failed!" }
-                    Logger.error(
-                        "${interaction.user.username} failed to ping a game in channel ${interaction.channelId.value}" +
-                            " because no previous play was found",
-                    )
-                    return
-                }
-            val currentPlay = playClient.getCurrentPlay(game.gameId)
+                previousPlayApiResponse.keys.firstOrNull()
+                    ?: run {
+                        response.respond { this.content = "No previous play found. Ping failed!" }
+                        return
+                    }
+
+            val currentPlayApiResponse = playClient.getCurrentPlay(game.gameId)
+            if (currentPlayApiResponse.keys.firstOrNull() == null) {
+                response.respond { this.content = currentPlayApiResponse.values.firstOrNull() ?: "Could not determine error" }
+                return
+            }
+            val currentPlay =
+                currentPlayApiResponse.keys.firstOrNull()
+                    ?: run {
+                        response.respond { this.content = "No current play found. Ping failed!" }
+                        return
+                    }
             val message = interaction.channel.createMessage("Pinging user...")
             gameHandler.sendGamePing(interaction.kord, game, previousPlay, currentPlay, message)
             response.respond { this.content = "Ping successful!" }

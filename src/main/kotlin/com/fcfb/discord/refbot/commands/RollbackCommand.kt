@@ -35,21 +35,38 @@ class RollbackCommand(
             "${interaction.user.username} is rolling back a play at channel ${interaction.channelId.value}",
         )
         val response = interaction.deferPublicResponse()
-        val game = gameClient.getGameByPlatformId(interaction.channelId.value.toString())
+        val apiResponse = gameClient.getGameByPlatformId(interaction.channelId.value.toString())
+        if (apiResponse.keys.firstOrNull() == null) {
+            response.respond { this.content = apiResponse.values.firstOrNull() ?: "Could not determine error" }
+            return
+        }
+        val game = apiResponse.keys.firstOrNull()
         val message = interaction.channel.createMessage("Rolling back play...")
 
         if (game != null) {
             try {
-                val currentPlay = playClient.rollbackPlay(game.gameId)
+                val currentPlayApiResponse = playClient.rollbackPlay(game.gameId)
+                if (currentPlayApiResponse.keys.firstOrNull() == null) {
+                    response.respond { this.content = currentPlayApiResponse.values.firstOrNull() ?: "Could not determine error" }
+                    return
+                }
+                val currentPlay =
+                    currentPlayApiResponse.keys.firstOrNull()
+                        ?: run {
+                            response.respond { this.content = "No current play found. Ping failed!" }
+                            return
+                        }
+                val previousPlayApiResponse = playClient.getPreviousPlay(game.gameId)
+                if (previousPlayApiResponse.keys.firstOrNull() == null) {
+                    response.respond { this.content = previousPlayApiResponse.values.firstOrNull() ?: "Could not determine error" }
+                    return
+                }
                 val previousPlay =
-                    playClient.getPreviousPlay(game.gameId) ?: run {
-                        response.respond { this.content = "Rollback failed!" }
-                        Logger.error(
-                            "${interaction.user.username} failed to rollback a play at channel ${interaction.channelId.value}" +
-                                " because no previous play was found",
-                        )
-                        return
-                    }
+                    previousPlayApiResponse.keys.firstOrNull()
+                        ?: run {
+                            response.respond { this.content = "No previous play found. Ping failed!" }
+                            return
+                        }
                 gameHandler.sendGamePing(interaction.kord, game, previousPlay, currentPlay, message)
                 response.respond { this.content = "Play rollback successful" }
                 // Post scorebug
