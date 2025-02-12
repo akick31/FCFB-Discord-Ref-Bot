@@ -37,31 +37,9 @@ class PingCommand(
         val game = apiResponse.keys.firstOrNull()
 
         if (game != null) {
-            val previousPlayApiResponse = playClient.getPreviousPlay(game.gameId)
-            if (previousPlayApiResponse.keys.firstOrNull() == null) {
-                response.respond { this.content = previousPlayApiResponse.values.firstOrNull() ?: "Could not determine error" }
-                return
-            }
-            val previousPlay =
-                previousPlayApiResponse.keys.firstOrNull()
-                    ?: run {
-                        response.respond { this.content = "No previous play found. Ping failed!" }
-                        return
-                    }
-
             val currentPlayApiResponse = playClient.getCurrentPlay(game.gameId)
-            if (currentPlayApiResponse.keys.firstOrNull() == null) {
-                response.respond { this.content = currentPlayApiResponse.values.firstOrNull() ?: "Could not determine error" }
-                return
-            }
-            val currentPlay =
-                currentPlayApiResponse.keys.firstOrNull()
-                    ?: run {
-                        response.respond { this.content = "No current play found. Ping failed!" }
-                        return
-                    }
-            val message = interaction.channel.createMessage("Pinging user...")
-            gameHandler.sendGamePing(interaction.kord, game, previousPlay, currentPlay, message)
+            val currentPlay = currentPlayApiResponse.keys.firstOrNull()
+            gameHandler.sendGamePing(interaction.kord, game, currentPlay)
             response.respond { this.content = "Ping successful!" }
             Logger.info("${interaction.user.username} successfully pinged a game in channel ${interaction.channelId.value}")
         } else {
