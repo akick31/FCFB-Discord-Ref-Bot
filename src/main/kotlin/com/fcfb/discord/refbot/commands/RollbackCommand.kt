@@ -28,7 +28,7 @@ class RollbackCommand(
     }
 
     /**
-     * Start a new game
+     * Rollback a game
      */
     suspend fun execute(interaction: ChatInputCommandInteraction) {
         Logger.info(
@@ -41,38 +41,35 @@ class RollbackCommand(
             return
         }
         val game = apiResponse.keys.firstOrNull()
-        val message = interaction.channel.createMessage("Rolling back play...")
 
         if (game != null) {
             try {
-                val currentPlayApiResponse = playClient.rollbackPlay(game.gameId)
-                if (currentPlayApiResponse.keys.firstOrNull() == null) {
-                    response.respond { this.content = currentPlayApiResponse.values.firstOrNull() ?: "Could not determine error" }
+                val rollbackPlayApiResponse = playClient.rollbackPlay(game.gameId)
+                if (rollbackPlayApiResponse.keys.firstOrNull() == null) {
+                    response.respond { this.content = rollbackPlayApiResponse.values.firstOrNull() ?: "Could not determine error" }
                     return
                 }
-                val currentPlay =
-                    currentPlayApiResponse.keys.firstOrNull()
-                        ?: run {
-                            response.respond { this.content = "No current play found. Ping failed!" }
-                            return
-                        }
-                val previousPlayApiResponse = playClient.getPreviousPlay(game.gameId)
-                if (previousPlayApiResponse.keys.firstOrNull() == null) {
-                    response.respond { this.content = previousPlayApiResponse.values.firstOrNull() ?: "Could not determine error" }
+
+                val currentPlayApiResponse = playClient.getCurrentPlay(game.gameId)
+                val currentPlay = currentPlayApiResponse.keys.firstOrNull()
+                val updatedGameApiResponse = gameClient.getGameByPlatformId(interaction.channelId.value.toString())
+                if (updatedGameApiResponse.keys.firstOrNull() == null) {
+                    response.respond { this.content = updatedGameApiResponse.values.firstOrNull() ?: "Could not determine error" }
                     return
                 }
-                val previousPlay =
-                    previousPlayApiResponse.keys.firstOrNull()
-                        ?: run {
-                            response.respond { this.content = "No previous play found. Ping failed!" }
-                            return
-                        }
-                gameHandler.sendGamePing(interaction.kord, game, previousPlay, currentPlay, message)
+                val updatedGame = updatedGameApiResponse.keys.firstOrNull() ?: run {
+                    response.respond { this.content = "No game found. Play rollback failed!" }
+                    Logger.error("${interaction.user.username} failed to rollback a play at channel ${interaction.channelId.value}")
+                    return
+                }
+
+                gameHandler.sendGamePing(interaction.kord, updatedGame, currentPlay)
                 response.respond { this.content = "Play rollback successful" }
+
                 // Post scorebug
                 val channel = interaction.channel.asChannel()
                 val scorebug = scorebugClient.getScorebugByGameId(game.gameId)
-                val embedData = gameUtils.getScorebugEmbed(scorebug, game, message.getJumpUrl())
+                val embedData = gameUtils.getScorebugEmbed(scorebug, game, null)
                 discordMessageHandler.sendMessageFromChannelObject(channel, "", embedData)
             } catch (e: Exception) {
                 response.respond { this.content = "Play rollback failed!" }

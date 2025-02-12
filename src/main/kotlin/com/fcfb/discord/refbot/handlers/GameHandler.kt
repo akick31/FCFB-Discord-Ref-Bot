@@ -66,17 +66,14 @@ class GameHandler(
     suspend fun sendGamePing(
         client: Kord,
         game: Game,
-        previousPlay: Play,
         currentPlay: Play?,
-        message: Message,
     ): List<Message?> {
         return if (game.waitingOn != game.possession || currentPlay == null) {
             discordMessageHandler.sendRequestForDefensiveNumber(
                 client,
                 game,
                 Scenario.DM_NUMBER_REQUEST,
-                previousPlay,
-                message,
+                null
             )
         } else {
             listOf(
@@ -85,7 +82,6 @@ class GameHandler(
                     game,
                     currentPlay,
                     false,
-                    message,
                 ),
             )
         }
