@@ -73,7 +73,7 @@ class GameHandler(
                 client,
                 game,
                 Scenario.DM_NUMBER_REQUEST,
-                null
+                null,
             )
         } else {
             listOf(

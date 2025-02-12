@@ -7,7 +7,6 @@ import com.fcfb.discord.refbot.handlers.GameHandler
 import com.fcfb.discord.refbot.handlers.discord.DiscordMessageHandler
 import com.fcfb.discord.refbot.utils.GameUtils
 import com.fcfb.discord.refbot.utils.Logger
-import com.kotlindiscord.kord.extensions.utils.getJumpUrl
 import dev.kord.core.Kord
 import dev.kord.core.behavior.interaction.response.respond
 import dev.kord.core.entity.interaction.ChatInputCommandInteraction
@@ -57,11 +56,12 @@ class RollbackCommand(
                     response.respond { this.content = updatedGameApiResponse.values.firstOrNull() ?: "Could not determine error" }
                     return
                 }
-                val updatedGame = updatedGameApiResponse.keys.firstOrNull() ?: run {
-                    response.respond { this.content = "No game found. Play rollback failed!" }
-                    Logger.error("${interaction.user.username} failed to rollback a play at channel ${interaction.channelId.value}")
-                    return
-                }
+                val updatedGame =
+                    updatedGameApiResponse.keys.firstOrNull() ?: run {
+                        response.respond { this.content = "No game found. Play rollback failed!" }
+                        Logger.error("${interaction.user.username} failed to rollback a play at channel ${interaction.channelId.value}")
+                        return
+                    }
 
                 gameHandler.sendGamePing(interaction.kord, updatedGame, currentPlay)
                 response.respond { this.content = "Play rollback successful" }
