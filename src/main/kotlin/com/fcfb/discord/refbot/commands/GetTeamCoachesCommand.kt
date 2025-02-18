@@ -41,7 +41,12 @@ class GetTeamCoachesCommand(
         val team = apiResponse.keys.firstOrNull()
 
         if (team != null) {
-            val coachList = team.coachDiscordIds.map { interaction.kord.getUser(Snowflake(it)) }
+            val coachList = team.coachDiscordIds?.map { interaction.kord.getUser(Snowflake(it)) }
+            if (coachList.isNullOrEmpty()) {
+                response.respond { this.content = "Team is empty!" }
+                Logger.error("${interaction.user.username} failed to get the team coaches in channel ${interaction.channelId.value}")
+                return
+            }
             response.respond { this.content = "${team.name} Coaches: " + coachList.filterNotNull().joinToString(" ") { it.mention } }
             Logger.info(
                 "${interaction.user.username} successfully grabbed team coaches in channel ${interaction.channelId.value}",
