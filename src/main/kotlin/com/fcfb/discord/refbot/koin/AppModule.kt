@@ -45,6 +45,7 @@ import com.fcfb.discord.refbot.requests.StartGameRequest
 import com.fcfb.discord.refbot.utils.GameUtils
 import com.fcfb.discord.refbot.utils.HealthChecks
 import com.fcfb.discord.refbot.utils.Properties
+import com.fcfb.discord.refbot.utils.Utils
 import dev.kord.common.annotation.KordPreview
 import dev.kord.rest.builder.message.EmbedBuilder
 import org.koin.dsl.module
@@ -59,6 +60,7 @@ val appModule =
         single { HelpCommand() }
         single { HealthChecks() }
         single { Properties() }
+        single { Utils() }
 
         // Classes with dependencies
         single { AuthClient(get()) }
@@ -75,7 +77,7 @@ val appModule =
         single { StartGameRequest(get(), get()) }
         single { ServerConfig(get(), get(), get()) }
         single { GameHandler(get(), get(), get(), get(), get(), get(), get(), get(), get()) }
-        single { DelayOfGameRequest(get(), get(), get()) }
+        single { DelayOfGameRequest(get(), get()) }
         single { RedZoneHandler(get(), get()) }
         single { CloseGameHandler(get(), get(), get()) }
         single { UpsetAlertHandler(get(), get(), get(), get()) }
@@ -104,5 +106,5 @@ val appModule =
             )
         }
         single { FCFBDiscordRefBot(get(), get(), get(), get()) }
-        single { DiscordMessageHandler(get(), get(), get(), get(), get(), get(), get(), get(), get()) }
+        single { DiscordMessageHandler(get(), get(), get(), get(), get(), get(), get(), get(), get(), get()) }
     }

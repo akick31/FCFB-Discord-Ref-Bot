@@ -438,6 +438,12 @@ class GameUtils(
         play: Play?,
         timeoutCalled: Boolean,
     ): String {
+        val defensiveTimeouts =
+            if (game.possession == TeamSide.HOME) {
+                game.awayTimeouts
+            } else {
+                game.homeTimeouts
+            }
         return when {
             play?.timeoutUsed == true &&
                 play.offensiveTimeoutCalled == true &&
@@ -464,7 +470,9 @@ class GameUtils(
                 play.offensiveTimeoutCalled == true &&
                 play.defensiveTimeoutCalled == true ->
                 "Both teams attempted to call a timeout, but the clock was stopped.\n\n"
-            timeoutCalled -> "${game.defensiveTeam()} is attempting to call a timeout.\n\n"
+            timeoutCalled &&
+                defensiveTimeouts > 0 ->
+                "${game.defensiveTeam()} is attempting to call a timeout.\n\n"
             else -> ""
         }
     }

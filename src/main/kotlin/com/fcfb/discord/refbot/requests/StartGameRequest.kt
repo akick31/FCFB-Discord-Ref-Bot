@@ -4,7 +4,6 @@ import com.fcfb.discord.refbot.handlers.discord.DiscordMessageHandler
 import com.fcfb.discord.refbot.handlers.discord.TextChannelThreadHandler
 import com.fcfb.discord.refbot.model.fcfb.game.Game
 import com.fcfb.discord.refbot.model.fcfb.game.Scenario
-import com.fcfb.discord.refbot.utils.GameMessageFailedException
 import com.fcfb.discord.refbot.utils.Logger
 import dev.kord.core.Kord
 import dev.kord.core.entity.channel.thread.TextChannelThread
@@ -35,7 +34,7 @@ class StartGameRequest(
                     null,
                     gameThread,
                     false,
-                ) ?: throw GameMessageFailedException(game.gameId)
+                )
 
             Logger.info("Game thread created: $gameThread")
             gameThread.id.value.toString() + "," + numberRequestMessage.id.value.toString()

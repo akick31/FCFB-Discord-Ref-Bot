@@ -1,5 +1,6 @@
 package com.fcfb.discord.refbot.api
 
+import com.fasterxml.jackson.core.type.TypeReference
 import com.fcfb.discord.refbot.config.JacksonConfig
 import com.fcfb.discord.refbot.model.fcfb.CoachPosition
 import com.fcfb.discord.refbot.model.fcfb.Team
@@ -136,7 +137,7 @@ class TeamClient(
 
     /**
      * Get all teams
-     * @param conference
+     * @param endpointUrl
      * @return List<Team>
      */
     private suspend fun getAllRequest(endpointUrl: String): Map<List<Team>?, String?> {
@@ -148,8 +149,7 @@ class TeamClient(
                 return mapOf(null to error)
             }
             val objectMapper = JacksonConfig().configureTeamMapping()
-            val teamListType = objectMapper.typeFactory.constructCollectionType(List::class.java, Team::class.java)
-            val teams: List<Team> = objectMapper.readValue(jsonResponse, teamListType)
+            val teams: List<Team> = objectMapper.readValue(jsonResponse, object : TypeReference<List<Team>>() {})
             mapOf(teams to null)
         } catch (e: Exception) {
             Logger.error(e.message ?: "Unknown error occurred while making a get request to the team endpoint")

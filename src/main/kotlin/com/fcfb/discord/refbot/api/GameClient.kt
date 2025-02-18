@@ -1,5 +1,6 @@
 package com.fcfb.discord.refbot.api
 
+import com.fasterxml.jackson.core.type.TypeReference
 import com.fcfb.discord.refbot.config.JacksonConfig
 import com.fcfb.discord.refbot.model.fcfb.game.Game
 import com.fcfb.discord.refbot.model.fcfb.game.GameType
@@ -7,6 +8,7 @@ import com.fcfb.discord.refbot.model.fcfb.game.Platform
 import com.fcfb.discord.refbot.model.fcfb.game.Subdivision
 import com.fcfb.discord.refbot.model.fcfb.game.TVChannel
 import com.fcfb.discord.refbot.model.request.StartRequest
+import com.fcfb.discord.refbot.model.response.PagedResponse
 import com.fcfb.discord.refbot.utils.Logger
 import dev.kord.core.entity.Message
 import io.ktor.client.HttpClient
@@ -418,8 +420,8 @@ class GameClient(
                 return mapOf(null to error)
             }
             val objectMapper = JacksonConfig().configureGameMapping()
-            val gameListType = objectMapper.typeFactory.constructCollectionType(List::class.java, Game::class.java)
-            val games: List<Game> = objectMapper.readValue(jsonResponse, gameListType)
+            val pagedResponse: PagedResponse<Game> = objectMapper.readValue(jsonResponse, object : TypeReference<PagedResponse<Game>>() {})
+            val games: List<Game> = pagedResponse.content
             mapOf(games to null)
         } catch (e: Exception) {
             Logger.error(e.message ?: "Unknown error occurred while making a get request to the game endpoint")
