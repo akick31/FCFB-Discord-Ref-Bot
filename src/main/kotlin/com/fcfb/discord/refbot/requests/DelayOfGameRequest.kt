@@ -1,9 +1,9 @@
 package com.fcfb.discord.refbot.requests
 
-import com.fcfb.discord.refbot.api.ScorebugClient
 import com.fcfb.discord.refbot.handlers.GameHandler
 import com.fcfb.discord.refbot.handlers.discord.DiscordMessageHandler
 import com.fcfb.discord.refbot.model.fcfb.game.Game
+import com.fcfb.discord.refbot.model.fcfb.game.GameStatus
 import com.fcfb.discord.refbot.model.fcfb.game.Scenario
 import com.fcfb.discord.refbot.utils.MissingPlatformIdException
 import dev.kord.common.entity.Snowflake
@@ -12,7 +12,6 @@ import dev.kord.core.entity.channel.thread.TextChannelThread
 
 class DelayOfGameRequest(
     private val discordMessageHandler: DiscordMessageHandler,
-    private val scorebugClient: ScorebugClient,
     private val gameHandler: GameHandler,
 ) {
     /**
@@ -27,25 +26,27 @@ class DelayOfGameRequest(
             client.getChannel(
                 Snowflake(game.homePlatformId ?: throw MissingPlatformIdException()),
             ) as TextChannelThread
+        val notification =
+            if (game.gameStatus != GameStatus.PREGAME) Scenario.DELAY_OF_GAME_NOTIFICATION else Scenario.PREGAME_DELAY_OF_GAME_NOTIFICATION
         val message =
             discordMessageHandler.sendGameMessage(
                 client,
                 game,
-                Scenario.DELAY_OF_GAME_NOTIFICATION,
+                notification,
                 null,
                 null,
                 gameThread,
             )
 
-        if (isDelayOfGameOut) {
-            gameHandler.endGame(client, game, message)
-        } else {
-            discordMessageHandler.sendRequestForDefensiveNumber(
-                client,
-                game,
-                Scenario.DELAY_OF_GAME,
-                null,
-            )
+        when {
+            isDelayOfGameOut -> gameHandler.endGame(client, game, message)
+            game.gameStatus != GameStatus.PREGAME ->
+                discordMessageHandler.sendRequestForDefensiveNumber(
+                    client,
+                    game,
+                    Scenario.DELAY_OF_GAME,
+                    null,
+                )
         }
     }
 

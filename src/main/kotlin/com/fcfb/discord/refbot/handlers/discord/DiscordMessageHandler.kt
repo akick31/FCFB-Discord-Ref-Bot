@@ -29,6 +29,7 @@ import com.fcfb.discord.refbot.utils.MissingPlatformIdException
 import com.fcfb.discord.refbot.utils.NoMessageContentFoundException
 import com.fcfb.discord.refbot.utils.OffensiveNumberRequestFailedException
 import com.fcfb.discord.refbot.utils.Properties
+import com.fcfb.discord.refbot.utils.Utils
 import com.kotlindiscord.kord.extensions.utils.getJumpUrl
 import dev.kord.common.entity.Snowflake
 import dev.kord.common.entity.optional.Optional
@@ -51,6 +52,7 @@ class DiscordMessageHandler(
     private val scorebugClient: ScorebugClient,
     private val logClient: LogClient,
     private val gameUtils: GameUtils,
+    private val utils: Utils,
     private val fileHandler: FileHandler,
     private val textChannelThreadHandler: TextChannelThreadHandler,
     private val properties: Properties,
@@ -134,7 +136,10 @@ class DiscordMessageHandler(
         val defensiveCoaches = gameMessage.second
 
         return try {
-            val numberRequestMessage = sendPrivateMessage(defensiveCoaches, embedData, messageContent, previousMessage)
+            val numberRequestMessage =
+                utils.retry {
+                    sendPrivateMessage(defensiveCoaches, embedData, messageContent, previousMessage)
+                }
             gameClient.updateRequestMessageId(game.gameId, numberRequestMessage)
             gameClient.updateLastMessageTimestamp(game.gameId)
 
@@ -150,6 +155,7 @@ class DiscordMessageHandler(
 
             numberRequestMessage
         } catch (e: Exception) {
+            Logger.error("Failed to send number request message: ${e.message}")
             previousMessage?.let { sendErrorMessage(it, Error.FAILED_TO_SEND_NUMBER_REQUEST_MESSAGE) }
             throw DefensiveNumberRequestFailedException(game.gameId)
         }
@@ -180,18 +186,20 @@ class DiscordMessageHandler(
                     }
             }
 
-        val numberRequestMessage =
-            sendGameMessage(
-                client,
-                game,
-                Scenario.NORMAL_NUMBER_REQUEST,
-                null,
-                null,
-                gameThread,
-                timeoutCalled,
-            )
-
         return try {
+            val numberRequestMessage =
+                utils.retry {
+                    sendGameMessage(
+                        client,
+                        game,
+                        Scenario.NORMAL_NUMBER_REQUEST,
+                        null,
+                        null,
+                        gameThread,
+                        timeoutCalled,
+                    )
+                }
+
             gameClient.updateRequestMessageId(game.gameId, listOf(numberRequestMessage))
             gameClient.updateLastMessageTimestamp(game.gameId)
             logClient.logRequestMessage(
@@ -203,6 +211,7 @@ class DiscordMessageHandler(
             )
             numberRequestMessage
         } catch (e: Exception) {
+            Logger.error("Failed to send number request message: ${e.message}")
             previousMessage?.let { sendErrorMessage(it, Error.FAILED_TO_SEND_NUMBER_REQUEST_MESSAGE) }
             throw OffensiveNumberRequestFailedException(game.gameId)
         }
