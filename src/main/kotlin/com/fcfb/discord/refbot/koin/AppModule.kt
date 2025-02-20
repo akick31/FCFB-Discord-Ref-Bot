@@ -23,7 +23,6 @@ import com.fcfb.discord.refbot.commands.HireCoachCommand
 import com.fcfb.discord.refbot.commands.HireInterimCoachCommand
 import com.fcfb.discord.refbot.commands.MessageAllGamesCommand
 import com.fcfb.discord.refbot.commands.PingCommand
-import com.fcfb.discord.refbot.commands.RegisterCommand
 import com.fcfb.discord.refbot.commands.RestartGameCommand
 import com.fcfb.discord.refbot.commands.RoleCommand
 import com.fcfb.discord.refbot.commands.RollbackCommand
@@ -92,7 +91,6 @@ val appModule =
         single { HireInterimCoachCommand(get()) }
         single { MessageAllGamesCommand(get(), get()) }
         single { PingCommand(get(), get(), get()) }
-        single { RegisterCommand(get()) }
         single { StartGameCommand(get()) }
         single { StartScrimmageCommand(get()) }
         single { SubCoachCommand(get(), get(), get()) }
@@ -102,7 +100,7 @@ val appModule =
         single {
             CommandRegistry(
                 get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(),
-                get(), get(), get(), get(), get(), get(), get(), get(), get(),
+                get(), get(), get(), get(), get(), get(), get(), get(),
             )
         }
         single { FCFBDiscordRefBot(get(), get(), get(), get()) }

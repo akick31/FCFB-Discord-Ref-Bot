@@ -6,7 +6,6 @@ object Permissions {
     private val generalCommands =
         setOf(
             "help",
-            "register",
             "ping",
             "game_info",
             "start_scrimmage",
