@@ -50,13 +50,13 @@ class GameHandler(
         }
 
         when {
+            !gameUtils.isGameWaitingOnUser(game, message) -> errorHandler.notWaitingForUserError(message)
             gameUtils.isPreGameBeforeCoinToss(game) -> handleCoinToss(client, game, message)
             gameUtils.isPreGameAfterCoinToss(game) -> handleCoinTossChoice(client, game, message)
             gameUtils.isOvertimeBeforeCoinToss(game) -> handleCoinToss(client, game, message)
             gameUtils.isOvertimeAfterCoinToss(game) -> handleOvertimeCoinTossChoice(client, game, message)
             gameUtils.isWaitingOnDefensiveNumber(game, message) -> handleDefensiveNumberSubmission(client, game, message)
             gameUtils.isWaitingOnOffensiveNumber(game, message) -> handleOffensiveNumberSubmission(client, game, message)
-            !gameUtils.isGameWaitingOnUser(game, message) -> return errorHandler.notWaitingForUserError(message)
         }
     }
 
