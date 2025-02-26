@@ -143,7 +143,12 @@ class PlayClient(
             mapOf(ObjectMapper().readValue(jsonResponse, Play::class.java) to null)
         } catch (e: Exception) {
             Logger.error(e.message ?: "Unknown error occurred while making a post request to the play endpoint")
-            mapOf(null to e.message)
+            if (e.message!!.contains("Connection refused")) {
+                Logger.error("Connection refused. Is the API running?")
+                mapOf(null to "Connection refused. Arceus API is likely not running.")
+            } else {
+                mapOf(null to e.message)
+            }
         }
     }
 
@@ -163,7 +168,12 @@ class PlayClient(
             mapOf(ObjectMapper().readValue(jsonResponse, Play::class.java) to null)
         } catch (e: Exception) {
             Logger.error(e.message ?: "Unknown error occurred while making a put request to the play endpoint")
-            mapOf(null to e.message)
+            if (e.message!!.contains("Connection refused")) {
+                Logger.error("Connection refused. Is the API running?")
+                mapOf(null to "Connection refused. Arceus API is likely not running.")
+            } else {
+                mapOf(null to e.message)
+            }
         }
     }
 
@@ -183,7 +193,12 @@ class PlayClient(
             mapOf(ObjectMapper().readValue(jsonResponse, Play::class.java) to null)
         } catch (e: Exception) {
             Logger.error(e.message ?: "Unknown error occurred while making a get request to the play endpoint")
-            mapOf(null to e.message)
+            if (e.message!!.contains("Connection refused")) {
+                Logger.error("Connection refused. Is the API running?")
+                mapOf(null to "Connection refused. Arceus API is likely not running.")
+            } else {
+                mapOf(null to e.message)
+            }
         }
     }
 }
