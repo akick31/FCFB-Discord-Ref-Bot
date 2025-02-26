@@ -45,11 +45,13 @@ class GameWriteupClient(
         playCall: PlayCall?,
     ): Map<String?, String?> {
         val endpointUrl =
-            if (playCall != null && (playCall == PlayCall.PASS || playCall == PlayCall.RUN ||
-                    playCall == PlayCall.PUNT || playCall == PlayCall.FIELD_GOAL ||
-                    playCall == PlayCall.KICKOFF_NORMAL || playCall == PlayCall.KICKOFF_ONSIDE ||
-                    playCall == PlayCall.KICKOFF_SQUIB
-            )) {
+            if (playCall != null && (
+                    playCall == PlayCall.PASS || playCall == PlayCall.RUN ||
+                        playCall == PlayCall.PUNT || playCall == PlayCall.FIELD_GOAL ||
+                        playCall == PlayCall.KICKOFF_NORMAL || playCall == PlayCall.KICKOFF_ONSIDE ||
+                        playCall == PlayCall.KICKOFF_SQUIB
+                )
+            ) {
                 "$baseUrl/game_writeup/${scenario.name}/$playCall"
             } else {
                 "$baseUrl/game_writeup/${scenario.name}/NONE"

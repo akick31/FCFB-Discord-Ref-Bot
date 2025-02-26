@@ -556,8 +556,12 @@ class DiscordMessageHandler(
                             ?: throw NoMessageContentFoundException(Scenario.PLAY_RESULT.description)
                     messageContent to null
                 }
-                play?.playCall in listOf(PlayCall.PASS, PlayCall.RUN, PlayCall.PUNT, PlayCall.FIELD_GOAL,
-                    PlayCall.KICKOFF_NORMAL, PlayCall.KICKOFF_SQUIB, PlayCall.KICKOFF_ONSIDE) -> {
+                play?.playCall in
+                    listOf(
+                        PlayCall.PASS, PlayCall.RUN, PlayCall.PUNT, PlayCall.FIELD_GOAL,
+                        PlayCall.KICKOFF_NORMAL, PlayCall.KICKOFF_SQUIB, PlayCall.KICKOFF_ONSIDE,
+                    )
+                -> {
                     // Get play result writeup
                     val playCallWriteupApiResponse = gameWriteupClient.getGameMessageByScenario(scenario, play?.playCall)
                     if (playCallWriteupApiResponse.keys.firstOrNull() == null) {
