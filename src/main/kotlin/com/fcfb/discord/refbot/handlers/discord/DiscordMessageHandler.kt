@@ -229,8 +229,8 @@ class DiscordMessageHandler(
         val baseMessage = Info.SUCCESSFUL_NUMBER_SUBMISSION.message.format(number)
         val messageContent =
             if (timeoutCalled) {
-                if ((game.possession == TeamSide.HOME && game.homeTimeouts == 0) ||
-                    (game.possession == TeamSide.AWAY && game.awayTimeouts == 0)
+                if ((game.possession == TeamSide.HOME && game.awayTimeouts == 0) ||
+                    (game.possession == TeamSide.AWAY && game.homeTimeouts == 0)
                 ) {
                     "$baseMessage. You have no timeouts remaining so not calling timeout."
                 } else {
