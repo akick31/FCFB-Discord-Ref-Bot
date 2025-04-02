@@ -74,7 +74,7 @@ val appModule =
         single { TextChannelThreadHandler(get(), get(), get(), get()) }
         single { GameUtils(get()) }
         single { StartGameRequest(get(), get()) }
-        single { ServerConfig(get(), get(), get()) }
+        single { ServerConfig(get(), get(), get(), get()) }
         single { GameHandler(get(), get(), get(), get(), get(), get(), get(), get(), get()) }
         single { DelayOfGameRequest(get(), get()) }
         single { RedZoneHandler(get(), get()) }

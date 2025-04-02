@@ -57,6 +57,21 @@ class DiscordMessageHandler(
     private val textChannelThreadHandler: TextChannelThreadHandler,
     private val properties: Properties,
 ) {
+    suspend fun sendNotificationToCommissioners(
+        client: Kord,
+        messageContent: String,
+    ): Message {
+        val channelId = properties.getDiscordProperties().notificationChannelId
+        val channel =
+            client.getChannel(
+                Snowflake(
+                    channelId,
+                ),
+            ) as MessageChannel
+
+        return sendMessageFromChannelObject(channel, messageContent, null)
+    }
+
     /**
      * Send an announcement to a game
      * @param client The Discord client

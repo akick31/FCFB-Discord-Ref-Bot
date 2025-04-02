@@ -68,6 +68,7 @@ pipeline {
                         discord.postgame.forum.id=1309027145489842207
                         discord.redzone.channel.id=1309027165228109824
                         discord.scores.channel.id=1309027178780033074
+                        discord.notification.channel.id=1356850265239719987
 
                         # Domain configuration
                         api.url=https://dev.api.fakecollegefootball.com/arceus
