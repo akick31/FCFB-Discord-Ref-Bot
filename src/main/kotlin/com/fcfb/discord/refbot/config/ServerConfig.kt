@@ -1,6 +1,8 @@
 package com.fcfb.discord.refbot.config
 
+import com.fcfb.discord.refbot.handlers.discord.DiscordMessageHandler
 import com.fcfb.discord.refbot.model.fcfb.game.Game
+import com.fcfb.discord.refbot.model.request.SignupInfo
 import com.fcfb.discord.refbot.requests.DelayOfGameRequest
 import com.fcfb.discord.refbot.requests.StartGameRequest
 import com.fcfb.discord.refbot.utils.HealthChecks
@@ -27,6 +29,7 @@ import kotlinx.coroutines.Job
 import java.text.DateFormat
 
 class ServerConfig(
+    private val discordMessageHandler: DiscordMessageHandler,
     private val delayOfGameRequest: DelayOfGameRequest,
     private val startGameRequest: StartGameRequest,
     private val healthChecks: HealthChecks,
@@ -112,6 +115,23 @@ class ServerConfig(
                 } catch (e: Exception) {
                     call.respond(HttpStatusCode.BadRequest, "Error processing request: ${e.message}")
                     Logger.error("Error processing delay of game: ${e.message}")
+                }
+            }
+
+            post("$serverUrl/new_signup") {
+                try {
+                    val signupInfo = call.receive<SignupInfo>()
+                    val messageContent =
+                        """
+                        New signup with the Discord tag of `${signupInfo.discordTag}` received. Their team choices are:
+                        1. ${signupInfo.teamChoiceOne}
+                        2. ${signupInfo.teamChoiceTwo}
+                        3. ${signupInfo.teamChoiceThree}
+                        """.trimIndent()
+                    discordMessageHandler.sendNotificationToCommissioners(client, messageContent)
+                    call.respondText("Commissioners notified new signup for ${signupInfo.discordTag}")
+                } catch (e: Exception) {
+                    call.respond(HttpStatusCode.BadRequest, "Error processing request: ${e.message}")
                 }
             }
 

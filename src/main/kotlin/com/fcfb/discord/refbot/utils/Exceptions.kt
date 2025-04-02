@@ -40,3 +40,5 @@ class InvalidCoinTossWinnerException(gameId: Int? = null) :
     Exception("Invalid coin toss winner${gameId?.let { " for game $it" } ?: ""}")
 
 class InvalidPlayCallException(messageContent: String) : Exception("Invalid play call: $messageContent")
+
+class UserNotFoundException : Exception("User not found")
