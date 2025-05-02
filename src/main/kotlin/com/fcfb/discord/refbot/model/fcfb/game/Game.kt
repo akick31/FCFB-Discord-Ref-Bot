@@ -58,7 +58,7 @@ data class Game(
     @JsonProperty("current_play_id") val currentPlayId: Int?,
     @JsonProperty("clock_stopped") val clockStopped: Boolean,
     @JsonProperty("request_message_id") val requestMessageId: List<String>?,
-    @JsonProperty("game_status") val gameStatus: GameStatus?,
+    @JsonProperty("game_status") var gameStatus: GameStatus?,
     @JsonProperty("game_type") val gameType: GameType?,
     @JsonProperty("game_mode") val gameMode: GameMode?,
     @JsonProperty("overtime_half") val overtimeHalf: Int?,

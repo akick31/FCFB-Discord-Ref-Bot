@@ -39,7 +39,10 @@ class DelayOfGameRequest(
             )
 
         when {
-            isDelayOfGameOut -> gameHandler.endGame(client, game, message)
+            isDelayOfGameOut -> {
+                game.gameStatus = GameStatus.FINAL
+                gameHandler.endGame(client, game, message)
+            }
             game.gameStatus != GameStatus.PREGAME ->
                 discordMessageHandler.sendRequestForDefensiveNumber(
                     client,
