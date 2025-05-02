@@ -82,6 +82,7 @@ enum class Subdivision(val description: String) {
     FCFB("FCFB"),
     FBS("FBS"),
     FCS("FCS"),
+    FAKE("FAKE"),
 }
 
 enum class OffensivePlaybook(val description: String) {
