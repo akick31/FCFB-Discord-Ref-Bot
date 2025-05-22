@@ -54,7 +54,6 @@ class TextChannelThreadHandler(
     ) {
         val gameChannel = getGameForumChannel(thread.kord)
         thread.edit {
-            name = getThreadName(game)
             appliedTags = getTagsForThread(game, gameChannel)
         }
         thread.message?.edit {

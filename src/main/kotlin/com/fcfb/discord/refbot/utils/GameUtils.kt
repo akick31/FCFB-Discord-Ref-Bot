@@ -6,6 +6,7 @@ import com.fcfb.discord.refbot.model.fcfb.game.ActualResult
 import com.fcfb.discord.refbot.model.fcfb.game.Game
 import com.fcfb.discord.refbot.model.fcfb.game.GameMode
 import com.fcfb.discord.refbot.model.fcfb.game.GameStatus
+import com.fcfb.discord.refbot.model.fcfb.game.GameStatus.END_OF_REGULATION
 import com.fcfb.discord.refbot.model.fcfb.game.Play
 import com.fcfb.discord.refbot.model.fcfb.game.PlayCall
 import com.fcfb.discord.refbot.model.fcfb.game.PlayType
@@ -144,23 +145,45 @@ class GameUtils(
         client: Kord,
         game: Game,
     ): List<User?> {
-        return when (game.coinTossWinner) {
-            TeamSide.HOME ->
-                game.homeCoachDiscordIds.map {
-                    client.getUser(
-                        Snowflake(it),
-                    )
-                }
+        if (game.gameStatus == END_OF_REGULATION) {
+            return when (game.overtimeCoinTossWinner) {
+                TeamSide.HOME ->
+                    game.homeCoachDiscordIds.map {
+                        client.getUser(
+                            Snowflake(it),
+                        )
+                    }
 
-            TeamSide.AWAY ->
-                game.awayCoachDiscordIds.map {
-                    client.getUser(
-                        Snowflake(it),
-                    )
-                }
+                TeamSide.AWAY ->
+                    game.awayCoachDiscordIds.map {
+                        client.getUser(
+                            Snowflake(it),
+                        )
+                    }
 
-            else -> {
-                throw InvalidCoinTossWinnerException(game.gameId)
+                else -> {
+                    throw InvalidCoinTossWinnerException(game.gameId)
+                }
+            }
+        } else {
+            return when (game.coinTossWinner) {
+                TeamSide.HOME ->
+                    game.homeCoachDiscordIds.map {
+                        client.getUser(
+                            Snowflake(it),
+                        )
+                    }
+
+                TeamSide.AWAY ->
+                    game.awayCoachDiscordIds.map {
+                        client.getUser(
+                            Snowflake(it),
+                        )
+                    }
+
+                else -> {
+                    throw InvalidCoinTossWinnerException(game.gameId)
+                }
             }
         }
     }

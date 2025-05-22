@@ -109,12 +109,28 @@ class ServerConfig(
             post("$serverUrl/delay_of_game_warning") {
                 try {
                     val game = call.receive<Game>()
-                    delayOfGameRequest.notifyWarning(client, game)
+                    val instance = call.request.queryParameters["instance"]?.toIntOrNull()
+
+                    if (instance != 1 && instance != 2) {
+                        call.respond(HttpStatusCode.BadRequest, "Missing or invalid 'instance' parameter")
+                        return@post
+                    }
+
+                    delayOfGameRequest.notifyWarning(client, game, instance)
                     call.respondText("Delay of game warning notification sent for game ${game.gameId}")
-                    Logger.info("Delay of game warning notification sent for game ${game.gameId}")
+                    Logger.info(
+                        "Delay of game warning notification sent.\n" +
+                            "Game ID: ${game.gameId}\n" +
+                            "Home Team: ${game.homeTeam}\n" +
+                            "Away Team: ${game.awayTeam}\n" +
+                            "Instance: $instance\n",
+                    )
                 } catch (e: Exception) {
                     call.respond(HttpStatusCode.BadRequest, "Error processing request: ${e.message}")
-                    Logger.error("Error processing delay of game: ${e.message}")
+                    Logger.error(
+                        "Error processing delay of game warning.\n" +
+                            "Error: ${e.message}\n",
+                    )
                 }
             }
 

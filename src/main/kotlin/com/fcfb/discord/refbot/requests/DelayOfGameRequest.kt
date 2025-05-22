@@ -59,15 +59,22 @@ class DelayOfGameRequest(
     suspend fun notifyWarning(
         client: Kord,
         game: Game,
+        instance: Int,
     ) {
         val gameThread =
             client.getChannel(
                 Snowflake(game.homePlatformId ?: throw MissingPlatformIdException()),
             ) as TextChannelThread
+        val scenario =
+            if (instance == 1) {
+                Scenario.FIRST_DELAY_OF_GAME_WARNING
+            } else {
+                Scenario.SECOND_DELAY_OF_GAME_WARNING
+            }
         discordMessageHandler.sendGameMessage(
             client,
             game,
-            Scenario.DELAY_OF_GAME_WARNING,
+            scenario,
             null,
             null,
             gameThread,

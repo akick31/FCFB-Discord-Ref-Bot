@@ -53,7 +53,7 @@ data class Game(
     @JsonProperty("away_platform_id") val awayPlatformId: String?,
     @JsonProperty("last_message_timestamp") val lastMessageTimestamp: String?,
     @JsonProperty("game_timer") val gameTimer: String?,
-    @JsonProperty("game_warned") val gameWarned: Boolean?,
+    @JsonProperty("game_warned") val gameWarned: Warning?,
     @JsonProperty("current_play_type") val currentPlayType: PlayType?,
     @JsonProperty("current_play_id") val currentPlayId: Int?,
     @JsonProperty("clock_stopped") val clockStopped: Boolean,
@@ -289,7 +289,8 @@ enum class Scenario(val description: String) {
     SIXTY_YARD_PUNT("60 YARD PUNT"),
     SIXTY_FIVE_YARD_PUNT("65 YARD PUNT"),
     SEVENTY_YARD_PUNT("70 YARD PUNT"),
-    DELAY_OF_GAME_WARNING("DELAY OF GAME WARNING"),
+    FIRST_DELAY_OF_GAME_WARNING("FIRST DELAY OF GAME WARNING"),
+    SECOND_DELAY_OF_GAME_WARNING("SECOND DELAY OF GAME WARNING"),
     DELAY_OF_GAME_NOTIFICATION("DELAY OF GAME NOTIFICATION"),
     PREGAME_DELAY_OF_GAME_NOTIFICATION("PREGAME DELAY OF GAME NOTIFICATION"),
     DELAY_OF_GAME("DELAY OF GAME"),
@@ -328,4 +329,10 @@ enum class GameType(val description: String) {
 enum class GameMode(val description: String) {
     NORMAL("Normal"),
     CHEW("Chew"),
+}
+
+enum class Warning(val description: String) {
+    NONE("NONE"),
+    FIRST_WARNING("FIRST WARNING"),
+    SECOND_WARNING("SECOND WARNING"),
 }

@@ -558,8 +558,9 @@ class DiscordMessageHandler(
                         Scenario.NORMAL_NUMBER_REQUEST, Scenario.GAME_START,
                         Scenario.COIN_TOSS_CHOICE, Scenario.OVERTIME_COIN_TOSS_CHOICE,
                         Scenario.OVERTIME_START, Scenario.GAME_OVER, Scenario.END_OF_HALF,
-                        Scenario.DELAY_OF_GAME, Scenario.DELAY_OF_GAME_WARNING,
-                        Scenario.DELAY_OF_GAME_NOTIFICATION, Scenario.CHEW_MODE_ENABLED,
+                        Scenario.DELAY_OF_GAME, Scenario.FIRST_DELAY_OF_GAME_WARNING,
+                        Scenario.SECOND_DELAY_OF_GAME_WARNING, Scenario.DELAY_OF_GAME_NOTIFICATION,
+                        Scenario.CHEW_MODE_ENABLED,
                     )
                 -> {
                     val messageContentApiResponse = gameWriteupClient.getGameMessageByScenario(scenario, null)
@@ -695,7 +696,8 @@ class DiscordMessageHandler(
         if (scorebug != null &&
             scenario != Scenario.NORMAL_NUMBER_REQUEST &&
             scenario != Scenario.CHEW_MODE_ENABLED &&
-            scenario != Scenario.DELAY_OF_GAME_WARNING
+            scenario != Scenario.FIRST_DELAY_OF_GAME_WARNING &&
+            scenario != Scenario.SECOND_DELAY_OF_GAME_WARNING
         ) {
             return createGameMessageWithScorebug(
                 game,
@@ -710,7 +712,8 @@ class DiscordMessageHandler(
         } else if (
             scenario == Scenario.NORMAL_NUMBER_REQUEST ||
             scenario == Scenario.CHEW_MODE_ENABLED ||
-            scenario == Scenario.DELAY_OF_GAME_WARNING
+            scenario == Scenario.FIRST_DELAY_OF_GAME_WARNING ||
+            scenario == Scenario.SECOND_DELAY_OF_GAME_WARNING
         ) {
             return createGameMessageWithoutScorebug(
                 game,
