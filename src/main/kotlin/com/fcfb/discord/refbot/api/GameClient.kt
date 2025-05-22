@@ -91,6 +91,36 @@ class GameClient(
     }
 
     /**
+     * Start a new game in overtime
+     * @param subdivision
+     * @param homeTeam
+     * @param awayTeam
+     * @param tvChannel
+     * @param gameType
+     */
+    internal suspend fun startOvertimeGame(
+        subdivision: Subdivision,
+        homeTeam: String,
+        awayTeam: String,
+        tvChannel: TVChannel?,
+        gameType: GameType,
+    ): Map<Game?, String?> {
+        val startRequest =
+            StartRequest(
+                homePlatform = Platform.DISCORD,
+                awayPlatform = Platform.DISCORD,
+                subdivision = subdivision,
+                homeTeam = homeTeam,
+                awayTeam = awayTeam,
+                tvChannel = tvChannel,
+                gameType = gameType,
+            )
+
+        val endpointUrl = "$baseUrl/game/start_overtime"
+        return postRequestWithBody(endpointUrl, startRequest)
+    }
+
+    /**
      * Update the request message id that the game is waiting on a response for
      * @param gameId
      * @param numberRequestMessageList
