@@ -165,8 +165,7 @@ class GameUtils(
                     throw InvalidCoinTossWinnerException(game.gameId)
                 }
             }
-        }
-        else {
+        } else {
             return when (game.coinTossWinner) {
                 TeamSide.HOME ->
                     game.homeCoachDiscordIds.map {

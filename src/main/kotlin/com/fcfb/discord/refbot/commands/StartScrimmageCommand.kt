@@ -36,10 +36,10 @@ class StartScrimmageCommand(
     suspend fun execute(interaction: ChatInputCommandInteraction) {
         val command = interaction.command
         Logger.info(
-                "Scrimmage command executed by ${interaction.user.username}\n" +
-                        "Home team: ${command.options["home_team"]!!.value},\n" +
-                        "Away team: ${command.options["away_team"]!!.value},\n" +
-                        "Scrimmage type: ${command.options["scrimmage_type"]!!.value}",
+            "Scrimmage command executed by ${interaction.user.username}\n" +
+                "Home team: ${command.options["home_team"]!!.value},\n" +
+                "Away team: ${command.options["away_team"]!!.value},\n" +
+                "Scrimmage type: ${command.options["scrimmage_type"]!!.value}",
         )
         val response = interaction.deferPublicResponse()
 
@@ -48,30 +48,32 @@ class StartScrimmageCommand(
         val scrimmageType = command.options["scrimmage_type"]!!.value.toString()
         val gameType = GameType.SCRIMMAGE
 
-        val startedGame = if (scrimmageType == "Standard") {
-            val apiResponse = gameClient.startGame(Subdivision.FCFB, homeTeam, awayTeam, null, gameType)
-            if (apiResponse.keys.firstOrNull() == null) {
-                response.respond { this.content = apiResponse.values.firstOrNull() ?: "Could not determine error" }
+        val startedGame =
+            if (scrimmageType == "Standard") {
+                val apiResponse = gameClient.startGame(Subdivision.FCFB, homeTeam, awayTeam, null, gameType)
+                if (apiResponse.keys.firstOrNull() == null) {
+                    response.respond { this.content = apiResponse.values.firstOrNull() ?: "Could not determine error" }
+                    return
+                }
+                apiResponse.keys.firstOrNull()
+            } else if (scrimmageType == "Overtime") {
+                val apiResponse = gameClient.startOvertimeGame(Subdivision.FCFB, homeTeam, awayTeam, null, gameType)
+                if (apiResponse.keys.firstOrNull() == null) {
+                    response.respond { this.content = apiResponse.values.firstOrNull() ?: "Could not determine error" }
+                    return
+                }
+                apiResponse.keys.firstOrNull()
+            } else {
+                response.respond { this.content = "Invalid scrimmage type!" }
                 return
             }
-            apiResponse.keys.firstOrNull()
-        } else if (scrimmageType == "Overtime") {
-            val apiResponse = gameClient.startOvertimeGame(Subdivision.FCFB, homeTeam, awayTeam, null, gameType)
-            if (apiResponse.keys.firstOrNull() == null) {
-                response.respond { this.content = apiResponse.values.firstOrNull() ?: "Could not determine error" }
-                return
-            }
-            apiResponse.keys.firstOrNull()
-        } else {
-            response.respond { this.content = "Invalid scrimmage type!" }
-            return
-        }
         if (startedGame == null) {
             response.respond { this.content = "Start scrimmage failed!" }
-            Logger.error("Failed to start scrimmage\n" +
+            Logger.error(
+                "Failed to start scrimmage\n" +
                     "Home team: $homeTeam\n" +
                     "Away team: $awayTeam\n" +
-                    "Scrimmage type: $scrimmageType"
+                    "Scrimmage type: $scrimmageType",
             )
         } else {
             response.respond { this.content = "Started game between $homeTeam and $awayTeam" }

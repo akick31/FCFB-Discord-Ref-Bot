@@ -65,11 +65,12 @@ class DelayOfGameRequest(
             client.getChannel(
                 Snowflake(game.homePlatformId ?: throw MissingPlatformIdException()),
             ) as TextChannelThread
-        val scenario = if (instance == 1) {
-            Scenario.FIRST_DELAY_OF_GAME_WARNING
-        } else {
-            Scenario.SECOND_DELAY_OF_GAME_WARNING
-        }
+        val scenario =
+            if (instance == 1) {
+                Scenario.FIRST_DELAY_OF_GAME_WARNING
+            } else {
+                Scenario.SECOND_DELAY_OF_GAME_WARNING
+            }
         discordMessageHandler.sendGameMessage(
             client,
             game,

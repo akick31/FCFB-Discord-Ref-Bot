@@ -4,7 +4,6 @@ import com.fcfb.discord.refbot.api.ScorebugClient
 import com.fcfb.discord.refbot.api.TeamClient
 import com.fcfb.discord.refbot.model.fcfb.game.Game
 import com.fcfb.discord.refbot.model.fcfb.game.GameStatus
-import com.fcfb.discord.refbot.model.fcfb.game.GameStatus.PREGAME
 import com.fcfb.discord.refbot.model.fcfb.game.GameType
 import com.fcfb.discord.refbot.model.fcfb.game.TeamSide
 import com.fcfb.discord.refbot.utils.GameUtils
