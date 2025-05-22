@@ -104,5 +104,5 @@ val appModule =
             )
         }
         single { FCFBDiscordRefBot(get(), get(), get(), get()) }
-        single { DiscordMessageHandler(get(), get(), get(), get(), get(), get(), get(), get(), get(), get()) }
+        single { DiscordMessageHandler(get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get()) }
     }

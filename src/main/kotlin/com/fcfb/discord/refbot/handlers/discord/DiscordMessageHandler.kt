@@ -4,6 +4,7 @@ import com.fcfb.discord.refbot.api.GameClient
 import com.fcfb.discord.refbot.api.GameWriteupClient
 import com.fcfb.discord.refbot.api.LogClient
 import com.fcfb.discord.refbot.api.ScorebugClient
+import com.fcfb.discord.refbot.api.UserClient
 import com.fcfb.discord.refbot.handlers.FileHandler
 import com.fcfb.discord.refbot.model.discord.MessageConstants.Error
 import com.fcfb.discord.refbot.model.discord.MessageConstants.Info
@@ -48,6 +49,7 @@ import kotlin.io.path.Path
 class DiscordMessageHandler(
     private val embedBuilder: EmbedBuilder,
     private val gameClient: GameClient,
+    private val userClient: UserClient,
     private val gameWriteupClient: GameWriteupClient,
     private val scorebugClient: ScorebugClient,
     private val logClient: LogClient,
@@ -748,7 +750,7 @@ class DiscordMessageHandler(
      * @param defensiveCoaches The defensive team coaches
      * @return The message content and embed data
      */
-    private fun createGameMessageWithoutScorebug(
+    private suspend fun createGameMessageWithoutScorebug(
         game: Game,
         scenario: Scenario,
         messageContent: String?,
@@ -764,7 +766,7 @@ class DiscordMessageHandler(
                 footer = Optional(EmbedFooterData(text = "Game ID: ${game.gameId}")),
             )
 
-        val messageToSend = appendUserPings(scenario, homeCoaches, awayCoaches, offensiveCoaches)
+        val messageToSend = appendUserPings(game, scenario, homeCoaches, awayCoaches, offensiveCoaches)
 
         return (messageToSend to embedData) to defensiveCoaches
     }
@@ -780,7 +782,7 @@ class DiscordMessageHandler(
      * @param defensiveCoaches The defensive team coaches
      * @return The message content and embed data
      */
-    private fun createGameMessageWithFallbackScorebug(
+    private suspend fun createGameMessageWithFallbackScorebug(
         game: Game,
         scenario: Scenario,
         messageContent: String?,
@@ -803,7 +805,7 @@ class DiscordMessageHandler(
                 footer = Optional(EmbedFooterData(text = "Game ID: ${game.gameId}")),
             )
 
-        val messageToSend = appendUserPings(scenario, homeCoaches, awayCoaches, offensiveCoaches)
+        val messageToSend = appendUserPings(game, scenario, homeCoaches, awayCoaches, offensiveCoaches)
 
         return (messageToSend to embedData) to defensiveCoaches
     }
@@ -820,7 +822,7 @@ class DiscordMessageHandler(
      * @param defensiveCoaches The defensive team coaches
      * @return The message content and embed data
      */
-    private fun createGameMessageWithScorebug(
+    private suspend fun createGameMessageWithScorebug(
         game: Game,
         scenario: Scenario,
         messageContent: String?,
@@ -842,7 +844,7 @@ class DiscordMessageHandler(
                     defensiveCoaches,
                 )
 
-        val messageToSend = appendUserPings(scenario, homeCoaches, awayCoaches, offensiveCoaches)
+        val messageToSend = appendUserPings(game, scenario, homeCoaches, awayCoaches, offensiveCoaches)
 
         return (messageToSend to embedData) to defensiveCoaches
     }
@@ -966,7 +968,14 @@ class DiscordMessageHandler(
 
             return submittedMessage
         } catch (e: Exception) {
-            Logger.error("Failed to send message to channel ${message?.channelId?.value}: ${e.message}", e)
+            Logger.error(
+                "Failed to send message to channel from message object.\n" +
+                    "Channel ID: ${message?.channelId?.value}\n" +
+                    "Message Content: $messageContent\n" +
+                    "Embed Data: $embedData\n" +
+                    "Error: ${e.message}",
+                e,
+            )
             throw e
         }
     }
@@ -1021,7 +1030,14 @@ class DiscordMessageHandler(
 
             return submittedMessage
         } catch (e: Exception) {
-            Logger.error("Failed to send message to channel ${channel.id.value}: ${e.message}", e)
+            Logger.error(
+                "Failed to send message to channel from channel object.\n" +
+                    "Channel ID: ${channel.id.value}\n" +
+                    "Message Content: $messageContent\n" +
+                    "Embed Data: $embedData\n" +
+                    "Error: ${e.message}",
+                e,
+            )
             throw e
         }
     }
@@ -1080,7 +1096,14 @@ class DiscordMessageHandler(
 
             return submittedMessage
         } catch (e: Exception) {
-            Logger.error("Failed to send message to channel ${textChannel?.id?.value}: ${e.message}", e)
+            Logger.error(
+                "Failed to send message from text channel object.\n" +
+                    "Channel ID: ${textChannel?.id?.value}\n" +
+                    "Message Content: $messageContent\n" +
+                    "Embed Data: $embedData\n" +
+                    "Error: ${e.message}",
+                e,
+            )
             throw e
         }
     }
@@ -1092,7 +1115,8 @@ class DiscordMessageHandler(
      * @param awayCoaches The away team coaches
      * @param offensiveCoaches The offensive team coaches
      */
-    private fun appendUserPings(
+    private suspend fun appendUserPings(
+        game: Game,
         scenario: Scenario,
         homeCoaches: List<User?>,
         awayCoaches: List<User?>,
@@ -1103,8 +1127,32 @@ class DiscordMessageHandler(
                 Scenario.GAME_START, Scenario.COIN_TOSS_CHOICE, Scenario.GAME_OVER,
                 !in listOf(Scenario.DM_NUMBER_REQUEST, Scenario.NORMAL_NUMBER_REQUEST),
                 -> {
-                    append("\n\n").append(joinMentions(homeCoaches))
-                    append(" ").append(joinMentions(awayCoaches))
+                    if (scenario == Scenario.FIRST_DELAY_OF_GAME_WARNING) {
+                        val homeCoachesFCFB =
+                            game.homeCoachDiscordIds.map {
+                                userClient.getUserByDiscordId(it).keys.firstOrNull()
+                            }
+                        val awayCoachesFCFB =
+                            game.awayCoachDiscordIds.map {
+                                userClient.getUserByDiscordId(it).keys.firstOrNull()
+                            }
+
+                        if (homeCoachesFCFB.any { it?.delayOfGameWarningOptOut == true } &&
+                            awayCoachesFCFB.any { it?.delayOfGameWarningOptOut == true }
+                        ) {
+                            // No mentions – both opted out
+                        } else if (homeCoachesFCFB.any { it?.delayOfGameWarningOptOut == true }) {
+                            append("\n\n").append(joinMentions(awayCoaches))
+                        } else if (awayCoachesFCFB.any { it?.delayOfGameWarningOptOut == true }) {
+                            append("\n\n").append(joinMentions(homeCoaches))
+                        } else {
+                            append("\n\n").append(joinMentions(homeCoaches))
+                            append(" ").append(joinMentions(awayCoaches))
+                        }
+                    } else {
+                        append("\n\n").append(joinMentions(homeCoaches))
+                        append(" ").append(joinMentions(awayCoaches))
+                    }
                 }
                 Scenario.NORMAL_NUMBER_REQUEST -> {
                     append("\n\n").append(joinMentions(offensiveCoaches))
