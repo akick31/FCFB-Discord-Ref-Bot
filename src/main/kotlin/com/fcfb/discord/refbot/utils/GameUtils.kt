@@ -230,7 +230,7 @@ class GameUtils(
      * @return True if the game is in the pregame state without a coin toss, false otherwise
      */
     internal fun isOvertimeBeforeCoinToss(game: Game): Boolean {
-        return game.gameStatus == GameStatus.END_OF_REGULATION && game.overtimeCoinTossWinner == null
+        return game.gameStatus == END_OF_REGULATION && game.overtimeCoinTossWinner == null
     }
 
     /**
@@ -239,7 +239,7 @@ class GameUtils(
      * @return True if the game is in the pregame state after the coin toss, false otherwise
      */
     internal fun isOvertimeAfterCoinToss(game: Game): Boolean {
-        return game.gameStatus == GameStatus.END_OF_REGULATION && game.overtimeCoinTossWinner != null
+        return game.gameStatus == END_OF_REGULATION && game.overtimeCoinTossWinner != null
     }
 
     /**
