@@ -611,22 +611,11 @@ class GameUtils(
     }
 
     /**
-     * Get the teams rank for a game
-     * @param game The game object
-     */
-    private suspend fun getTeamRankings(game: Game): Pair<Int?, Int?> {
-        val (homeTeam, awayTeam) = getTeams(game)
-        val homeTeamRank = homeTeam?.playoffCommitteeRanking ?: homeTeam?.coachesPollRanking
-        val awayTeamRank = awayTeam?.playoffCommitteeRanking ?: awayTeam?.coachesPollRanking
-
-        return Pair(homeTeamRank, awayTeamRank)
-    }
-
-    /**
      * Get the formatted team names for posting
      */
-    suspend fun getFormattedTeamNames(game: Game): Pair<String, String> {
-        val (homeTeamRank, awayTeamRank) = getTeamRankings(game)
+    fun getFormattedTeamNames(game: Game): Pair<String, String> {
+        val homeTeamRank = game.homeTeamRank
+        val awayTeamRank = game.awayTeamRank
         val formattedHomeTeam = if (homeTeamRank != null && homeTeamRank != 0) "#$homeTeamRank ${game.homeTeam}" else game.homeTeam
         val formattedAwayTeam = if (awayTeamRank != null && awayTeamRank != 0) "#$awayTeamRank ${game.awayTeam}" else game.awayTeam
         return Pair(formattedHomeTeam, formattedAwayTeam)
