@@ -239,12 +239,6 @@ class TextChannelThreadHandler(
             }
         }
 
-        val tags = availableTags.filter { it.name == game.gameType?.description }.map { it.id }
-
-        for (tag in tags) {
-            tagsToApply.add(tag)
-        }
-
         return tagsToApply
     }
 
