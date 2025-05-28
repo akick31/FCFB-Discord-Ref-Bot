@@ -41,10 +41,8 @@ class UpsetAlertHandler(
             Logger.error("Error getting away team for upset alert: ${awayTeamApiResponse.values.firstOrNull()}")
         }
         val awayTeam = awayTeamApiResponse.keys.firstOrNull() ?: return null
-        var homeTeamRanking = if (homeTeam.playoffCommitteeRanking == 0) homeTeam.coachesPollRanking else homeTeam.playoffCommitteeRanking
-        var awayTeamRanking = if (awayTeam.playoffCommitteeRanking == 0) awayTeam.coachesPollRanking else awayTeam.playoffCommitteeRanking
-        homeTeamRanking = if (homeTeamRanking == 0 || homeTeamRanking == null) 100 else homeTeamRanking
-        awayTeamRanking = if (awayTeamRanking == 0 || awayTeamRanking == null) 100 else awayTeamRanking
+        val homeTeamRanking = game.homeTeamRank ?: 100
+        val awayTeamRanking = game.awayTeamRank ?: 100
 
         val teamOnUpsetAlert = if (homeTeamRanking < awayTeamRanking) homeTeam else awayTeam
 
