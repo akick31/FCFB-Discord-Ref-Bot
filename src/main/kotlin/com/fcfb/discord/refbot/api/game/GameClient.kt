@@ -64,7 +64,7 @@ class GameClient(
                 gameType = gameType,
             )
 
-        val endpointUrl = "$baseUrl/games"
+        val endpointUrl = "$baseUrl/game"
         return postRequestWithBody(endpointUrl, startRequest)
     }
 
@@ -89,7 +89,7 @@ class GameClient(
                 gameType = gameType,
             )
 
-        val endpointUrl = "$baseUrl/games/overtime"
+        val endpointUrl = "$baseUrl/game/overtime"
         return postRequestWithBody(endpointUrl, startRequest)
     }
 
@@ -101,7 +101,7 @@ class GameClient(
         numberRequestMessageList: List<Message?>,
     ): Boolean {
         val requestMessageIds = numberRequestMessageList.joinToString(",") { it?.id?.value.toString() }
-        val endpointUrl = "$baseUrl/games/$gameId/request-message?requestMessageId=$requestMessageIds"
+        val endpointUrl = "$baseUrl/game/$gameId/request-message?requestMessageId=$requestMessageIds"
         return putRequestStatus(endpointUrl)
     }
 
@@ -109,7 +109,7 @@ class GameClient(
      * Update the last message timestamp
      */
     internal suspend fun updateLastMessageTimestamp(gameId: Int): Boolean {
-        val endpointUrl = "$baseUrl/games/$gameId/last-message-timestamp"
+        val endpointUrl = "$baseUrl/game/$gameId/last-message-timestamp"
         return putRequestStatus(endpointUrl)
     }
 
@@ -117,7 +117,7 @@ class GameClient(
      * Get the game by request message id
      */
     internal suspend fun getGameByRequestMessageId(messageId: String): Map<Game?, String?> {
-        val endpointUrl = "$baseUrl/games/request-message?requestMessageId=$messageId"
+        val endpointUrl = "$baseUrl/game/request-message?requestMessageId=$messageId"
         return getRequest(endpointUrl)
     }
 
@@ -128,7 +128,7 @@ class GameClient(
         gameId: Int,
         coinTossCall: String,
     ): Map<Game?, String?> {
-        val endpointUrl = "$baseUrl/games/$gameId/coin-toss?coinTossCall=$coinTossCall"
+        val endpointUrl = "$baseUrl/game/$gameId/coin-toss?coinTossCall=$coinTossCall"
         return putRequest(endpointUrl)
     }
 
@@ -139,7 +139,7 @@ class GameClient(
         gameId: Int,
         coinTossChoice: String,
     ): Map<Game?, String?> {
-        val endpointUrl = "$baseUrl/games/$gameId/coin-toss-choice?coinTossChoice=$coinTossChoice"
+        val endpointUrl = "$baseUrl/game/$gameId/coin-toss-choice?coinTossChoice=$coinTossChoice"
         return putRequest(endpointUrl)
     }
 
@@ -150,7 +150,7 @@ class GameClient(
         gameId: Int,
         coinTossChoice: String,
     ): Map<Game?, String?> {
-        val endpointUrl = "$baseUrl/games/$gameId/overtime-coin-toss-choice?coinTossChoice=$coinTossChoice"
+        val endpointUrl = "$baseUrl/game/$gameId/overtime-coin-toss-choice?coinTossChoice=$coinTossChoice"
         return putRequest(endpointUrl)
     }
 
@@ -158,15 +158,15 @@ class GameClient(
      * End a game
      */
     internal suspend fun endGame(channelId: ULong): Map<Game?, String?> {
-        val endpointUrl = "$baseUrl/games/$channelId/end"
+        val endpointUrl = "$baseUrl/game/$channelId/end"
         return postRequest(endpointUrl)
     }
 
     /**
-     * End all ongoing games
+     * End all ongoing game
      */
     internal suspend fun endAllGames(): Map<List<Game>?, String?> {
-        val endpointUrl = "$baseUrl/games/end-all"
+        val endpointUrl = "$baseUrl/game/end-all"
         return postRequestList(endpointUrl)
     }
 
@@ -174,7 +174,7 @@ class GameClient(
      * Delete a game
      */
     internal suspend fun deleteGame(channelId: ULong): Int? {
-        val endpointUrl = "$baseUrl/games/$channelId"
+        val endpointUrl = "$baseUrl/game/$channelId"
         return deleteRequest(endpointUrl)
     }
 
@@ -182,7 +182,7 @@ class GameClient(
      * Restart a game
      */
     internal suspend fun restartGame(channelId: ULong): Map<Game?, String?> {
-        val endpointUrl = "$baseUrl/games/$channelId/restart"
+        val endpointUrl = "$baseUrl/game/$channelId/restart"
         return postRequest(endpointUrl)
     }
 
@@ -190,15 +190,15 @@ class GameClient(
      * Get game by platform id
      */
     internal suspend fun getGameByPlatformId(platformId: String): Map<Game?, String?> {
-        val endpointUrl = "$baseUrl/games/platform/$platformId"
+        val endpointUrl = "$baseUrl/game/platform/$platformId"
         return getRequest(endpointUrl)
     }
 
     /**
-     * Get all ongoing games
+     * Get all ongoing game
      */
     internal suspend fun getAllOngoingGames(): Map<List<Game>?, String?> {
-        val endpointUrl = "$baseUrl/games?category=ONGOING"
+        val endpointUrl = "$baseUrl/game?category=ONGOING"
         return getRequestList(endpointUrl)
     }
 
@@ -211,7 +211,7 @@ class GameClient(
         gameId: Int,
     ): Map<Game?, String?> {
         val endpointUrl =
-            "$baseUrl/games/$gameId/sub?" +
+            "$baseUrl/game/$gameId/sub?" +
                 "team=${
                     withContext(Dispatchers.IO) {
                         URLEncoder.encode(team, StandardCharsets.UTF_8.toString())
@@ -224,7 +224,7 @@ class GameClient(
      * Chew a game
      */
     internal suspend fun chewGame(channelId: ULong): Map<Game?, String?> {
-        val endpointUrl = "$baseUrl/games/$channelId/chew"
+        val endpointUrl = "$baseUrl/game/$channelId/chew"
         return postRequest(endpointUrl)
     }
 
@@ -232,7 +232,7 @@ class GameClient(
      * Mark the game as having pinged the close game role
      */
     internal suspend fun markCloseGamePinged(gameId: Int): Map<Game?, String?> {
-        val endpointUrl = "$baseUrl/games/$gameId/close-game-pinged"
+        val endpointUrl = "$baseUrl/game/$gameId/close-game-pinged"
         return putRequest(endpointUrl)
     }
 
@@ -240,7 +240,7 @@ class GameClient(
      * Mark the game as having pinged the upset alert role
      */
     internal suspend fun markUpsetAlertPinged(gameId: Int): Map<Game?, String?> {
-        val endpointUrl = "$baseUrl/games/$gameId/upset-alert-pinged"
+        val endpointUrl = "$baseUrl/game/$gameId/upset-alert-pinged"
         return putRequest(endpointUrl)
     }
 
@@ -307,7 +307,7 @@ class GameClient(
     }
 
     /**
-     * Call a post request to the game endpoint and return a list of games
+     * Call a post request to the game endpoint and return a list of game
      * @param endpointUrl
      * @return Game
      */
@@ -321,8 +321,8 @@ class GameClient(
             }
             val objectMapper = JacksonConfig().configureGameMapping()
             val gameListType = objectMapper.typeFactory.constructCollectionType(List::class.java, Game::class.java)
-            val games: List<Game> = objectMapper.readValue(jsonResponse, gameListType)
-            mapOf(games to null)
+            val game: List<Game> = objectMapper.readValue(jsonResponse, gameListType)
+            mapOf(game to null)
         } catch (e: Exception) {
             Logger.error(e.message ?: "Unknown error occurred while making a post request to the game endpoint")
             if (e.message!!.contains("Connection refused")) {
@@ -409,8 +409,8 @@ class GameClient(
             }
             val objectMapper = JacksonConfig().configureGameMapping()
             val pagedResponse: PagedResponse<Game> = objectMapper.readValue(jsonResponse, object : TypeReference<PagedResponse<Game>>() {})
-            val games: List<Game> = pagedResponse.content
-            mapOf(games to null)
+            val game: List<Game> = pagedResponse.content
+            mapOf(game to null)
         } catch (e: Exception) {
             Logger.error(e.message ?: "Unknown error occurred while making a get request to the game endpoint")
             if (e.message!!.contains("Connection refused")) {
