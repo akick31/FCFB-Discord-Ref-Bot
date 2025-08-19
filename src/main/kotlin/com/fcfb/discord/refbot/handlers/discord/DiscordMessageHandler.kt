@@ -1,36 +1,37 @@
 package com.fcfb.discord.refbot.handlers.discord
 
-import com.fcfb.discord.refbot.api.GameClient
-import com.fcfb.discord.refbot.api.GameWriteupClient
-import com.fcfb.discord.refbot.api.LogClient
-import com.fcfb.discord.refbot.api.ScorebugClient
-import com.fcfb.discord.refbot.api.UserClient
-import com.fcfb.discord.refbot.handlers.FileHandler
-import com.fcfb.discord.refbot.model.discord.MessageConstants.Error
-import com.fcfb.discord.refbot.model.discord.MessageConstants.Info
-import com.fcfb.discord.refbot.model.fcfb.game.ActualResult
-import com.fcfb.discord.refbot.model.fcfb.game.Game
-import com.fcfb.discord.refbot.model.fcfb.game.GameStatus
-import com.fcfb.discord.refbot.model.fcfb.game.GameType
-import com.fcfb.discord.refbot.model.fcfb.game.Platform
-import com.fcfb.discord.refbot.model.fcfb.game.Play
-import com.fcfb.discord.refbot.model.fcfb.game.PlayCall
-import com.fcfb.discord.refbot.model.fcfb.game.PlayType
-import com.fcfb.discord.refbot.model.fcfb.game.Scenario
-import com.fcfb.discord.refbot.model.fcfb.game.TeamSide
-import com.fcfb.discord.refbot.model.log.MessageType
-import com.fcfb.discord.refbot.utils.CouldNotDetermineCoachPossessionException
-import com.fcfb.discord.refbot.utils.CouldNotDetermineTeamPossessionException
-import com.fcfb.discord.refbot.utils.DefensiveNumberRequestFailedException
-import com.fcfb.discord.refbot.utils.GameMessageFailedException
-import com.fcfb.discord.refbot.utils.GameUtils
-import com.fcfb.discord.refbot.utils.InvalidGameThreadException
-import com.fcfb.discord.refbot.utils.Logger
-import com.fcfb.discord.refbot.utils.MissingPlatformIdException
-import com.fcfb.discord.refbot.utils.NoMessageContentFoundException
-import com.fcfb.discord.refbot.utils.OffensiveNumberRequestFailedException
-import com.fcfb.discord.refbot.utils.Properties
-import com.fcfb.discord.refbot.utils.Utils
+import com.fcfb.discord.refbot.api.game.GameClient
+import com.fcfb.discord.refbot.api.game.GameWriteupClient
+import com.fcfb.discord.refbot.api.game.ScorebugClient
+import com.fcfb.discord.refbot.api.system.LogClient
+import com.fcfb.discord.refbot.api.user.FCFBUserClient
+import com.fcfb.discord.refbot.handlers.system.FileHandler
+import com.fcfb.discord.refbot.model.domain.Game
+import com.fcfb.discord.refbot.model.domain.Play
+import com.fcfb.discord.refbot.model.enums.game.GameStatus
+import com.fcfb.discord.refbot.model.enums.game.GameType
+import com.fcfb.discord.refbot.model.enums.message.Error
+import com.fcfb.discord.refbot.model.enums.message.Info
+import com.fcfb.discord.refbot.model.enums.message.MessageType
+import com.fcfb.discord.refbot.model.enums.play.ActualResult
+import com.fcfb.discord.refbot.model.enums.play.PlayCall
+import com.fcfb.discord.refbot.model.enums.play.PlayType
+import com.fcfb.discord.refbot.model.enums.play.Scenario
+import com.fcfb.discord.refbot.model.enums.play.Scenario.PLAY_RESULT
+import com.fcfb.discord.refbot.model.enums.system.Platform
+import com.fcfb.discord.refbot.model.enums.team.TeamSide
+import com.fcfb.discord.refbot.utils.game.GameUtils
+import com.fcfb.discord.refbot.utils.system.CouldNotDetermineCoachPossessionException
+import com.fcfb.discord.refbot.utils.system.CouldNotDetermineTeamPossessionException
+import com.fcfb.discord.refbot.utils.system.DefensiveNumberRequestFailedException
+import com.fcfb.discord.refbot.utils.system.GameMessageFailedException
+import com.fcfb.discord.refbot.utils.system.InvalidGameThreadException
+import com.fcfb.discord.refbot.utils.system.Logger
+import com.fcfb.discord.refbot.utils.system.MissingPlatformIdException
+import com.fcfb.discord.refbot.utils.system.NoMessageContentFoundException
+import com.fcfb.discord.refbot.utils.system.OffensiveNumberRequestFailedException
+import com.fcfb.discord.refbot.utils.system.Properties
+import com.fcfb.discord.refbot.utils.system.SystemUtils
 import com.kotlindiscord.kord.extensions.utils.getJumpUrl
 import dev.kord.common.entity.Snowflake
 import dev.kord.common.entity.optional.Optional
@@ -49,12 +50,12 @@ import kotlin.io.path.Path
 class DiscordMessageHandler(
     private val embedBuilder: EmbedBuilder,
     private val gameClient: GameClient,
-    private val userClient: UserClient,
+    private val fcfbUserClient: FCFBUserClient,
     private val gameWriteupClient: GameWriteupClient,
     private val scorebugClient: ScorebugClient,
     private val logClient: LogClient,
     private val gameUtils: GameUtils,
-    private val utils: Utils,
+    private val systemUtils: SystemUtils,
     private val fileHandler: FileHandler,
     private val textChannelThreadHandler: TextChannelThreadHandler,
     private val properties: Properties,
@@ -154,7 +155,7 @@ class DiscordMessageHandler(
 
         return try {
             val numberRequestMessage =
-                utils.retry {
+                systemUtils.retry {
                     sendPrivateMessage(defensiveCoaches, embedData, messageContent, previousMessage)
                 }
             gameClient.updateRequestMessageId(game.gameId, numberRequestMessage)
@@ -205,7 +206,7 @@ class DiscordMessageHandler(
 
         return try {
             val numberRequestMessage =
-                utils.retry {
+                systemUtils.retry {
                     sendGameMessage(
                         client,
                         game,
@@ -567,7 +568,7 @@ class DiscordMessageHandler(
                 -> {
                     val messageContentApiResponse = gameWriteupClient.getGameMessageByScenario(scenario, null)
                     if (messageContentApiResponse.keys.firstOrNull() == null) {
-                        throw NoMessageContentFoundException(Scenario.PLAY_RESULT.description)
+                        throw NoMessageContentFoundException(PLAY_RESULT.description)
                     }
                     val messageContent =
                         messageContentApiResponse.keys.firstOrNull()
@@ -1130,11 +1131,11 @@ class DiscordMessageHandler(
                     if (scenario == Scenario.FIRST_DELAY_OF_GAME_WARNING) {
                         val homeCoachesFCFB =
                             game.homeCoachDiscordIds.map {
-                                userClient.getUserByDiscordId(it).keys.firstOrNull()
+                                fcfbUserClient.getUserByDiscordId(it).keys.firstOrNull()
                             }
                         val awayCoachesFCFB =
                             game.awayCoachDiscordIds.map {
-                                userClient.getUserByDiscordId(it).keys.firstOrNull()
+                                fcfbUserClient.getUserByDiscordId(it).keys.firstOrNull()
                             }
 
                         if (homeCoachesFCFB.any { it?.delayOfGameWarningOptOut == true } &&

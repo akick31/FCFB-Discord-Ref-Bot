@@ -5,6 +5,7 @@ application.properties
 *.png
 
 .idea
+.kotlin
 .gradle
 build/
 !gradle/wrapper/gradle-wrapper.jar
