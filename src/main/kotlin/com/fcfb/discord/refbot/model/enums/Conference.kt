@@ -1,0 +1,27 @@
+package com.fcfb.discord.refbot.model.enums
+
+enum class Conference(val description: String) {
+    ACC("ACC"),
+    AMERICAN("American"),
+    BIG_12("Big 12"),
+    BIG_TEN("Big Ten"),
+    CUSA("C-USA"),
+    FAKE_TEAM("Fake Team"),
+    FBS_INDEPENDENT("FBS Independent"),
+    MAC("MAC"),
+    MOUNTAIN_WEST("Mountain West"),
+    PAC_12("Pac-12"),
+    SEC("SEC"),
+    SUN_BELT("Sun Belt"),
+    ATLANTIC_SUN("Atlantic Sun"),
+    BIG_SKY("Big Sky"),
+    CAROLINA_FOOTBALL_CONFERENCE("Carolina Football Conference"),
+    MISSOURI_VALLEY("Missouri Valley"),
+    COLONIAL("Colonial"),
+    NEC("NEC"),
+    IVY_LEAGUE("Ivy League"),
+    MID_ATLANTIC("Mid-Atlantic"),
+    SOUTHLAND("Southland"),
+    OHIO_VALLEY("Ohio Valley"),
+    SWAC("SWAC"),
+} 
