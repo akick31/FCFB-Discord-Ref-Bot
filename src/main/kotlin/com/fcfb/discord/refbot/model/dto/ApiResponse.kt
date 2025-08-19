@@ -1,4 +1,4 @@
-package com.fcfb.discord.refbot.model.response
+package com.fcfb.discord.refbot.model.dto
 
 data class ApiResponse(
     val error: String,

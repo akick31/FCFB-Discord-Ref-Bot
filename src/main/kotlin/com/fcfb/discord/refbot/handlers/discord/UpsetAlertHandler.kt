@@ -1,11 +1,11 @@
 package com.fcfb.discord.refbot.handlers.discord
 
-import com.fcfb.discord.refbot.api.GameClient
-import com.fcfb.discord.refbot.api.TeamClient
-import com.fcfb.discord.refbot.model.fcfb.game.Game
-import com.fcfb.discord.refbot.model.fcfb.game.GameType
-import com.fcfb.discord.refbot.utils.Logger
-import com.fcfb.discord.refbot.utils.Properties
+import com.fcfb.discord.refbot.api.game.GameClient
+import com.fcfb.discord.refbot.api.team.TeamClient
+import com.fcfb.discord.refbot.model.domain.Game
+import com.fcfb.discord.refbot.model.enums.game.GameType
+import com.fcfb.discord.refbot.utils.system.Logger
+import com.fcfb.discord.refbot.utils.system.Properties
 import com.kotlindiscord.kord.extensions.utils.getJumpUrl
 import dev.kord.common.entity.Snowflake
 import dev.kord.core.Kord

@@ -3,7 +3,7 @@ package com.fcfb.discord.refbot.config.deserializers
 import com.fasterxml.jackson.core.JsonParser
 import com.fasterxml.jackson.databind.DeserializationContext
 import com.fasterxml.jackson.databind.JsonDeserializer
-import com.fcfb.discord.refbot.model.fcfb.game.RunoffType
+import com.fcfb.discord.refbot.model.enums.play.RunoffType
 
 class RunoffTypeDeserializer : JsonDeserializer<RunoffType>() {
     override fun deserialize(

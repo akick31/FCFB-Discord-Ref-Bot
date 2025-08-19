@@ -3,7 +3,7 @@ package com.fcfb.discord.refbot.config.deserializers
 import com.fasterxml.jackson.core.JsonParser
 import com.fasterxml.jackson.databind.DeserializationContext
 import com.fasterxml.jackson.databind.JsonDeserializer
-import com.fcfb.discord.refbot.model.log.MessageType
+import com.fcfb.discord.refbot.model.enums.message.MessageType
 
 class MessageTypeDeserializer : JsonDeserializer<MessageType>() {
     override fun deserialize(

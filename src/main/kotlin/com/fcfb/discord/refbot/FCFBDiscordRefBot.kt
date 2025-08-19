@@ -1,12 +1,12 @@
 package com.fcfb.discord.refbot
 
-import com.fcfb.discord.refbot.commands.registry.CommandRegistry
-import com.fcfb.discord.refbot.config.ServerConfig
+import com.fcfb.discord.refbot.commands.infrastructure.CommandRegistry
+import com.fcfb.discord.refbot.config.server.ServerConfig
 import com.fcfb.discord.refbot.handlers.discord.MessageProcessor
 import com.fcfb.discord.refbot.koin.appModule
-import com.fcfb.discord.refbot.utils.HealthChecks
-import com.fcfb.discord.refbot.utils.Logger
-import com.fcfb.discord.refbot.utils.Properties
+import com.fcfb.discord.refbot.utils.health.HealthChecks
+import com.fcfb.discord.refbot.utils.system.Logger
+import com.fcfb.discord.refbot.utils.system.Properties
 import dev.kord.common.annotation.KordPreview
 import dev.kord.core.Kord
 import dev.kord.core.event.interaction.ChatInputCommandInteractionCreateEvent

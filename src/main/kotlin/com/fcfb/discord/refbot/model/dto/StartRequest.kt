@@ -1,9 +1,9 @@
-package com.fcfb.discord.refbot.model.request
+package com.fcfb.discord.refbot.model.dto
 
-import com.fcfb.discord.refbot.model.fcfb.game.GameType
-import com.fcfb.discord.refbot.model.fcfb.game.Platform
-import com.fcfb.discord.refbot.model.fcfb.game.Subdivision
-import com.fcfb.discord.refbot.model.fcfb.game.TVChannel
+import com.fcfb.discord.refbot.model.enums.game.GameType
+import com.fcfb.discord.refbot.model.enums.game.TVChannel
+import com.fcfb.discord.refbot.model.enums.system.Platform
+import com.fcfb.discord.refbot.model.enums.team.Subdivision
 
 data class StartRequest(
     val homePlatform: Platform,

@@ -2,9 +2,9 @@ package com.fcfb.discord.refbot.requests
 
 import com.fcfb.discord.refbot.handlers.discord.DiscordMessageHandler
 import com.fcfb.discord.refbot.handlers.discord.TextChannelThreadHandler
-import com.fcfb.discord.refbot.model.fcfb.game.Game
-import com.fcfb.discord.refbot.model.fcfb.game.Scenario
-import com.fcfb.discord.refbot.utils.Logger
+import com.fcfb.discord.refbot.model.domain.Game
+import com.fcfb.discord.refbot.model.enums.play.Scenario
+import com.fcfb.discord.refbot.utils.system.Logger
 import dev.kord.core.Kord
 import dev.kord.core.entity.channel.thread.TextChannelThread
 
