@@ -2,13 +2,11 @@ package com.fcfb.discord.refbot.api.team
 
 import com.fasterxml.jackson.core.type.TypeReference
 import com.fcfb.discord.refbot.api.utils.ApiUtils
+import com.fcfb.discord.refbot.api.utils.HttpClientConfig
 import com.fcfb.discord.refbot.config.jackson.JacksonConfig
 import com.fcfb.discord.refbot.model.domain.Team
 import com.fcfb.discord.refbot.model.enums.user.CoachPosition
 import com.fcfb.discord.refbot.utils.system.Logger
-import io.ktor.client.HttpClient
-import io.ktor.client.engine.cio.CIO
-import io.ktor.client.engine.cio.endpoint
 import io.ktor.client.request.get
 import io.ktor.client.request.post
 import io.ktor.client.statement.bodyAsText
@@ -22,17 +20,7 @@ class TeamClient(
     private val apiUtils: ApiUtils,
 ) {
     private val baseUrl: String
-    private val httpClient =
-        HttpClient(CIO) {
-            engine {
-                maxConnectionsCount = 64
-                endpoint {
-                    maxConnectionsPerRoute = 8
-                    connectTimeout = 10_000
-                    requestTimeout = 60_000
-                }
-            }
-        }
+    private val httpClient = HttpClientConfig.createClient()
 
     init {
         val stream =

@@ -5,4 +5,4 @@ enum class CoachPosition(val description: String) {
     OFFENSIVE_COORDINATOR("Offensive Coordinator"),
     DEFENSIVE_COORDINATOR("Defensive Coordinator"),
     RETIRED("Retired"),
-} 
+}

@@ -6,4 +6,4 @@ enum class RunoffType(val description: String) {
     HURRY("HURRY"),
     NORMAL("NORMAL"),
     NONE("NONE"),
-} 
+}

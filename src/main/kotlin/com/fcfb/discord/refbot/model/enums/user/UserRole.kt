@@ -4,4 +4,4 @@ enum class UserRole(val description: String) {
     USER("User"),
     CONFERENCE_COMMISSIONER("Conference Commissioner"),
     ADMIN("Admin"),
-} 
+}

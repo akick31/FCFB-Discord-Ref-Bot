@@ -30,7 +30,9 @@ import com.fcfb.discord.refbot.commands.system.HelpCommand
 import com.fcfb.discord.refbot.commands.user.GetRoleCommand
 import com.fcfb.discord.refbot.commands.user.PingCommand
 import com.fcfb.discord.refbot.commands.user.RoleCommand
-import com.fcfb.discord.refbot.config.server.ServerConfig
+import com.fcfb.discord.refbot.config.server.KtorServerConfig
+import com.fcfb.discord.refbot.handlers.api.DelayOfGameRequest
+import com.fcfb.discord.refbot.handlers.api.StartGameRequest
 import com.fcfb.discord.refbot.handlers.discord.CloseGameAlertHandler
 import com.fcfb.discord.refbot.handlers.discord.DiscordMessageHandler
 import com.fcfb.discord.refbot.handlers.discord.RedZoneChannelHandler
@@ -39,8 +41,6 @@ import com.fcfb.discord.refbot.handlers.discord.UpsetAlertHandler
 import com.fcfb.discord.refbot.handlers.game.GameHandler
 import com.fcfb.discord.refbot.handlers.system.ErrorHandler
 import com.fcfb.discord.refbot.handlers.system.FileHandler
-import com.fcfb.discord.refbot.requests.DelayOfGameRequest
-import com.fcfb.discord.refbot.requests.StartGameRequest
 import com.fcfb.discord.refbot.utils.game.GameUtils
 import com.fcfb.discord.refbot.utils.health.HealthChecks
 import com.fcfb.discord.refbot.utils.system.Properties
@@ -74,7 +74,7 @@ val appModule =
         single { TextChannelThreadHandler(get(), get(), get(), get()) }
         single { GameUtils(get()) }
         single { StartGameRequest(get(), get()) }
-        single { ServerConfig(get(), get(), get(), get()) }
+        single { KtorServerConfig(get(), get(), get(), get()) }
         single { GameHandler(get(), get(), get(), get(), get(), get(), get(), get(), get()) }
         single { DelayOfGameRequest(get(), get()) }
         single { RedZoneChannelHandler(get(), get()) }

@@ -6,4 +6,4 @@ enum class OffensivePlaybook(val description: String) {
     PRO("PRO"),
     SPREAD("SPREAD"),
     WEST_COAST("WEST COAST"),
-} 
+}

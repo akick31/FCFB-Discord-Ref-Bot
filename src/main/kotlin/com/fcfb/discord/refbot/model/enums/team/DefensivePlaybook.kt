@@ -6,4 +6,4 @@ enum class DefensivePlaybook(val description: String) {
     FIVE_TWO("5-2"),
     FOUR_FOUR("4-4"),
     THREE_THREE_FIVE("3-3-5"),
-} 
+}

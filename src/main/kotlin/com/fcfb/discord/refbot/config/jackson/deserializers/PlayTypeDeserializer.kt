@@ -1,4 +1,4 @@
-package com.fcfb.discord.refbot.config.deserializers
+package com.fcfb.discord.refbot.config.jackson.deserializers
 
 import com.fasterxml.jackson.core.JsonParser
 import com.fasterxml.jackson.databind.DeserializationContext

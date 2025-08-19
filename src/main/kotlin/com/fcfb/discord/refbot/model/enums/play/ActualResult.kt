@@ -33,4 +33,4 @@ enum class ActualResult(val description: String) {
     DELAY_OF_GAME_HOME("DELAY OF GAME ON HOME TEAM"),
     DELAY_OF_GAME_AWAY("DELAY OF GAME ON AWAY TEAM"),
     END_OF_HALF("END OF HALF"),
-} 
+}

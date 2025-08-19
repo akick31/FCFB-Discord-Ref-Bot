@@ -8,4 +8,4 @@ enum class GameStatus(val description: String) {
     FINAL("FINAL"),
     END_OF_REGULATION("END OF REGULATION"),
     OVERTIME("OVERTIME"),
-} 
+}

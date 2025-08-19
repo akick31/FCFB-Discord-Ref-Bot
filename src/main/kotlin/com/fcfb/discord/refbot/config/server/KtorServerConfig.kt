@@ -1,10 +1,10 @@
 package com.fcfb.discord.refbot.config.server
 
+import com.fcfb.discord.refbot.handlers.api.DelayOfGameRequest
+import com.fcfb.discord.refbot.handlers.api.StartGameRequest
 import com.fcfb.discord.refbot.handlers.discord.DiscordMessageHandler
 import com.fcfb.discord.refbot.model.domain.Game
 import com.fcfb.discord.refbot.model.dto.SignupInfoDTO
-import com.fcfb.discord.refbot.requests.DelayOfGameRequest
-import com.fcfb.discord.refbot.requests.StartGameRequest
 import com.fcfb.discord.refbot.utils.health.HealthChecks
 import com.fcfb.discord.refbot.utils.system.Logger
 import com.fcfb.discord.refbot.utils.system.Properties
@@ -28,7 +28,7 @@ import io.ktor.server.routing.routing
 import kotlinx.coroutines.Job
 import java.text.DateFormat
 
-class ServerConfig(
+class KtorServerConfig(
     private val discordMessageHandler: DiscordMessageHandler,
     private val delayOfGameRequest: DelayOfGameRequest,
     private val startGameRequest: StartGameRequest,

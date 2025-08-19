@@ -113,4 +113,4 @@ enum class Scenario(val description: String) {
     CHEW_MODE_ENABLED("CHEW MODE ENABLED"),
     GAME_OVER("GAME OVER"),
     END_OF_HALF("END OF HALF"),
-} 
+}

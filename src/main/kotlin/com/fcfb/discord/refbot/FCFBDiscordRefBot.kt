@@ -1,7 +1,7 @@
 package com.fcfb.discord.refbot
 
 import com.fcfb.discord.refbot.commands.infrastructure.CommandRegistry
-import com.fcfb.discord.refbot.config.server.ServerConfig
+import com.fcfb.discord.refbot.config.server.KtorServerConfig
 import com.fcfb.discord.refbot.handlers.discord.MessageProcessor
 import com.fcfb.discord.refbot.koin.appModule
 import com.fcfb.discord.refbot.utils.health.HealthChecks
@@ -33,7 +33,7 @@ import kotlin.time.Duration.Companion.seconds
 class FCFBDiscordRefBot(
     private val properties: Properties,
     private val commandRegistry: CommandRegistry,
-    private val serverConfig: ServerConfig,
+    private val ktorServerConfig: KtorServerConfig,
     private val healthChecks: HealthChecks,
 ) {
     private lateinit var client: Kord
@@ -151,7 +151,7 @@ class FCFBDiscordRefBot(
         restartJob: Job?,
     ) = runBlocking {
         launch(Dispatchers.IO) {
-            serverConfig.startKtorServer(client, heartbeatJob, restartJob)
+            ktorServerConfig.startKtorServer(client, heartbeatJob, restartJob)
         }
 
         launch {
@@ -177,7 +177,7 @@ class FCFBDiscordRefBot(
     private suspend fun logoutOfDiscord() {
         Logger.info("Shutting down the Discord Ref Bot...")
         runBlocking {
-            serverConfig.stopKtorServer()
+            ktorServerConfig.stopKtorServer()
         }
         try {
             client.logout()

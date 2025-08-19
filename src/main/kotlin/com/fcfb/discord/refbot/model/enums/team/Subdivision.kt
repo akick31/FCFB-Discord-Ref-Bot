@@ -5,4 +5,4 @@ enum class Subdivision(val description: String) {
     FBS("FBS"),
     FCS("FCS"),
     FAKE("FAKE"),
-} 
+}

@@ -1,4 +1,4 @@
-package com.fcfb.discord.refbot.requests
+package com.fcfb.discord.refbot.handlers.api
 
 import com.fcfb.discord.refbot.handlers.discord.DiscordMessageHandler
 import com.fcfb.discord.refbot.handlers.discord.TextChannelThreadHandler

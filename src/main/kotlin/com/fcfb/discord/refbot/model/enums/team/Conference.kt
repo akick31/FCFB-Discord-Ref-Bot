@@ -24,4 +24,4 @@ enum class Conference(val description: String) {
     SOUTHLAND("Southland"),
     OHIO_VALLEY("Ohio Valley"),
     SWAC("SWAC"),
-} 
+}

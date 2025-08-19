@@ -8,4 +8,4 @@ enum class GameType(val description: String) {
     NATIONAL_CHAMPIONSHIP("National Championship"),
     BOWL("Bowl"),
     SCRIMMAGE("Scrimmage"),
-} 
+}

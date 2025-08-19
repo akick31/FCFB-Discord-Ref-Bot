@@ -1,41 +1,23 @@
 package com.fcfb.discord.refbot.api.system
 
 import com.fcfb.discord.refbot.api.utils.ApiUtils
+import com.fcfb.discord.refbot.api.utils.HttpClientConfig
 import com.fcfb.discord.refbot.config.jackson.JacksonConfig
 import com.fcfb.discord.refbot.model.enums.message.MessageType
 import com.fcfb.discord.refbot.model.infrastructure.RequestMessageLog
 import com.fcfb.discord.refbot.utils.system.Logger
-import io.ktor.client.HttpClient
-import io.ktor.client.engine.cio.CIO
-import io.ktor.client.engine.cio.endpoint
-import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.ContentType
 import io.ktor.http.contentType
-import io.ktor.serialization.jackson.jackson
 import java.util.Properties
 
 class LogClient(
     private val apiUtils: ApiUtils,
 ) {
     private val baseUrl: String
-    private val httpClient =
-        HttpClient(CIO) {
-            engine {
-                maxConnectionsCount = 64
-                endpoint {
-                    maxConnectionsPerRoute = 8
-                    connectTimeout = 10_000
-                    requestTimeout = 60_000
-                }
-            }
-
-            install(ContentNegotiation) {
-                jackson {}
-            }
-        }
+    private val httpClient = HttpClientConfig.createClient()
 
     init {
         val stream =
