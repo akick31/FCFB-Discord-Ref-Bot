@@ -71,7 +71,7 @@ pipeline {
                         discord.notification.channel.id=1178833016760569856
 
                         # Domain configuration
-                        api.url=https://api.fakecollegefootball.com/arceus
+                        api.url=https://api.fakecollegefootball.com/api/v1/arceus
 
                         # Server configuration
                         server.port=1211
