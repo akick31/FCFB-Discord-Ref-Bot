@@ -1,7 +1,6 @@
 package com.fcfb.discord.refbot.handlers.discord
 
 import com.fcfb.discord.refbot.api.game.GameClient
-import com.fcfb.discord.refbot.api.team.TeamClient
 import com.fcfb.discord.refbot.model.domain.Game
 import com.fcfb.discord.refbot.model.enums.game.GameType
 import com.fcfb.discord.refbot.utils.system.Logger
@@ -12,9 +11,8 @@ import dev.kord.core.Kord
 import dev.kord.core.entity.Message
 import dev.kord.core.entity.channel.MessageChannel
 
-class UpsetAlertHandler(
+class CloseGameAlertHandler(
     private val gameClient: GameClient,
-    private val teamClient: TeamClient,
     private val discordMessageHandler: DiscordMessageHandler,
     private val properties: Properties,
 ) {
@@ -23,33 +21,16 @@ class UpsetAlertHandler(
      * @param client the discord client
      * @param game the game
      */
-    suspend fun handleUpsetAlert(
+    suspend fun handleCloseGame(
         client: Kord,
         game: Game,
         playMessage: Message?,
     ): Message? {
-        if (game.gameType == GameType.SCRIMMAGE || !game.upsetAlert || game.upsetAlertPinged) {
+        if (game.gameType == GameType.SCRIMMAGE || !game.closeGame || game.closeGamePinged) {
             return null
         }
-        val homeTeamApiResponse = teamClient.getTeamByName(game.homeTeam)
-        if (homeTeamApiResponse.keys.firstOrNull() == null) {
-            Logger.error("Error getting home team for upset alert: ${homeTeamApiResponse.values.firstOrNull()}")
-        }
-        val homeTeam = homeTeamApiResponse.keys.firstOrNull() ?: return null
-        val awayTeamApiResponse = teamClient.getTeamByName(game.awayTeam)
-        if (awayTeamApiResponse.keys.firstOrNull() == null) {
-            Logger.error("Error getting away team for upset alert: ${awayTeamApiResponse.values.firstOrNull()}")
-        }
-        val awayTeam = awayTeamApiResponse.keys.firstOrNull() ?: return null
-        val homeTeamRanking = game.homeTeamRank ?: 100
-        val awayTeamRanking = game.awayTeamRank ?: 100
 
-        val teamOnUpsetAlert = if (homeTeamRanking < awayTeamRanking) homeTeam else awayTeam
-
-        var messageContent = "**UPSET ALERT**\n"
-        messageContent += "#${if (teamOnUpsetAlert.name == homeTeam.name) homeTeamRanking else awayTeamRanking} " +
-            "${teamOnUpsetAlert.name} is at risk of losing to " +
-            "${if (teamOnUpsetAlert.name == homeTeam.name) awayTeam.name else homeTeam.name} late in the game.\n\n"
+        var messageContent = "**CLOSE GAME ALERT**\n"
         messageContent +=
             if (game.homeScore == game.awayScore) {
                 if (game.quarter >= 5) {
@@ -61,9 +42,10 @@ class UpsetAlertHandler(
                 val winningTeam = if (game.homeScore > game.awayScore) game.homeTeam else game.awayTeam
                 val losingTeam = if (game.homeScore > game.awayScore) game.awayTeam else game.homeTeam
                 if (game.quarter >= 5) {
-                    "$winningTeam is leading $losingTeam ${game.homeScore}-${game.awayScore} in overtime."
+                    "The game is close with $winningTeam leading $losingTeam ${game.homeScore}-${game.awayScore} in overtime."
                 } else {
-                    "$winningTeam is leading $losingTeam ${game.homeScore}-${game.awayScore} with ${game.clock} left in regulation."
+                    "The game is close with $winningTeam leading $losingTeam ${game.homeScore}-${game.awayScore} with " +
+                        "${game.clock} left in regulation."
                 }
             }
 
@@ -73,7 +55,7 @@ class UpsetAlertHandler(
             }
             val redZoneChannel = client.getChannel(Snowflake(properties.getDiscordProperties().redzoneChannelId)) as MessageChannel
             val message = discordMessageHandler.sendRedZoneMessage(game, redZoneChannel, messageContent, playMessage)
-            gameClient.markUpsetAlertPinged(game.gameId)
+            gameClient.markCloseGamePinged(game.gameId)
             return message
         } catch (e: Exception) {
             Logger.error("Error sending close game message: ${e.message}")

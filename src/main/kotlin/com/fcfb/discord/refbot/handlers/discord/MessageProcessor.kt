@@ -1,7 +1,7 @@
 package com.fcfb.discord.refbot.handlers.discord
 
-import com.fcfb.discord.refbot.handlers.GameHandler
-import com.fcfb.discord.refbot.utils.Properties
+import com.fcfb.discord.refbot.handlers.game.GameHandler
+import com.fcfb.discord.refbot.utils.system.Properties
 import dev.kord.core.Kord
 import dev.kord.core.entity.Message
 import org.koin.mp.KoinPlatform.getKoin

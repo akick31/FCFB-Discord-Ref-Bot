@@ -1,13 +1,13 @@
 package com.fcfb.discord.refbot.handlers.discord
 
-import com.fcfb.discord.refbot.api.ScorebugClient
-import com.fcfb.discord.refbot.api.TeamClient
-import com.fcfb.discord.refbot.model.fcfb.game.Game
-import com.fcfb.discord.refbot.model.fcfb.game.GameStatus
-import com.fcfb.discord.refbot.model.fcfb.game.GameType
-import com.fcfb.discord.refbot.model.fcfb.game.TeamSide
-import com.fcfb.discord.refbot.utils.GameUtils
-import com.fcfb.discord.refbot.utils.Properties
+import com.fcfb.discord.refbot.api.game.ScorebugClient
+import com.fcfb.discord.refbot.api.team.TeamClient
+import com.fcfb.discord.refbot.model.domain.Game
+import com.fcfb.discord.refbot.model.enums.game.GameStatus
+import com.fcfb.discord.refbot.model.enums.game.GameType
+import com.fcfb.discord.refbot.model.enums.team.TeamSide
+import com.fcfb.discord.refbot.utils.game.GameUtils
+import com.fcfb.discord.refbot.utils.system.Properties
 import com.kotlindiscord.kord.extensions.utils.getJumpUrl
 import dev.kord.common.entity.Snowflake
 import dev.kord.core.Kord
