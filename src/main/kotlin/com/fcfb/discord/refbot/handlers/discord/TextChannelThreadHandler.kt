@@ -56,9 +56,6 @@ class TextChannelThreadHandler(
         thread.edit {
             appliedTags = getTagsForThread(game, gameChannel)
         }
-        thread.message?.edit {
-            content = getGameInformation(game)
-        }
     }
 
     /**
@@ -75,7 +72,7 @@ class TextChannelThreadHandler(
         val gameChannel = getGameForumChannel(client)
 
         // Get the thread content
-        val threadContent = getGameInformation(game)
+        val threadContent = getGameThreadMessageContent(game)
         val tags = getTagsForThread(game, gameChannel)
 
         return gameChannel.startPublicThread(threadName) {
@@ -131,8 +128,16 @@ class TextChannelThreadHandler(
         }
     }
 
+    /**
+     * Get the game thread message content for the top
+     */
     private fun getGameThreadMessageContent(game: Game): String {
-        return "Please submit bugs here: https://github.com/akick31/FCFB-Discord-Ref-Bot/issues"
+        return "**Welcome to Season XI!**\n" +
+                "This is the game thread for ${game.homeTeam} vs ${game.awayTeam}\n\n-" +
+                "Visit our website at https://fakecollegefootball.com\n" +
+                "-[Support us on Patreon](https://www.patreon.com/fakecfb)\n" +
+                "-Please ping Dick for any game errors\n" +
+                "-Report technical bugs [here](https://github.com/akick31/FCFB-Discord-Ref-Bot/issues)."
     }
 
     /**
