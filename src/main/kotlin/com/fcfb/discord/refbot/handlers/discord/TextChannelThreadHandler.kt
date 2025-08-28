@@ -5,7 +5,6 @@ import com.fcfb.discord.refbot.api.team.TeamClient
 import com.fcfb.discord.refbot.model.domain.Game
 import com.fcfb.discord.refbot.model.enums.game.GameStatus
 import com.fcfb.discord.refbot.model.enums.game.GameType
-import com.fcfb.discord.refbot.model.enums.team.TeamSide
 import com.fcfb.discord.refbot.utils.game.GameUtils
 import com.fcfb.discord.refbot.utils.system.Properties
 import com.kotlindiscord.kord.extensions.utils.getJumpUrl
@@ -56,9 +55,6 @@ class TextChannelThreadHandler(
         thread.edit {
             appliedTags = getTagsForThread(game, gameChannel)
         }
-        thread.message?.edit {
-            content = getGameInformation(game)
-        }
     }
 
     /**
@@ -75,7 +71,7 @@ class TextChannelThreadHandler(
         val gameChannel = getGameForumChannel(client)
 
         // Get the thread content
-        val threadContent = getGameInformation(game)
+        val threadContent = getGameThreadMessageContent(game)
         val tags = getTagsForThread(game, gameChannel)
 
         return gameChannel.startPublicThread(threadName) {
@@ -131,31 +127,16 @@ class TextChannelThreadHandler(
         }
     }
 
-    private fun getGameThreadMessageContent(game: Game): String {
-        return "Please submit bugs here: https://github.com/akick31/FCFB-Discord-Ref-Bot/issues"
-    }
-
     /**
-     * Get the game information embeds to post in the thread
-     * @param game The game object
-     * @return The game information embed
+     * Get the game thread message content for the top
      */
-    private fun getGameInformation(game: Game): String {
-        val waitingOn = if (game.waitingOn == TeamSide.HOME) game.homeTeam else game.awayTeam
-        val possession = if (game.possession == TeamSide.HOME) game.homeTeam else game.awayTeam
-        var messageContent = getGameThreadMessageContent(game)
-        messageContent += "\n\n"
-        messageContent += "**Home Team**: ${game.homeTeam}\n"
-        messageContent += "**Away Team**: ${game.awayTeam}\n"
-        messageContent += "**Game Type**: ${game.gameType?.description}\n"
-        messageContent += "**Game Status**: ${game.gameStatus?.description}\n"
-        messageContent += "**Possession**: ${possession}\n"
-        messageContent += "**Waiting On**: ${waitingOn}\n"
-        messageContent += "**${game.homeTeam} Offensive Playbook**: ${game.homeOffensivePlaybook?.description}\n"
-        messageContent += "**${game.homeTeam} Defensive Playbook**: ${game.homeDefensivePlaybook?.description}\n"
-        messageContent += "**${game.awayTeam} Offensive Playbook**: ${game.awayOffensivePlaybook?.description}\n"
-        messageContent += "**${game.awayTeam} Defensive Playbook**: ${game.awayDefensivePlaybook?.description}\n"
-        return messageContent
+    private fun getGameThreadMessageContent(game: Game): String {
+        return "**Welcome to Season XI!**\n" +
+            "This is the game thread for ${game.homeTeam} vs ${game.awayTeam}\n\n-" +
+            "Visit our website at https://fakecollegefootball.com\n" +
+            "-[Support us on Patreon](https://www.patreon.com/fakecfb)\n" +
+            "-Please ping Dick for any game errors\n" +
+            "-Report technical bugs [here](https://github.com/akick31/FCFB-Discord-Ref-Bot/issues)."
     }
 
     private fun getPostgameInformation(
