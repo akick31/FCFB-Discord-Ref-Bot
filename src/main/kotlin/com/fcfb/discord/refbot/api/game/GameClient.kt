@@ -158,7 +158,7 @@ class GameClient(
      * End a game
      */
     internal suspend fun endGame(channelId: ULong): Map<Game?, String?> {
-        val endpointUrl = "$baseUrl/game/$channelId/end"
+        val endpointUrl = "$baseUrl/game/end?channelId=$channelId"
         return postRequest(endpointUrl)
     }
 
@@ -174,7 +174,7 @@ class GameClient(
      * Delete a game
      */
     internal suspend fun deleteGame(channelId: ULong): Int? {
-        val endpointUrl = "$baseUrl/game/$channelId"
+        val endpointUrl = "$baseUrl/game?channelId=$channelId"
         return deleteRequest(endpointUrl)
     }
 
@@ -182,7 +182,7 @@ class GameClient(
      * Restart a game
      */
     internal suspend fun restartGame(channelId: ULong): Map<Game?, String?> {
-        val endpointUrl = "$baseUrl/game/$channelId/restart"
+        val endpointUrl = "$baseUrl/game/restart?channelId=$channelId"
         return postRequest(endpointUrl)
     }
 
@@ -190,7 +190,7 @@ class GameClient(
      * Get game by platform id
      */
     internal suspend fun getGameByPlatformId(platformId: String): Map<Game?, String?> {
-        val endpointUrl = "$baseUrl/game/platform/$platformId"
+        val endpointUrl = "$baseUrl/game/platform?platformId=$platformId"
         return getRequest(endpointUrl)
     }
 
@@ -224,7 +224,7 @@ class GameClient(
      * Chew a game
      */
     internal suspend fun chewGame(channelId: ULong): Map<Game?, String?> {
-        val endpointUrl = "$baseUrl/game/$channelId/chew"
+        val endpointUrl = "$baseUrl/game/chew?channelId=$channelId"
         return postRequest(endpointUrl)
     }
 

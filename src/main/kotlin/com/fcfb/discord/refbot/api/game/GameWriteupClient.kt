@@ -26,24 +26,19 @@ class GameWriteupClient(
 
     /**
      * Fetch the game message by the scenario
-     * @param scenario
-     * @return String
+     * @param scenario the scenario enum
+     * @param playCall the play call enum (optional)
+     * @return Map<String?, String?> response from API
      */
     internal suspend fun getGameMessageByScenario(
         scenario: Scenario,
         playCall: PlayCall?,
     ): Map<String?, String?> {
         val endpointUrl =
-            if (playCall != null && (
-                    playCall == PlayCall.PASS || playCall == PlayCall.RUN ||
-                        playCall == PlayCall.PUNT || playCall == PlayCall.FIELD_GOAL ||
-                        playCall == PlayCall.KICKOFF_NORMAL || playCall == PlayCall.KICKOFF_ONSIDE ||
-                        playCall == PlayCall.KICKOFF_SQUIB
-                )
-            ) {
-                "$baseUrl/game_writeup/${scenario.name}/$playCall"
+            if (playCall != null) {
+                "$baseUrl/game_writeup?scenario=${scenario.name}&playCall=${playCall.name}"
             } else {
-                "$baseUrl/game_writeup/${scenario.name}/NONE"
+                "$baseUrl/game_writeup?scenario=${scenario.name}&playCall=NONE"
             }
 
         return getRequest(endpointUrl)

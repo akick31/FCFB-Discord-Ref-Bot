@@ -19,7 +19,6 @@ import com.fcfb.discord.refbot.commands.game.StartScrimmageCommand
 import com.fcfb.discord.refbot.commands.system.HelpCommand
 import com.fcfb.discord.refbot.commands.user.GetRoleCommand
 import com.fcfb.discord.refbot.commands.user.PingCommand
-import com.fcfb.discord.refbot.commands.user.RoleCommand
 import com.fcfb.discord.refbot.model.enums.user.UserRole
 import com.fcfb.discord.refbot.utils.system.Logger
 import dev.kord.core.Kord
@@ -41,7 +40,6 @@ class CommandRegistry(
     private val hireInterimCoachCommand: HireInterimCoachCommand,
     private val messageAllGamesCommand: MessageAllGamesCommand,
     private val pingCommand: PingCommand,
-    private val roleCommand: RoleCommand,
     private val startGameCommand: StartGameCommand,
     private val startScrimmageCommand: StartScrimmageCommand,
     private val subCoachCommand: SubCoachCommand,
@@ -65,7 +63,6 @@ class CommandRegistry(
         hireInterimCoachCommand.register(client)
         messageAllGamesCommand.register(client)
         pingCommand.register(client)
-        roleCommand.register(client)
         startGameCommand.register(client)
         startScrimmageCommand.register(client)
         subCoachCommand.register(client)
@@ -110,7 +107,6 @@ class CommandRegistry(
             "hire_interim_coach" -> hireInterimCoachCommand.execute(interaction)
             "message_all_games" -> messageAllGamesCommand.execute(interaction)
             "ping" -> pingCommand.execute(interaction)
-            "role" -> roleCommand.execute(userRole, interaction)
             "start_game" -> startGameCommand.execute(interaction)
             "start_scrimmage" -> startScrimmageCommand.execute(interaction)
             "sub_coach" -> subCoachCommand.execute(interaction)
