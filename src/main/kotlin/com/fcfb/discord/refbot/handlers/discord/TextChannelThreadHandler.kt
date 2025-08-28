@@ -5,7 +5,6 @@ import com.fcfb.discord.refbot.api.team.TeamClient
 import com.fcfb.discord.refbot.model.domain.Game
 import com.fcfb.discord.refbot.model.enums.game.GameStatus
 import com.fcfb.discord.refbot.model.enums.game.GameType
-import com.fcfb.discord.refbot.model.enums.team.TeamSide
 import com.fcfb.discord.refbot.utils.game.GameUtils
 import com.fcfb.discord.refbot.utils.system.Properties
 import com.kotlindiscord.kord.extensions.utils.getJumpUrl
@@ -133,11 +132,11 @@ class TextChannelThreadHandler(
      */
     private fun getGameThreadMessageContent(game: Game): String {
         return "**Welcome to Season XI!**\n" +
-                "This is the game thread for ${game.homeTeam} vs ${game.awayTeam}\n\n-" +
-                "Visit our website at https://fakecollegefootball.com\n" +
-                "-[Support us on Patreon](https://www.patreon.com/fakecfb)\n" +
-                "-Please ping Dick for any game errors\n" +
-                "-Report technical bugs [here](https://github.com/akick31/FCFB-Discord-Ref-Bot/issues)."
+            "This is the game thread for ${game.homeTeam} vs ${game.awayTeam}\n\n-" +
+            "Visit our website at https://fakecollegefootball.com\n" +
+            "-[Support us on Patreon](https://www.patreon.com/fakecfb)\n" +
+            "-Please ping Dick for any game errors\n" +
+            "-Report technical bugs [here](https://github.com/akick31/FCFB-Discord-Ref-Bot/issues)."
     }
 
     private fun getPostgameInformation(
