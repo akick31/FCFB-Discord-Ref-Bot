@@ -4,10 +4,8 @@ import com.fcfb.discord.refbot.api.utils.ApiUtils
 import com.fcfb.discord.refbot.api.utils.HttpClientConfig
 import com.fcfb.discord.refbot.config.jackson.JacksonConfig
 import com.fcfb.discord.refbot.model.domain.FCFBUser
-import com.fcfb.discord.refbot.model.enums.user.UserRole
 import com.fcfb.discord.refbot.utils.system.Logger
 import io.ktor.client.request.get
-import io.ktor.client.request.put
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.ContentType
 import io.ktor.http.contentType

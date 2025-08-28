@@ -34,11 +34,12 @@ class GameWriteupClient(
         scenario: Scenario,
         playCall: PlayCall?,
     ): Map<String?, String?> {
-        val endpointUrl = if (playCall != null) {
-            "$baseUrl/game_writeup?scenario=${scenario.name}&playCall=${playCall.name}"
-        } else {
-            "$baseUrl/game_writeup?scenario=${scenario.name}&playCall=NONE"
-        }
+        val endpointUrl =
+            if (playCall != null) {
+                "$baseUrl/game_writeup?scenario=${scenario.name}&playCall=${playCall.name}"
+            } else {
+                "$baseUrl/game_writeup?scenario=${scenario.name}&playCall=NONE"
+            }
 
         return getRequest(endpointUrl)
     }
