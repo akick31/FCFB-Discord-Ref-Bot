@@ -140,29 +140,6 @@ class TextChannelThreadHandler(
                 "-Report technical bugs [here](https://github.com/akick31/FCFB-Discord-Ref-Bot/issues)."
     }
 
-    /**
-     * Get the game information embeds to post in the thread
-     * @param game The game object
-     * @return The game information embed
-     */
-    private fun getGameInformation(game: Game): String {
-        val waitingOn = if (game.waitingOn == TeamSide.HOME) game.homeTeam else game.awayTeam
-        val possession = if (game.possession == TeamSide.HOME) game.homeTeam else game.awayTeam
-        var messageContent = getGameThreadMessageContent(game)
-        messageContent += "\n\n"
-        messageContent += "**Home Team**: ${game.homeTeam}\n"
-        messageContent += "**Away Team**: ${game.awayTeam}\n"
-        messageContent += "**Game Type**: ${game.gameType?.description}\n"
-        messageContent += "**Game Status**: ${game.gameStatus?.description}\n"
-        messageContent += "**Possession**: ${possession}\n"
-        messageContent += "**Waiting On**: ${waitingOn}\n"
-        messageContent += "**${game.homeTeam} Offensive Playbook**: ${game.homeOffensivePlaybook?.description}\n"
-        messageContent += "**${game.homeTeam} Defensive Playbook**: ${game.homeDefensivePlaybook?.description}\n"
-        messageContent += "**${game.awayTeam} Offensive Playbook**: ${game.awayOffensivePlaybook?.description}\n"
-        messageContent += "**${game.awayTeam} Defensive Playbook**: ${game.awayDefensivePlaybook?.description}\n"
-        return messageContent
-    }
-
     private fun getPostgameInformation(
         game: Game,
         lastMessage: Message,
