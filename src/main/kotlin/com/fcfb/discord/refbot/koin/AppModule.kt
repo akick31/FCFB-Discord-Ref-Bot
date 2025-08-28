@@ -7,7 +7,6 @@ import com.fcfb.discord.refbot.api.game.PlayClient
 import com.fcfb.discord.refbot.api.game.ScorebugClient
 import com.fcfb.discord.refbot.api.system.LogClient
 import com.fcfb.discord.refbot.api.team.TeamClient
-import com.fcfb.discord.refbot.api.user.AuthClient
 import com.fcfb.discord.refbot.api.user.FCFBUserClient
 import com.fcfb.discord.refbot.api.utils.ApiUtils
 import com.fcfb.discord.refbot.commands.coach.FireCoachCommand
@@ -29,7 +28,6 @@ import com.fcfb.discord.refbot.commands.infrastructure.CommandRegistry
 import com.fcfb.discord.refbot.commands.system.HelpCommand
 import com.fcfb.discord.refbot.commands.user.GetRoleCommand
 import com.fcfb.discord.refbot.commands.user.PingCommand
-import com.fcfb.discord.refbot.commands.user.RoleCommand
 import com.fcfb.discord.refbot.config.server.KtorServerConfig
 import com.fcfb.discord.refbot.handlers.api.DelayOfGameRequest
 import com.fcfb.discord.refbot.handlers.api.StartGameRequest
@@ -62,14 +60,12 @@ val appModule =
         single { SystemUtils() }
 
         // Classes with dependencies
-        single { AuthClient(get()) }
         single { GameClient(get()) }
         single { GameWriteupClient(get()) }
         single { PlayClient(get()) }
         single { LogClient(get()) }
         single { TeamClient(get()) }
         single { FCFBUserClient(get()) }
-        single { RoleCommand(get()) }
         single { ErrorHandler(get()) }
         single { TextChannelThreadHandler(get(), get(), get(), get()) }
         single { GameUtils(get()) }
@@ -100,7 +96,7 @@ val appModule =
         single {
             CommandRegistry(
                 get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(),
-                get(), get(), get(), get(), get(), get(), get(), get(),
+                get(), get(), get(), get(), get(), get(), get(),
             )
         }
         single { FCFBDiscordRefBot(get(), get(), get(), get()) }
