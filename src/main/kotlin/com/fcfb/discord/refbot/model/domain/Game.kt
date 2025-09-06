@@ -79,4 +79,6 @@ data class Game(
     @JsonProperty("close_game_pinged") val closeGamePinged: Boolean,
     @JsonProperty("upset_alert") val upsetAlert: Boolean,
     @JsonProperty("upset_alert_pinged") val upsetAlertPinged: Boolean,
+    @JsonProperty("home_vegas_spread") val homeVegasSpread: Double?,
+    @JsonProperty("away_vegas_spread") val awayVegasSpread: Double?,
 )

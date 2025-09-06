@@ -46,4 +46,6 @@ data class Team(
     @JsonProperty("national_championship_losses") var nationalChampionshipLosses: Int = 0,
     @JsonProperty("is_taken") var isTaken: Boolean = false,
     @JsonProperty("active") var active: Boolean = true,
+    @JsonProperty("current_elo") var currentElo: Double,
+    @JsonProperty("overall_elo") var overallElo: Double,
 )
