@@ -48,6 +48,7 @@ class PlayClient(
     internal suspend fun submitDefensiveNumber(
         gameId: Int,
         defensiveSubmitter: String,
+        defensiveSubmitterId: String,
         defensiveNumber: Int,
         timeoutCalled: Boolean,
     ): Map<Play?, String?> {
@@ -55,6 +56,7 @@ class PlayClient(
             "$baseUrl/play/submit_defense?" +
                 "gameId=$gameId&" +
                 "defensiveSubmitter=$defensiveSubmitter&" +
+                "defensiveSubmitterId=$defensiveSubmitterId&" +
                 "defensiveNumber=$defensiveNumber&" +
                 "timeoutCalled=$timeoutCalled"
         return postRequest(endpointUrl)
@@ -72,6 +74,7 @@ class PlayClient(
     internal suspend fun submitOffensiveNumber(
         gameId: Int,
         offensiveSubmitter: String,
+        offensiveSubmitterId: String,
         offensiveNumber: Int?,
         playCall: PlayCall,
         runoffType: RunoffType,
@@ -82,6 +85,7 @@ class PlayClient(
                 "$baseUrl/play/submit_offense?" +
                     "gameId=$gameId&" +
                     "offensiveSubmitter=$offensiveSubmitter&" +
+                    "offensiveSubmitterId=$offensiveSubmitterId&" +
                     "playCall=$playCall&" +
                     "runoffType=$runoffType&" +
                     "timeoutCalled=$offensiveTimeoutCalled"
@@ -89,6 +93,7 @@ class PlayClient(
                 "$baseUrl/play/submit_offense?" +
                     "gameId=$gameId&" +
                     "offensiveSubmitter=$offensiveSubmitter&" +
+                    "offensiveSubmitterId=$offensiveSubmitterId&" +
                     "offensiveNumber=$offensiveNumber&" +
                     "playCall=$playCall&" +
                     "runoffType=$runoffType&" +

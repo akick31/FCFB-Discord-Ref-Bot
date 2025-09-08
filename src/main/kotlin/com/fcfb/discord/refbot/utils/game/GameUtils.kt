@@ -333,7 +333,9 @@ class GameUtils(
     ): String {
         return if (game.gameStatus != GameStatus.OVERTIME) {
             if (play?.playCall != PlayCall.PAT && play?.playCall != PlayCall.TWO_POINT) {
-                "The play took ${(play?.playTime ?: 0) + (play?.runoffTime ?: 0)} seconds. "
+                val playTime = play?.playTime ?: 0
+                val runoffTime = play?.runoffTime ?: 0
+                "The play took ${playTime + runoffTime} seconds. "
             } else {
                 ""
             }

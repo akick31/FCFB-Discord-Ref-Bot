@@ -118,6 +118,7 @@ class GameHandler(
         val runoffType = gameUtils.parseRunoffTypeFromMessage(game, message)
         val timeoutCalled = gameUtils.parseTimeoutFromMessage(message)
         val offensiveSubmitter = message.author?.username ?: return errorHandler.invalidOffensiveSubmitter(message)
+        val offensiveSubmitterId = message.author?.id?.value.toString()
 
         // Handle overtime specifics
         if (game.gameStatus == GameStatus.OVERTIME) {
@@ -136,6 +137,7 @@ class GameHandler(
             playClient.submitOffensiveNumber(
                 game.gameId,
                 offensiveSubmitter,
+                offensiveSubmitterId,
                 number,
                 playCall,
                 runoffType,
@@ -212,11 +214,13 @@ class GameHandler(
             }
         val timeoutCalled = gameUtils.parseTimeoutFromMessage(message)
         val defensiveSubmitter = message.author?.username ?: return errorHandler.invalidDefensiveSubmitter(message)
+        val defensiveSubmitterId = message.author?.id?.value.toString()
 
         val playApiResponse =
             playClient.submitDefensiveNumber(
                 game.gameId,
                 defensiveSubmitter,
+                defensiveSubmitterId,
                 number,
                 timeoutCalled,
             )
