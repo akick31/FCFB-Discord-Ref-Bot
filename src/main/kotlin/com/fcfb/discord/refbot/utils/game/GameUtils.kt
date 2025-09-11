@@ -660,7 +660,7 @@ class GameUtils(
      * @param gameId The game ID
      * @return The file path or null if failed
      */
-    private fun saveChartToFile(
+    fun saveChartToFile(
         chartData: ByteArray,
         chartType: String,
         gameId: Int,

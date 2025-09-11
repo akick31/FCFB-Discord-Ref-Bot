@@ -8,7 +8,6 @@ import com.fcfb.discord.refbot.utils.system.Logger
 import dev.kord.core.Kord
 import dev.kord.core.behavior.interaction.respondEphemeral
 import dev.kord.core.behavior.interaction.respondPublic
-import dev.kord.core.entity.channel.thread.TextChannelThread
 import dev.kord.core.entity.interaction.ChatInputCommandInteraction
 import dev.kord.rest.builder.interaction.integer
 import dev.kord.rest.builder.interaction.string
@@ -73,20 +72,11 @@ class ScoreChartCommand(
 
             // Check if we're in a game thread and auto-detect game ID
             val channel = interaction.channel
+            val gameResponse = gameClient.getGameByPlatformId(channel.id.value.toString())
+            val game = gameResponse.keys.firstOrNull()
             val detectedGameId =
-                if (channel is TextChannelThread) {
-                    try {
-                        val gameResponse = gameClient.getGameByPlatformId(channel.id.value.toString())
-                        val game = gameResponse.keys.firstOrNull()
-                        if (game != null) {
-                            game.gameId
-                        } else {
-                            null
-                        }
-                    } catch (e: Exception) {
-                        Logger.error("Failed to get game by platform ID: ${e.message}", e)
-                        null
-                    }
+                if (game != null) {
+                    game.gameId
                 } else {
                     null
                 }
@@ -158,7 +148,7 @@ class ScoreChartCommand(
                             val gameResponse = gameClient.getGameByGameId("$finalGameId")
                             val game = gameResponse.keys.firstOrNull()
                             if (game != null) {
-                                "https://discord.com/channels/${discordProperties.guildId}/${game.homePlatformId})"
+                                "https://discord.com/channels/${discordProperties.guildId}/${game.homePlatformId}"
                             } else {
                                 "Game ID: $finalGameId"
                             }

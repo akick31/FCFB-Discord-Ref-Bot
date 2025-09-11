@@ -72,7 +72,7 @@ val appModule =
         single { TeamClient(get()) }
         single { FCFBUserClient(get()) }
         single { ErrorHandler(get()) }
-        single { TextChannelThreadHandler(get(), get(), get(), get()) }
+        single { TextChannelThreadHandler(get(), get(), get(), get(), get()) }
         single { GameUtils(get()) }
         single { StartGameRequest(get(), get()) }
         single { KtorServerConfig(get(), get(), get(), get()) }

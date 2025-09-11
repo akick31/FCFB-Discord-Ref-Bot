@@ -46,6 +46,7 @@ import dev.kord.core.entity.channel.MessageChannel
 import dev.kord.core.entity.channel.thread.TextChannelThread
 import dev.kord.rest.builder.message.EmbedBuilder
 import dev.kord.rest.builder.message.addFile
+import java.nio.file.Paths
 import kotlin.io.path.Path
 
 class DiscordMessageHandler(
@@ -526,33 +527,66 @@ class DiscordMessageHandler(
         sendMessageFromChannelObject(scoreChannel, messageContent, embedData)
 
         // Post charts after the score
-        postGameCharts(client, game, scoreChannel)
+        postGameCharts(client, game)
     }
 
     /**
-     * Post game charts (win probability and score chart) to the scores channel
+     * Post game charts (win probability and score chart) to the game thread
      * @param client The Discord client
      * @param game The game object
-     * @param scoreChannel The scores channel
      */
     private suspend fun postGameCharts(
         client: Kord,
         game: Game,
-        scoreChannel: MessageChannel,
     ) {
         try {
+            Logger.info("Posting game charts for game ID: ${game.gameId}")
+
+            // Get the game thread
+            val gameThread =
+                when {
+                    game.homePlatform == Platform.DISCORD ->
+                        client.getChannel(
+                            Snowflake(game.homePlatformId.toString()),
+                        ) as? TextChannelThread
+                    game.awayPlatform == Platform.DISCORD ->
+                        client.getChannel(
+                            Snowflake(game.awayPlatformId.toString()),
+                        ) as? TextChannelThread
+                    else -> null
+                }
+
+            if (gameThread == null) {
+                Logger.error("Could not find game thread for game ${game.gameId}")
+                return
+            }
+
             // Get win probability chart
             val winProbabilityChart = chartClient.getWinProbabilityChartByGameId(game.gameId)
-            val winProbabilityEmbed = gameUtils.getWinProbabilityChartEmbed(winProbabilityChart, game, null)
-            if (winProbabilityEmbed != null) {
-                sendMessageFromChannelObject(scoreChannel, "", winProbabilityEmbed)
+            Logger.info("Win probability chart result: ${if (winProbabilityChart != null) "Success" else "Failed"}")
+            if (winProbabilityChart != null) {
+                val chartUrl = gameUtils.saveChartToFile(winProbabilityChart, "win_probability", game.gameId)
+                Logger.info("Win probability chart saved to: $chartUrl")
+                if (chartUrl != null) {
+                    gameThread.createMessage {
+                        addFile(Paths.get(chartUrl))
+                    }
+                    Logger.info("Win probability chart posted to game thread")
+                }
             }
 
             // Get score chart
             val scoreChart = chartClient.getScoreChartByGameId(game.gameId)
-            val scoreChartEmbed = gameUtils.getScoreChartEmbed(scoreChart, game, null)
-            if (scoreChartEmbed != null) {
-                sendMessageFromChannelObject(scoreChannel, "", scoreChartEmbed)
+            Logger.info("Score chart result: ${if (scoreChart != null) "Success" else "Failed"}")
+            if (scoreChart != null) {
+                val chartUrl = gameUtils.saveChartToFile(scoreChart, "score_chart", game.gameId)
+                Logger.info("Score chart saved to: $chartUrl")
+                if (chartUrl != null) {
+                    gameThread.createMessage {
+                        addFile(Paths.get(chartUrl))
+                    }
+                    Logger.info("Score chart posted to game thread")
+                }
             }
         } catch (e: Exception) {
             Logger.error("Failed to post game charts: ${e.message}", e)
@@ -724,8 +758,7 @@ class DiscordMessageHandler(
             }
         }
 
-        messageContent += "\n\n[Game Details & Play List](https://fakecollegefootball.com/game-details/${game.gameId})\n" +
-            "[Game Stats](https://fakecollegefootball.com/game-stats/${game.gameId})\n" +
+        messageContent += "\n\n[Game Details](https://fakecollegefootball.com/game-details/${game.gameId})\n" +
             "[Ranges](https://docs.google.com/spreadsheets/d/1yXG2Xe1W_G5uq_1Tus3AbP4u8HOwjgmJ1LOQDV-dhvc/edit#gid=1822037032)"
 
         // If no scorebug was found, generate one and try to read it again
