@@ -11,6 +11,8 @@ object Permissions {
             "start_scrimmage",
             "get_role",
             "get_team_coaches",
+            "score_chart",
+            "win_probability",
         )
     private val adminCommands =
         setOf(

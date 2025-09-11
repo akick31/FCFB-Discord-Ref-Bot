@@ -195,6 +195,14 @@ class GameClient(
     }
 
     /**
+     * Get game by game id
+     */
+    internal suspend fun getGameByGameId(gameId: String): Map<Game?, String?> {
+        val endpointUrl = "$baseUrl/game/$gameId"
+        return getRequest(endpointUrl)
+    }
+
+    /**
      * Get all ongoing game
      */
     internal suspend fun getAllOngoingGames(): Map<List<Game>?, String?> {

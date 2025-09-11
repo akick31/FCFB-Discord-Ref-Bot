@@ -14,8 +14,10 @@ import com.fcfb.discord.refbot.commands.game.GameInfoCommand
 import com.fcfb.discord.refbot.commands.game.MessageAllGamesCommand
 import com.fcfb.discord.refbot.commands.game.RestartGameCommand
 import com.fcfb.discord.refbot.commands.game.RollbackCommand
+import com.fcfb.discord.refbot.commands.game.ScoreChartCommand
 import com.fcfb.discord.refbot.commands.game.StartGameCommand
 import com.fcfb.discord.refbot.commands.game.StartScrimmageCommand
+import com.fcfb.discord.refbot.commands.game.WinProbabilityCommand
 import com.fcfb.discord.refbot.commands.system.HelpCommand
 import com.fcfb.discord.refbot.commands.user.GetRoleCommand
 import com.fcfb.discord.refbot.commands.user.PingCommand
@@ -45,10 +47,12 @@ class CommandRegistry(
     private val subCoachCommand: SubCoachCommand,
     private val getRoleCommand: GetRoleCommand,
     private val rollbackCommand: RollbackCommand,
+    private val scoreChartCommand: ScoreChartCommand,
+    private val winProbabilityCommand: WinProbabilityCommand,
 ) {
     suspend fun registerCommands(client: Kord) {
 //        // Delete old commands just in case of changes
-//        client.getGlobalApplicationCommands().collect { it.delete() }
+        client.getGlobalApplicationCommands().collect { it.delete() }
 
         // Register all commands
         chewGameCommand.register(client)
@@ -69,6 +73,8 @@ class CommandRegistry(
         getRoleCommand.register(client)
         rollbackCommand.register(client)
         getTeamCoachesCommand.register(client)
+        scoreChartCommand.register(client)
+        winProbabilityCommand.register(client)
     }
 
     suspend fun executeCommand(interaction: ChatInputCommandInteraction) {
@@ -112,6 +118,8 @@ class CommandRegistry(
             "sub_coach" -> subCoachCommand.execute(interaction)
             "get_role" -> getRoleCommand.execute(interaction)
             "rollback" -> rollbackCommand.execute(interaction)
+            "score_chart" -> scoreChartCommand.handle(interaction)
+            "win_probability" -> winProbabilityCommand.handle(interaction)
         }
     }
 }

@@ -1,5 +1,6 @@
 package com.fcfb.discord.refbot.handlers.discord
 
+import com.fcfb.discord.refbot.api.game.ChartClient
 import com.fcfb.discord.refbot.api.game.GameClient
 import com.fcfb.discord.refbot.api.game.GameWriteupClient
 import com.fcfb.discord.refbot.api.game.ScorebugClient
@@ -53,6 +54,7 @@ class DiscordMessageHandler(
     private val fcfbUserClient: FCFBUserClient,
     private val gameWriteupClient: GameWriteupClient,
     private val scorebugClient: ScorebugClient,
+    private val chartClient: ChartClient,
     private val logClient: LogClient,
     private val gameUtils: GameUtils,
     private val systemUtils: SystemUtils,
@@ -522,6 +524,39 @@ class DiscordMessageHandler(
                 ?: return postGameScoreWithoutScorebug(scoreChannel, messageContent + embedContent)
 
         sendMessageFromChannelObject(scoreChannel, messageContent, embedData)
+
+        // Post charts after the score
+        postGameCharts(client, game, scoreChannel)
+    }
+
+    /**
+     * Post game charts (win probability and score chart) to the scores channel
+     * @param client The Discord client
+     * @param game The game object
+     * @param scoreChannel The scores channel
+     */
+    private suspend fun postGameCharts(
+        client: Kord,
+        game: Game,
+        scoreChannel: MessageChannel,
+    ) {
+        try {
+            // Get win probability chart
+            val winProbabilityChart = chartClient.getWinProbabilityChartByGameId(game.gameId)
+            val winProbabilityEmbed = gameUtils.getWinProbabilityChartEmbed(winProbabilityChart, game, null)
+            if (winProbabilityEmbed != null) {
+                sendMessageFromChannelObject(scoreChannel, "", winProbabilityEmbed)
+            }
+
+            // Get score chart
+            val scoreChart = chartClient.getScoreChartByGameId(game.gameId)
+            val scoreChartEmbed = gameUtils.getScoreChartEmbed(scoreChart, game, null)
+            if (scoreChartEmbed != null) {
+                sendMessageFromChannelObject(scoreChannel, "", scoreChartEmbed)
+            }
+        } catch (e: Exception) {
+            Logger.error("Failed to post game charts: ${e.message}", e)
+        }
     }
 
     /**

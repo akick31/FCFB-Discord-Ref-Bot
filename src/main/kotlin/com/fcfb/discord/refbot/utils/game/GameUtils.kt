@@ -598,6 +598,94 @@ class GameUtils(
     }
 
     /**
+     * Get win probability chart embed
+     * @param chartData The chart byte array
+     * @param game The game object
+     * @param embedContent Optional embed content
+     * @return The embed data
+     */
+    fun getWinProbabilityChartEmbed(
+        chartData: ByteArray?,
+        game: Game,
+        embedContent: String?,
+    ): EmbedData? {
+        if (chartData == null) {
+            return null
+        }
+
+        val chartUrl =
+            saveChartToFile(chartData, "win_probability", game.gameId)
+                ?: return null
+
+        return EmbedData(
+            title = Optional("Win Probability Chart - ${game.homeTeam} vs ${game.awayTeam}"),
+            description = Optional(embedContent.orEmpty()),
+            image = Optional(EmbedImageData(url = Optional(chartUrl))),
+            footer = Optional(EmbedFooterData(text = "Game ID: ${game.gameId}")),
+        )
+    }
+
+    /**
+     * Get score chart embed
+     * @param chartData The chart byte array
+     * @param game The game object
+     * @param embedContent Optional embed content
+     * @return The embed data
+     */
+    fun getScoreChartEmbed(
+        chartData: ByteArray?,
+        game: Game,
+        embedContent: String?,
+    ): EmbedData? {
+        if (chartData == null) {
+            return null
+        }
+
+        val chartUrl =
+            saveChartToFile(chartData, "score_chart", game.gameId)
+                ?: return null
+
+        return EmbedData(
+            title = Optional("Score Chart - ${game.homeTeam} vs ${game.awayTeam}"),
+            description = Optional(embedContent.orEmpty()),
+            image = Optional(EmbedImageData(url = Optional(chartUrl))),
+            footer = Optional(EmbedFooterData(text = "Game ID: ${game.gameId}")),
+        )
+    }
+
+    /**
+     * Save chart data to a file
+     * @param chartData The chart byte array
+     * @param chartType The type of chart (win_probability or score_chart)
+     * @param gameId The game ID
+     * @return The file path or null if failed
+     */
+    private fun saveChartToFile(
+        chartData: ByteArray,
+        chartType: String,
+        gameId: Int,
+    ): String? {
+        val fileName = "images/${gameId}_$chartType.png"
+        val file = File(fileName)
+        return try {
+            // Ensure the images directory exists
+            val imagesDir = File("images")
+            if (!imagesDir.exists()) {
+                if (imagesDir.mkdirs()) {
+                    Logger.info("Created images directory: ${imagesDir.absolutePath}")
+                } else {
+                    Logger.info("Failed to create images directory.")
+                }
+            }
+            Files.write(file.toPath(), chartData, StandardOpenOption.CREATE)
+            file.path
+        } catch (e: Exception) {
+            Logger.error("Failed to write chart image: ${e.stackTraceToString()}")
+            null
+        }
+    }
+
+    /**
      * Get the teams for a game
      * @param game The game object
      */
