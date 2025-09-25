@@ -740,7 +740,7 @@ class GameUtils(
         val spread = game.homeVegasSpread
 
         return if (homeTeamAbbreviation != null && spread != null) {
-            "Game ID: ${game.gameId} | Spread: $homeTeamAbbreviation ${if (spread > 0) "+" else "-"}$spread"
+            "Game ID: ${game.gameId} | Spread: $homeTeamAbbreviation ${if (spread > 0) "+" else ""}$spread"
         } else {
             "Game ID: ${game.gameId}"
         }
