@@ -547,7 +547,7 @@ class GameUtils(
      * @param game The game object
      * @param embedContent The embed content
      */
-    fun getScorebugEmbed(
+    suspend fun getScorebugEmbed(
         scorebug: ByteArray?,
         game: Game,
         embedContent: String?,
@@ -581,7 +581,7 @@ class GameUtils(
             title = Optional("${game.homeTeam} vs ${game.awayTeam}"),
             description = Optional(embedContent.orEmpty()),
             image = Optional(EmbedImageData(url = Optional(scorebugUrl))),
-            footer = Optional(EmbedFooterData(text = "Game ID: ${game.gameId}")),
+            footer = Optional(EmbedFooterData(text = getFormattedFooterText(game))),
         )
     }
 
@@ -604,7 +604,7 @@ class GameUtils(
      * @param embedContent Optional embed content
      * @return The embed data
      */
-    fun getWinProbabilityChartEmbed(
+    suspend fun getWinProbabilityChartEmbed(
         chartData: ByteArray?,
         game: Game,
         embedContent: String?,
@@ -621,7 +621,7 @@ class GameUtils(
             title = Optional("Win Probability Chart - ${game.homeTeam} vs ${game.awayTeam}"),
             description = Optional(embedContent.orEmpty()),
             image = Optional(EmbedImageData(url = Optional(chartUrl))),
-            footer = Optional(EmbedFooterData(text = "Game ID: ${game.gameId}")),
+            footer = Optional(EmbedFooterData(text = getFormattedFooterText(game))),
         )
     }
 
@@ -632,7 +632,7 @@ class GameUtils(
      * @param embedContent Optional embed content
      * @return The embed data
      */
-    fun getScoreChartEmbed(
+    suspend fun getScoreChartEmbed(
         chartData: ByteArray?,
         game: Game,
         embedContent: String?,
@@ -649,7 +649,7 @@ class GameUtils(
             title = Optional("Score Chart - ${game.homeTeam} vs ${game.awayTeam}"),
             description = Optional(embedContent.orEmpty()),
             image = Optional(EmbedImageData(url = Optional(chartUrl))),
-            footer = Optional(EmbedFooterData(text = "Game ID: ${game.gameId}")),
+            footer = Optional(EmbedFooterData(text = getFormattedFooterText(game))),
         )
     }
 
@@ -712,5 +712,37 @@ class GameUtils(
         val formattedHomeTeam = if (homeTeamRank != null && homeTeamRank != 0) "#$homeTeamRank ${game.homeTeam}" else game.homeTeam
         val formattedAwayTeam = if (awayTeamRank != null && awayTeamRank != 0) "#$awayTeamRank ${game.awayTeam}" else game.awayTeam
         return Pair(formattedHomeTeam, formattedAwayTeam)
+    }
+
+    /**
+     * Get the home team abbreviation for a game
+     * @param game The game object
+     * @return The home team abbreviation or null if not found
+     */
+    suspend fun getTeamAbbreviation(teamName: String): String? {
+        return try {
+            val apiResponse = teamClient.getTeamByName(teamName)
+            val team = apiResponse.keys.firstOrNull()
+            team?.abbreviation
+        } catch (e: Exception) {
+            Logger.error("Failed to get team abbreviation for $teamName: ${e.message}", e)
+            null
+        }
+    }
+
+    /**
+     * Get formatted footer text with game ID and spread information
+     * @param game The game object
+     * @return Formatted footer text
+     */
+    suspend fun getFormattedFooterText(game: Game): String {
+        val homeTeamAbbreviation = getTeamAbbreviation(game.homeTeam)
+        val spread = game.homeVegasSpread
+
+        return if (homeTeamAbbreviation != null && spread != null) {
+            "Game ID: ${game.gameId} | Spread: $homeTeamAbbreviation ${if (spread > 0) "+" else "-"}$spread"
+        } else {
+            "Game ID: ${game.gameId}"
+        }
     }
 }

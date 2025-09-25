@@ -9,6 +9,7 @@ import com.fcfb.discord.refbot.api.user.FCFBUserClient
 import com.fcfb.discord.refbot.handlers.system.FileHandler
 import com.fcfb.discord.refbot.model.domain.Game
 import com.fcfb.discord.refbot.model.domain.Play
+import com.fcfb.discord.refbot.model.enums.game.GameMode
 import com.fcfb.discord.refbot.model.enums.game.GameStatus
 import com.fcfb.discord.refbot.model.enums.game.GameType
 import com.fcfb.discord.refbot.model.enums.message.Error
@@ -758,6 +759,11 @@ class DiscordMessageHandler(
             }
         }
 
+        // Add chew mode message if game is in chew mode
+        if (game.gameMode == GameMode.CHEW) {
+            messageContent += "\n\n**The game is in chew mode**"
+        }
+
         messageContent += "\n\n[Game Details](https://fakecollegefootball.com/game-details/${game.gameId})\n" +
             "[Ranges](https://docs.google.com/spreadsheets/d/1yXG2Xe1W_G5uq_1Tus3AbP4u8HOwjgmJ1LOQDV-dhvc/edit#gid=1822037032)"
 
@@ -832,7 +838,7 @@ class DiscordMessageHandler(
             EmbedData(
                 title = Optional("${game.homeTeam} vs ${game.awayTeam}"),
                 description = Optional(messageContent + ""),
-                footer = Optional(EmbedFooterData(text = "Game ID: ${game.gameId}")),
+                footer = Optional(EmbedFooterData(text = gameUtils.getFormattedFooterText(game))),
             )
 
         val messageToSend = appendUserPings(game, scenario, homeCoaches, awayCoaches, offensiveCoaches)
@@ -871,7 +877,7 @@ class DiscordMessageHandler(
             EmbedData(
                 title = Optional("${game.homeTeam} vs ${game.awayTeam}"),
                 description = Optional(messageContent + textScorebug),
-                footer = Optional(EmbedFooterData(text = "Game ID: ${game.gameId}")),
+                footer = Optional(EmbedFooterData(text = gameUtils.getFormattedFooterText(game))),
             )
 
         val messageToSend = appendUserPings(game, scenario, homeCoaches, awayCoaches, offensiveCoaches)

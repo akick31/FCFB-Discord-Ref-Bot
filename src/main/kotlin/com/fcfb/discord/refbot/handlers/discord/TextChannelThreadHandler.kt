@@ -4,6 +4,7 @@ import com.fcfb.discord.refbot.api.game.ChartClient
 import com.fcfb.discord.refbot.api.game.ScorebugClient
 import com.fcfb.discord.refbot.api.team.TeamClient
 import com.fcfb.discord.refbot.model.domain.Game
+import com.fcfb.discord.refbot.model.enums.game.GameMode
 import com.fcfb.discord.refbot.model.enums.game.GameStatus
 import com.fcfb.discord.refbot.model.enums.game.GameType
 import com.fcfb.discord.refbot.utils.game.GameUtils
@@ -235,6 +236,9 @@ class TextChannelThreadHandler(
                 tagsToApply.add(tag.id)
             }
             if (tag.name == "Final" && game.gameStatus == GameStatus.FINAL) {
+                tagsToApply.add(tag.id)
+            }
+            if (tag.name == "Chew" && game.gameMode == GameMode.CHEW) {
                 tagsToApply.add(tag.id)
             }
         }
