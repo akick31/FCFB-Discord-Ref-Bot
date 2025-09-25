@@ -661,13 +661,13 @@ class DiscordMessageHandler(
                             ?: throw NoMessageContentFoundException(scenario.description)
 
                     // Get message content
-                    val messageContentApiResponse = gameWriteupClient.getGameMessageByScenario(Scenario.PLAY_RESULT, null)
+                    val messageContentApiResponse = gameWriteupClient.getGameMessageByScenario(PLAY_RESULT, null)
                     if (messageContentApiResponse.keys.firstOrNull() == null) {
-                        throw NoMessageContentFoundException(Scenario.PLAY_RESULT.description)
+                        throw NoMessageContentFoundException(PLAY_RESULT.description)
                     }
                     val messageContent =
                         messageContentApiResponse.keys.firstOrNull()
-                            ?: throw NoMessageContentFoundException(Scenario.PLAY_RESULT.description)
+                            ?: throw NoMessageContentFoundException(PLAY_RESULT.description)
                     messageContent to writeup
                 }
                 else -> {
