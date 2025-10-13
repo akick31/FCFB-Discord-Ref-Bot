@@ -51,29 +51,29 @@ class CommandRegistry(
     private val winProbabilityCommand: WinProbabilityCommand,
 ) {
     suspend fun registerCommands(client: Kord) {
-//        // Delete old commands just in case of changes
-        client.getGlobalApplicationCommands().collect { it.delete() }
+        // Delete old commands just in case of changes
+        //client.getGlobalApplicationCommands().collect { it.delete() }
 
         // Register all commands
         chewGameCommand.register(client)
         deleteGameCommand.register(client)
-        restartGameCommand.register(client)
-        endGameCommand.register(client)
         endAllGamesCommand.register(client)
+        endGameCommand.register(client)
         fireCoachCommand.register(client)
         gameInfoCommand.register(client)
+        getRoleCommand.register(client)
+        getTeamCoachesCommand.register(client)
         helpCommand.register(client)
         hireCoachCommand.register(client)
         hireInterimCoachCommand.register(client)
         messageAllGamesCommand.register(client)
         pingCommand.register(client)
+        restartGameCommand.register(client)
+        rollbackCommand.register(client)
+        scoreChartCommand.register(client)
         startGameCommand.register(client)
         startScrimmageCommand.register(client)
         subCoachCommand.register(client)
-        getRoleCommand.register(client)
-        rollbackCommand.register(client)
-        getTeamCoachesCommand.register(client)
-        scoreChartCommand.register(client)
         winProbabilityCommand.register(client)
     }
 
