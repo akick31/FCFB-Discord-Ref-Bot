@@ -241,6 +241,9 @@ class TextChannelThreadHandler(
             if (tag.name == "Chew" && game.gameMode == GameMode.CHEW) {
                 tagsToApply.add(tag.id)
             }
+            if (tag.name == "Scrimmage" && game.gameType == GameType.SCRIMMAGE) {
+                tagsToApply.add(tag.id)
+            }
         }
 
         return tagsToApply
