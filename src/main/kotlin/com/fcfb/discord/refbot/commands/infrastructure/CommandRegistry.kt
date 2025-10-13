@@ -52,7 +52,7 @@ class CommandRegistry(
 ) {
     suspend fun registerCommands(client: Kord) {
         // Delete old commands just in case of changes
-        //client.getGlobalApplicationCommands().collect { it.delete() }
+        // client.getGlobalApplicationCommands().collect { it.delete() }
 
         // Register all commands
         chewGameCommand.register(client)
