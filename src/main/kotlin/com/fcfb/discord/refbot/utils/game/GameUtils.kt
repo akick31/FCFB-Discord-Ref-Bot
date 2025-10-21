@@ -396,13 +396,13 @@ class GameUtils(
      * Get the location description as TEAM [YARD LINE] from a game
      * @return The location description
      */
-    private fun Game.getLocationDescription(): String {
-        val location = this.ballLocation
+    fun getLocationDescription(game: Game): String {
+        val location = game.ballLocation
         return when {
-            location > 50 && this.possession == TeamSide.HOME -> "${this.awayTeam} ${100 - location}"
-            location > 50 && this.possession == TeamSide.AWAY -> "${this.homeTeam} ${100 - location}"
-            location < 50 && this.possession == TeamSide.HOME -> "${this.homeTeam} $location"
-            location < 50 && this.possession == TeamSide.AWAY -> "${this.awayTeam} $location"
+            location > 50 && game.possession == TeamSide.HOME -> "${game.awayTeam} ${100 - location}"
+            location > 50 && game.possession == TeamSide.AWAY -> "${game.homeTeam} ${100 - location}"
+            location < 50 && game.possession == TeamSide.HOME -> "${game.homeTeam} $location"
+            location < 50 && game.possession == TeamSide.AWAY -> "${game.awayTeam} $location"
             else -> "50"
         }
     }
@@ -414,7 +414,7 @@ class GameUtils(
     private fun Game.getDownAndDistanceDescription(): String {
         val downDescription = toOrdinal(this.down)
         val yardsToGoDescription = if ((this.yardsToGo.plus(this.ballLocation)) >= 100) "goal" else "${this.yardsToGo}"
-        val locationDescription = getLocationDescription()
+        val locationDescription = getLocationDescription(this)
 
         return "It's $downDescription & $yardsToGoDescription on the $locationDescription."
     }

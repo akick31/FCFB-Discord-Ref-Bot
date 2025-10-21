@@ -725,6 +725,7 @@ class DiscordMessageHandler(
         val replacements =
             mapOf(
                 "{kicking_team}" to offensiveTeam,
+                "{receiving_team}" to offensiveTeam,
                 "{home_coach}" to joinMentions(homeCoaches),
                 "{away_coach}" to joinMentions(awayCoaches),
                 "{offensive_coach}" to joinMentions(offensiveCoaches),
@@ -743,6 +744,7 @@ class DiscordMessageHandler(
                 "{result}" to play?.result?.name,
                 "{timeout_called}" to gameUtils.getTimeoutMessage(game, play, timeoutCalled),
                 "{clock_status}" to if (game.clockStopped) "The clock is stopped." else "The clock is running.",
+                "{ball_location}" to gameUtils.getLocationDescription(game),
                 "{ball_location_scenario}" to gameUtils.getBallLocationScenarioMessage(game, play),
                 "{dog_deadline}" to game.gameTimer.toString(),
                 "{play_options}" to gameUtils.getPlayOptions(game),
