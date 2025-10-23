@@ -725,7 +725,7 @@ class DiscordMessageHandler(
         val replacements =
             mapOf(
                 "{kicking_team}" to offensiveTeam,
-                "{receiving_team}" to offensiveTeam,
+                "{receiving_team}" to defensiveTeam,
                 "{home_coach}" to joinMentions(homeCoaches),
                 "{away_coach}" to joinMentions(awayCoaches),
                 "{offensive_coach}" to joinMentions(offensiveCoaches),
