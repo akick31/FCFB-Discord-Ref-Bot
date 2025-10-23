@@ -9,7 +9,6 @@ import com.fcfb.discord.refbot.api.user.FCFBUserClient
 import com.fcfb.discord.refbot.handlers.system.FileHandler
 import com.fcfb.discord.refbot.model.domain.Game
 import com.fcfb.discord.refbot.model.domain.Play
-import com.fcfb.discord.refbot.model.enums.game.GameMode
 import com.fcfb.discord.refbot.model.enums.game.GameStatus
 import com.fcfb.discord.refbot.model.enums.game.GameType
 import com.fcfb.discord.refbot.model.enums.message.Error
@@ -532,6 +531,27 @@ class DiscordMessageHandler(
     }
 
     /**
+     * Apply placeholder replacements to a text string
+     * @param text The text to process
+     * @param replacements Map of placeholder to replacement value
+     * @return Text with placeholders replaced
+     */
+    private fun applyPlaceholderReplacements(
+        text: String?,
+        replacements: Map<String, String?>,
+    ): String {
+        if (text == null) return ""
+
+        var processedText: String = text
+        replacements.forEach { (placeholder, replacement) ->
+            if (placeholder in processedText) {
+                processedText = processedText.replace(placeholder, replacement ?: "")
+            }
+        }
+        return processedText
+    }
+
+    /**
      * Post game charts (win probability and score chart) to the game thread
      * @param client The Discord client
      * @param game The game object
@@ -642,7 +662,7 @@ class DiscordMessageHandler(
                     }
                     val messageContent =
                         messageContentApiResponse.keys.firstOrNull()
-                            ?: throw NoMessageContentFoundException(Scenario.PLAY_RESULT.description)
+                            ?: throw NoMessageContentFoundException(PLAY_RESULT.description)
                     messageContent to null
                 }
                 play?.playCall in
@@ -732,7 +752,6 @@ class DiscordMessageHandler(
                 "{defensive_coach}" to joinMentions(defensiveCoaches),
                 "{offensive_team}" to offensiveTeam,
                 "{defensive_team}" to defensiveTeam,
-                "{play_writeup}" to playWriteup,
                 "{clock_info}" to gameUtils.getClockInfo(game),
                 "{play_time}" to gameUtils.getPlayTimeInfo(game, play),
                 "{clock}" to game.clock,
@@ -754,16 +773,17 @@ class DiscordMessageHandler(
                 "<br>" to "\n",
             )
 
+        // Apply placeholder replacements to playWriteup first
+        val processedPlayWriteup = applyPlaceholderReplacements(playWriteup, replacements)
+
+        // Add the processed playWriteup to replacements
+        val finalReplacements = replacements + mapOf("{play_writeup}" to processedPlayWriteup)
+
         // Replace placeholders with actual values
-        replacements.forEach { (placeholder, replacement) ->
+        finalReplacements.forEach { (placeholder, replacement) ->
             if (placeholder in messageContent) {
                 messageContent = messageContent.replace(placeholder, replacement ?: "")
             }
-        }
-
-        // Add chew mode message if game is in chew mode
-        if (game.gameMode == GameMode.CHEW) {
-            messageContent += "\n\n**The game is in chew mode**"
         }
 
         messageContent += "\n\n[Game Details](https://fakecollegefootball.com/game-details/${game.gameId})\n" +
