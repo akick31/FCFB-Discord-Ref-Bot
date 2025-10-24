@@ -17,6 +17,7 @@ import com.fcfb.discord.refbot.model.enums.message.MessageType
 import com.fcfb.discord.refbot.model.enums.play.ActualResult
 import com.fcfb.discord.refbot.model.enums.play.PlayCall
 import com.fcfb.discord.refbot.model.enums.play.PlayType
+import com.fcfb.discord.refbot.model.enums.play.PlayType.KICKOFF
 import com.fcfb.discord.refbot.model.enums.play.Scenario
 import com.fcfb.discord.refbot.model.enums.play.Scenario.PLAY_RESULT
 import com.fcfb.discord.refbot.model.enums.system.Platform
@@ -721,25 +722,47 @@ class DiscordMessageHandler(
         val awayCoaches = game.awayCoachDiscordIds.map { client.getUser(Snowflake(it)) }
 
         // Determine which team has possession and their coaches
-        val (offensiveCoaches, defensiveCoaches) =
+        val (offensiveCoaches, defensiveCoaches) = if (play != null) {
             when {
-                game.possession == TeamSide.HOME && gameUtils.isKickoff(play?.playCall) -> homeCoaches to awayCoaches
-                game.possession == TeamSide.AWAY && gameUtils.isKickoff(play?.playCall) -> awayCoaches to homeCoaches
-                game.possession == TeamSide.HOME && game.currentPlayType == PlayType.KICKOFF -> homeCoaches to awayCoaches
-                game.possession == TeamSide.AWAY && game.currentPlayType == PlayType.KICKOFF -> awayCoaches to homeCoaches
+                play.possession == TeamSide.HOME && gameUtils.isKickoff(play.playCall) -> homeCoaches to awayCoaches
+                play.possession == TeamSide.AWAY && gameUtils.isKickoff(play.playCall) -> awayCoaches to homeCoaches
+                play.possession == TeamSide.HOME -> homeCoaches to awayCoaches
+                play.possession == TeamSide.AWAY -> awayCoaches to homeCoaches
+                else -> throw CouldNotDetermineCoachPossessionException(game.gameId)
+            }
+        } else {
+            when {
+                game.possession == TeamSide.HOME && game.currentPlayType == KICKOFF -> homeCoaches to awayCoaches
+                game.possession == TeamSide.AWAY && game.currentPlayType == KICKOFF -> awayCoaches to homeCoaches
                 game.possession == TeamSide.HOME -> homeCoaches to awayCoaches
                 game.possession == TeamSide.AWAY -> awayCoaches to homeCoaches
                 else -> throw CouldNotDetermineCoachPossessionException(game.gameId)
             }
+        }
 
-        val (offensiveTeam, defensiveTeam) =
+        val (offensiveTeam, defensiveTeam) = if (play != null) {
             when {
-                game.possession == TeamSide.HOME && game.currentPlayType == PlayType.KICKOFF -> game.awayTeam to game.homeTeam
-                game.possession == TeamSide.AWAY && game.currentPlayType == PlayType.KICKOFF -> game.homeTeam to game.awayTeam
+                play.possession == TeamSide.HOME && gameUtils.isKickoff(play.playCall) -> game.awayTeam to game.homeTeam
+                play.possession == TeamSide.AWAY && gameUtils.isKickoff(play.playCall) -> game.homeTeam to game.awayTeam
+                play.possession == TeamSide.HOME -> game.homeTeam to game.awayTeam
+                play.possession == TeamSide.AWAY -> game.awayTeam to game.homeTeam
+                else -> throw CouldNotDetermineTeamPossessionException(game.gameId)
+            }
+        } else {
+            when {
+                game.possession == TeamSide.HOME && game.currentPlayType == KICKOFF -> game.awayTeam to game.homeTeam
+                game.possession == TeamSide.AWAY && game.currentPlayType == KICKOFF -> game.homeTeam to game.awayTeam
                 game.possession == TeamSide.HOME -> game.homeTeam to game.awayTeam
                 game.possession == TeamSide.AWAY -> game.awayTeam to game.homeTeam
                 else -> throw CouldNotDetermineTeamPossessionException(game.gameId)
             }
+        }
+
+        val offensiveNumber = play?.offensiveNumber ?: "None"
+        val defensiveNumber = play?.defensiveNumber ?: "None"
+        val difference = play?.difference?.toString() ?: "None"
+        val actualResult = if (play?.actualResult != null) { play.actualResult.description } else { "None" }
+        val result = if (play?.result != null) { play.result.name } else { "None" }
 
         // Build placeholders for message replacement
         val replacements =
@@ -756,11 +779,11 @@ class DiscordMessageHandler(
                 "{play_time}" to gameUtils.getPlayTimeInfo(game, play),
                 "{clock}" to game.clock,
                 "{quarter}" to gameUtils.toOrdinal(game.quarter),
-                "{offensive_number}" to play?.offensiveNumber.toString(),
-                "{defensive_number}" to play?.defensiveNumber.toString(),
-                "{difference}" to play?.difference.toString(),
-                "{actual_result}" to play?.actualResult?.description,
-                "{result}" to play?.result?.name,
+                "{offensive_number}" to offensiveNumber,
+                "{defensive_number}" to defensiveNumber,
+                "{difference}" to difference,
+                "{actual_result}" to actualResult,
+                "{result}" to result,
                 "{timeout_called}" to gameUtils.getTimeoutMessage(game, play, timeoutCalled),
                 "{clock_status}" to if (game.clockStopped) "The clock is stopped." else "The clock is running.",
                 "{ball_location}" to gameUtils.getLocationDescription(game),
