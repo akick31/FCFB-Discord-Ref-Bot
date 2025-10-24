@@ -16,7 +16,6 @@ import com.fcfb.discord.refbot.model.enums.message.Info
 import com.fcfb.discord.refbot.model.enums.message.MessageType
 import com.fcfb.discord.refbot.model.enums.play.ActualResult
 import com.fcfb.discord.refbot.model.enums.play.PlayCall
-import com.fcfb.discord.refbot.model.enums.play.PlayType
 import com.fcfb.discord.refbot.model.enums.play.PlayType.KICKOFF
 import com.fcfb.discord.refbot.model.enums.play.Scenario
 import com.fcfb.discord.refbot.model.enums.play.Scenario.PLAY_RESULT
@@ -722,47 +721,59 @@ class DiscordMessageHandler(
         val awayCoaches = game.awayCoachDiscordIds.map { client.getUser(Snowflake(it)) }
 
         // Determine which team has possession and their coaches
-        val (offensiveCoaches, defensiveCoaches) = if (play != null) {
-            when {
-                play.possession == TeamSide.HOME && gameUtils.isKickoff(play.playCall) -> homeCoaches to awayCoaches
-                play.possession == TeamSide.AWAY && gameUtils.isKickoff(play.playCall) -> awayCoaches to homeCoaches
-                play.possession == TeamSide.HOME -> homeCoaches to awayCoaches
-                play.possession == TeamSide.AWAY -> awayCoaches to homeCoaches
-                else -> throw CouldNotDetermineCoachPossessionException(game.gameId)
+        val (offensiveCoaches, defensiveCoaches) =
+            if (play != null) {
+                when {
+                    play.possession == TeamSide.HOME && gameUtils.isKickoff(play.playCall) -> homeCoaches to awayCoaches
+                    play.possession == TeamSide.AWAY && gameUtils.isKickoff(play.playCall) -> awayCoaches to homeCoaches
+                    play.possession == TeamSide.HOME -> homeCoaches to awayCoaches
+                    play.possession == TeamSide.AWAY -> awayCoaches to homeCoaches
+                    else -> throw CouldNotDetermineCoachPossessionException(game.gameId)
+                }
+            } else {
+                when {
+                    game.possession == TeamSide.HOME && game.currentPlayType == KICKOFF -> homeCoaches to awayCoaches
+                    game.possession == TeamSide.AWAY && game.currentPlayType == KICKOFF -> awayCoaches to homeCoaches
+                    game.possession == TeamSide.HOME -> homeCoaches to awayCoaches
+                    game.possession == TeamSide.AWAY -> awayCoaches to homeCoaches
+                    else -> throw CouldNotDetermineCoachPossessionException(game.gameId)
+                }
             }
-        } else {
-            when {
-                game.possession == TeamSide.HOME && game.currentPlayType == KICKOFF -> homeCoaches to awayCoaches
-                game.possession == TeamSide.AWAY && game.currentPlayType == KICKOFF -> awayCoaches to homeCoaches
-                game.possession == TeamSide.HOME -> homeCoaches to awayCoaches
-                game.possession == TeamSide.AWAY -> awayCoaches to homeCoaches
-                else -> throw CouldNotDetermineCoachPossessionException(game.gameId)
-            }
-        }
 
-        val (offensiveTeam, defensiveTeam) = if (play != null) {
-            when {
-                play.possession == TeamSide.HOME && gameUtils.isKickoff(play.playCall) -> game.awayTeam to game.homeTeam
-                play.possession == TeamSide.AWAY && gameUtils.isKickoff(play.playCall) -> game.homeTeam to game.awayTeam
-                play.possession == TeamSide.HOME -> game.homeTeam to game.awayTeam
-                play.possession == TeamSide.AWAY -> game.awayTeam to game.homeTeam
-                else -> throw CouldNotDetermineTeamPossessionException(game.gameId)
+        val (offensiveTeam, defensiveTeam) =
+            if (play != null) {
+                when {
+                    play.possession == TeamSide.HOME && gameUtils.isKickoff(play.playCall) -> game.awayTeam to game.homeTeam
+                    play.possession == TeamSide.AWAY && gameUtils.isKickoff(play.playCall) -> game.homeTeam to game.awayTeam
+                    play.possession == TeamSide.HOME -> game.homeTeam to game.awayTeam
+                    play.possession == TeamSide.AWAY -> game.awayTeam to game.homeTeam
+                    else -> throw CouldNotDetermineTeamPossessionException(game.gameId)
+                }
+            } else {
+                when {
+                    game.possession == TeamSide.HOME && game.currentPlayType == KICKOFF -> game.awayTeam to game.homeTeam
+                    game.possession == TeamSide.AWAY && game.currentPlayType == KICKOFF -> game.homeTeam to game.awayTeam
+                    game.possession == TeamSide.HOME -> game.homeTeam to game.awayTeam
+                    game.possession == TeamSide.AWAY -> game.awayTeam to game.homeTeam
+                    else -> throw CouldNotDetermineTeamPossessionException(game.gameId)
+                }
             }
-        } else {
-            when {
-                game.possession == TeamSide.HOME && game.currentPlayType == KICKOFF -> game.awayTeam to game.homeTeam
-                game.possession == TeamSide.AWAY && game.currentPlayType == KICKOFF -> game.homeTeam to game.awayTeam
-                game.possession == TeamSide.HOME -> game.homeTeam to game.awayTeam
-                game.possession == TeamSide.AWAY -> game.awayTeam to game.homeTeam
-                else -> throw CouldNotDetermineTeamPossessionException(game.gameId)
-            }
-        }
 
         val offensiveNumber = play?.offensiveNumber ?: "None"
         val defensiveNumber = play?.defensiveNumber ?: "None"
         val difference = play?.difference?.toString() ?: "None"
-        val actualResult = if (play?.actualResult != null) { play.actualResult.description } else { "None" }
-        val result = if (play?.result != null) { play.result.name } else { "None" }
+        val actualResult =
+            if (play?.actualResult != null) {
+                play.actualResult.description
+            } else {
+                "None"
+            }
+        val result =
+            if (play?.result != null) {
+                play.result.name
+            } else {
+                "None"
+            }
 
         // Build placeholders for message replacement
         val replacements =
