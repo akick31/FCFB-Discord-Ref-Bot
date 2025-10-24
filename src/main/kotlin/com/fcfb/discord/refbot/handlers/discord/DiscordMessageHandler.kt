@@ -721,7 +721,7 @@ class DiscordMessageHandler(
         val awayCoaches = game.awayCoachDiscordIds.map { client.getUser(Snowflake(it)) }
 
         // Determine which team has possession and their coaches
-        val (offensiveCoaches, defensiveCoaches) =
+        val (writeupOffensiveCoaches, writeupDefensiveCoaches) =
             if (play != null) {
                 when {
                     play.possession == TeamSide.HOME && gameUtils.isKickoff(play.playCall) -> homeCoaches to awayCoaches
@@ -759,6 +759,17 @@ class DiscordMessageHandler(
                 }
             }
 
+        val (offensiveCoaches, defensiveCoaches) =
+            when {
+                game.possession == TeamSide.HOME && gameUtils.isKickoff(play?.playCall) -> homeCoaches to awayCoaches
+                game.possession == TeamSide.AWAY && gameUtils.isKickoff(play?.playCall) -> awayCoaches to homeCoaches
+                game.possession == TeamSide.HOME && game.currentPlayType == KICKOFF -> homeCoaches to awayCoaches
+                game.possession == TeamSide.AWAY && game.currentPlayType == KICKOFF -> awayCoaches to homeCoaches
+                game.possession == TeamSide.HOME -> homeCoaches to awayCoaches
+                game.possession == TeamSide.AWAY -> awayCoaches to homeCoaches
+                else -> throw CouldNotDetermineCoachPossessionException(game.gameId)
+            }
+
         val offensiveNumber = play?.offensiveNumber ?: "None"
         val defensiveNumber = play?.defensiveNumber ?: "None"
         val difference = play?.difference?.toString() ?: "None"
@@ -782,8 +793,8 @@ class DiscordMessageHandler(
                 "{receiving_team}" to defensiveTeam,
                 "{home_coach}" to joinMentions(homeCoaches),
                 "{away_coach}" to joinMentions(awayCoaches),
-                "{offensive_coach}" to joinMentions(offensiveCoaches),
-                "{defensive_coach}" to joinMentions(defensiveCoaches),
+                "{offensive_coach}" to joinMentions(writeupOffensiveCoaches),
+                "{defensive_coach}" to joinMentions(writeupDefensiveCoaches),
                 "{offensive_team}" to offensiveTeam,
                 "{defensive_team}" to defensiveTeam,
                 "{clock_info}" to gameUtils.getClockInfo(game),
