@@ -146,7 +146,18 @@ class GameHandler(
         if (playApiResponse.keys.firstOrNull() == null) {
             return errorHandler.customErrorMessage(message, playApiResponse.values.firstOrNull() ?: "Could not determine error")
         }
-        val playOutcome = playApiResponse.keys.firstOrNull() ?: return errorHandler.invalidOffensiveNumberSubmission(message)
+        var playOutcome = playApiResponse.keys.firstOrNull() ?: return errorHandler.invalidOffensiveNumberSubmission(message)
+
+        // Verify the play outcome is for the correct game to prevent race conditions
+        // If it's not, fetch the correct play for this game
+        if (playOutcome.gameId != game.gameId) {
+            val correctPlayResponse = playClient.getPreviousPlay(game.gameId)
+            playOutcome = correctPlayResponse.keys.firstOrNull()
+                ?: return errorHandler.customErrorMessage(
+                    message,
+                    "Error: Could not retrieve play outcome. Please try again.",
+                )
+        }
 
         val gameApiResponse = gameClient.getGameByGameId(game.gameId.toString())
         if (gameApiResponse.keys.firstOrNull() == null) {
