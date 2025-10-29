@@ -148,10 +148,7 @@ class GameHandler(
         }
         val playOutcome = playApiResponse.keys.firstOrNull() ?: return errorHandler.invalidOffensiveNumberSubmission(message)
 
-        val gameApiResponse =
-            gameClient.getGameByRequestMessageId(
-                message.referencedMessage?.id?.value.toString(),
-            )
+        val gameApiResponse = val gameApiResponse = gameClient.getGameByGameId(game.gameId.toString())
         if (gameApiResponse.keys.firstOrNull() == null) {
             return errorHandler.customErrorMessage(message, gameApiResponse.values.firstOrNull() ?: "Could not determine error")
         }
