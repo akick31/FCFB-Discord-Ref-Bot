@@ -21,6 +21,7 @@ import com.fcfb.discord.refbot.commands.game.EndAllGamesCommand
 import com.fcfb.discord.refbot.commands.game.EndGameCommand
 import com.fcfb.discord.refbot.commands.game.GameInfoCommand
 import com.fcfb.discord.refbot.commands.game.MessageAllGamesCommand
+import com.fcfb.discord.refbot.commands.game.PreviousPlayCommand
 import com.fcfb.discord.refbot.commands.game.RestartGameCommand
 import com.fcfb.discord.refbot.commands.game.RollbackCommand
 import com.fcfb.discord.refbot.commands.game.ScoreChartCommand
@@ -100,10 +101,11 @@ val appModule =
         single { RollbackCommand(get(), get(), get(), get(), get(), get()) }
         single { ScoreChartCommand(get(), get(), get(), get()) }
         single { WinProbabilityCommand(get(), get(), get(), get()) }
+        single { PreviousPlayCommand(get(), get(), get()) }
         single {
             CommandRegistry(
                 get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(),
-                get(), get(), get(), get(), get(), get(), get(), get(), get(),
+                get(), get(), get(), get(), get(), get(), get(), get(), get(), get(),
             )
         }
         single { FCFBDiscordRefBot(get(), get(), get(), get()) }

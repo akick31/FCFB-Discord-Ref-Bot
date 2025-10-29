@@ -155,7 +155,8 @@ class GameHandler(
             playOutcome = correctPlayResponse.keys.firstOrNull()
                 ?: return errorHandler.customErrorMessage(
                     message,
-                    "Error: Could not retrieve play outcome. Please try again.",
+                    "Error: Could not retrieve play outcome. Please call \"/previous_play\" to see the play result. " +
+                        "The game will continue as if the play was posted.",
                 )
         }
 

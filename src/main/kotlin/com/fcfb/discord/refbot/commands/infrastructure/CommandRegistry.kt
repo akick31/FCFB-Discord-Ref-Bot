@@ -12,6 +12,7 @@ import com.fcfb.discord.refbot.commands.game.EndAllGamesCommand
 import com.fcfb.discord.refbot.commands.game.EndGameCommand
 import com.fcfb.discord.refbot.commands.game.GameInfoCommand
 import com.fcfb.discord.refbot.commands.game.MessageAllGamesCommand
+import com.fcfb.discord.refbot.commands.game.PreviousPlayCommand
 import com.fcfb.discord.refbot.commands.game.RestartGameCommand
 import com.fcfb.discord.refbot.commands.game.RollbackCommand
 import com.fcfb.discord.refbot.commands.game.ScoreChartCommand
@@ -49,6 +50,7 @@ class CommandRegistry(
     private val rollbackCommand: RollbackCommand,
     private val scoreChartCommand: ScoreChartCommand,
     private val winProbabilityCommand: WinProbabilityCommand,
+    private val previousPlayCommand: PreviousPlayCommand,
 ) {
     suspend fun registerCommands(client: Kord) {
         // Delete old commands just in case of changes
@@ -68,6 +70,7 @@ class CommandRegistry(
         hireInterimCoachCommand.register(client)
         messageAllGamesCommand.register(client)
         pingCommand.register(client)
+        previousPlayCommand.register(client)
         restartGameCommand.register(client)
         rollbackCommand.register(client)
         scoreChartCommand.register(client)
@@ -113,6 +116,7 @@ class CommandRegistry(
             "hire_interim_coach" -> hireInterimCoachCommand.execute(interaction)
             "message_all_games" -> messageAllGamesCommand.execute(interaction)
             "ping" -> pingCommand.execute(interaction)
+            "previous_play" -> previousPlayCommand.execute(interaction)
             "start_game" -> startGameCommand.execute(interaction)
             "start_scrimmage" -> startScrimmageCommand.execute(interaction)
             "sub_coach" -> subCoachCommand.execute(interaction)
