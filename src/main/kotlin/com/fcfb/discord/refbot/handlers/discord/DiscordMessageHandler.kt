@@ -743,16 +743,16 @@ class DiscordMessageHandler(
         val (offensiveTeam, defensiveTeam) =
             if (play != null) {
                 when {
-                    play.possession == TeamSide.HOME && gameUtils.isKickoff(play.playCall) -> game.awayTeam to game.homeTeam
-                    play.possession == TeamSide.AWAY && gameUtils.isKickoff(play.playCall) -> game.homeTeam to game.awayTeam
+                    play.possession == TeamSide.HOME && gameUtils.isKickoff(play.playCall) -> game.homeTeam to game.awayTeam
+                    play.possession == TeamSide.AWAY && gameUtils.isKickoff(play.playCall) -> game.awayTeam to game.homeTeam
                     play.possession == TeamSide.HOME -> game.homeTeam to game.awayTeam
                     play.possession == TeamSide.AWAY -> game.awayTeam to game.homeTeam
                     else -> throw CouldNotDetermineTeamPossessionException(game.gameId)
                 }
             } else {
                 when {
-                    game.possession == TeamSide.HOME && game.currentPlayType == KICKOFF -> game.awayTeam to game.homeTeam
-                    game.possession == TeamSide.AWAY && game.currentPlayType == KICKOFF -> game.homeTeam to game.awayTeam
+                    game.possession == TeamSide.HOME && game.currentPlayType == KICKOFF -> game.homeTeam to game.awayTeam
+                    game.possession == TeamSide.AWAY && game.currentPlayType == KICKOFF -> game.awayTeam to game.homeTeam
                     game.possession == TeamSide.HOME -> game.homeTeam to game.awayTeam
                     game.possession == TeamSide.AWAY -> game.awayTeam to game.homeTeam
                     else -> throw CouldNotDetermineTeamPossessionException(game.gameId)
@@ -761,8 +761,6 @@ class DiscordMessageHandler(
 
         val (offensiveCoaches, defensiveCoaches) =
             when {
-                game.possession == TeamSide.HOME && gameUtils.isKickoff(play?.playCall) -> homeCoaches to awayCoaches
-                game.possession == TeamSide.AWAY && gameUtils.isKickoff(play?.playCall) -> awayCoaches to homeCoaches
                 game.possession == TeamSide.HOME && game.currentPlayType == KICKOFF -> homeCoaches to awayCoaches
                 game.possession == TeamSide.AWAY && game.currentPlayType == KICKOFF -> awayCoaches to homeCoaches
                 game.possession == TeamSide.HOME -> homeCoaches to awayCoaches
