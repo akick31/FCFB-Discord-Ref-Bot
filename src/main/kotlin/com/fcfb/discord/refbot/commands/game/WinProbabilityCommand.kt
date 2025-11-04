@@ -34,7 +34,7 @@ class WinProbabilityCommand(
         const val FIRST_TEAM_DESCRIPTION = "First team name (required if no game ID)"
 
         const val SECOND_TEAM_OPTION = "second_team"
-        const val SECOND_TEAM_DESCRIPTION = "First team name (required if no game ID)"
+        const val SECOND_TEAM_DESCRIPTION = "Second team name (required if no game ID)"
 
         const val SEASON_OPTION = "season"
         const val SEASON_DESCRIPTION = "Season number (required if using team names)"
@@ -160,9 +160,18 @@ class WinProbabilityCommand(
                         "Teams: $firstTeam vs $secondTeam (Season $season)"
                     }
 
-                interaction.respondPublic {
-                    addFile(Paths.get(chartUrl))
-                    content = gameInfo
+                if (index == 0) {
+                    // First chart: respond to the interaction
+                    interaction.respondPublic {
+                        addFile(Paths.get(chartUrl))
+                        content = gameInfo
+                    }
+                } else {
+                    // Subsequent charts: send as regular channel messages
+                    interaction.channel.createMessage {
+                        addFile(Paths.get(chartUrl))
+                        content = gameInfo
+                    }
                 }
             }
         } catch (e: Exception) {

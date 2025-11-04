@@ -160,9 +160,18 @@ class ScoreChartCommand(
                         "Teams: $firstTeam vs $secondTeam (Season $season)"
                     }
 
-                interaction.respondPublic {
-                    addFile(Paths.get(chartUrl))
-                    content = gameInfo
+                if (index == 0) {
+                    // First chart: respond to the interaction
+                    interaction.respondPublic {
+                        addFile(Paths.get(chartUrl))
+                        content = gameInfo
+                    }
+                } else {
+                    // Subsequent charts: send as regular channel messages
+                    interaction.channel.createMessage {
+                        addFile(Paths.get(chartUrl))
+                        content = gameInfo
+                    }
                 }
             }
         } catch (e: Exception) {

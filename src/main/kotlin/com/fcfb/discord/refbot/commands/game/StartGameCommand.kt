@@ -49,7 +49,7 @@ class StartGameCommand(
                     choice("The CW", "The CW"),
                     choice("ESPNU", "ESPNU"),
                     choice("ESPN+", "ESPN+"),
-                    choice("SEC Network", "Sec Network"),
+                    choice("SEC Network", "SEC Network"),
                     choice("TNT", "TNT"),
                     choice("PAC-12 Network", "PAC-12 Network"),
                     choice("Peacock", "Peacock"),
