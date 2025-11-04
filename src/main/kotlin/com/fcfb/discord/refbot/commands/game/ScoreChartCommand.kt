@@ -6,6 +6,7 @@ import com.fcfb.discord.refbot.model.config.DiscordProperties
 import com.fcfb.discord.refbot.utils.game.GameUtils
 import com.fcfb.discord.refbot.utils.system.Logger
 import dev.kord.core.Kord
+import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.behavior.interaction.respondEphemeral
 import dev.kord.core.behavior.interaction.respondPublic
 import dev.kord.core.entity.interaction.ChatInputCommandInteraction
