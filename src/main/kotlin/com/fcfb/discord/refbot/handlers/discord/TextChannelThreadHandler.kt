@@ -1,8 +1,10 @@
 package com.fcfb.discord.refbot.handlers.discord
 
+import com.fcfb.discord.refbot.api.game.ChartClient
 import com.fcfb.discord.refbot.api.game.ScorebugClient
 import com.fcfb.discord.refbot.api.team.TeamClient
 import com.fcfb.discord.refbot.model.domain.Game
+import com.fcfb.discord.refbot.model.enums.game.GameMode
 import com.fcfb.discord.refbot.model.enums.game.GameStatus
 import com.fcfb.discord.refbot.model.enums.game.GameType
 import com.fcfb.discord.refbot.utils.game.GameUtils
@@ -18,6 +20,7 @@ import dev.kord.core.entity.channel.ForumChannel
 import dev.kord.core.entity.channel.thread.TextChannelThread
 import dev.kord.rest.builder.message.EmbedBuilder
 import dev.kord.rest.builder.message.addFile
+import java.nio.file.Paths
 import kotlin.io.path.Path
 
 class TextChannelThreadHandler(
@@ -25,6 +28,7 @@ class TextChannelThreadHandler(
     private val properties: Properties,
     private val teamClient: TeamClient,
     private val scorebugClient: ScorebugClient,
+    private val chartClient: ChartClient,
 ) {
     /**
      * Get the text channel thread by ID
@@ -104,6 +108,10 @@ class TextChannelThreadHandler(
         val scorebug = scorebugClient.getScorebugByGameId(game.gameId)
         val embedData = gameUtils.getScorebugEmbed(scorebug, game, threadContent)
 
+        // Get charts
+        val winProbabilityChart = chartClient.getWinProbabilityChartByGameId(game.gameId)
+        val scoreChart = chartClient.getScoreChartByGameId(game.gameId)
+
         return gameChannel.startPublicThread(threadName) {
             name = threadName
             appliedTags = tags
@@ -122,6 +130,18 @@ class TextChannelThreadHandler(
                                 }
                             },
                         )
+                }
+
+                // Add win probability chart if available
+                winProbabilityChart?.let { chartData ->
+                    val chartUrl = gameUtils.saveChartToFile(chartData, "win_probability", game.gameId)
+                    chartUrl?.let { addFile(Paths.get(it)) }
+                }
+
+                // Add score chart if available
+                scoreChart?.let { chartData ->
+                    val chartUrl = gameUtils.saveChartToFile(chartData, "score_chart", game.gameId)
+                    chartUrl?.let { addFile(Paths.get(it)) }
                 }
             }
         }
@@ -216,6 +236,12 @@ class TextChannelThreadHandler(
                 tagsToApply.add(tag.id)
             }
             if (tag.name == "Final" && game.gameStatus == GameStatus.FINAL) {
+                tagsToApply.add(tag.id)
+            }
+            if (tag.name == "Chew" && game.gameMode == GameMode.CHEW) {
+                tagsToApply.add(tag.id)
+            }
+            if (tag.name == "Scrimmage" && game.gameType == GameType.SCRIMMAGE) {
                 tagsToApply.add(tag.id)
             }
         }

@@ -333,7 +333,9 @@ class GameUtils(
     ): String {
         return if (game.gameStatus != GameStatus.OVERTIME) {
             if (play?.playCall != PlayCall.PAT && play?.playCall != PlayCall.TWO_POINT) {
-                "The play took ${(play?.playTime ?: 0) + (play?.runoffTime ?: 0)} seconds. "
+                val playTime = play?.playTime ?: 0
+                val runoffTime = play?.runoffTime ?: 0
+                "The play took ${playTime + runoffTime} seconds. "
             } else {
                 ""
             }
@@ -394,13 +396,13 @@ class GameUtils(
      * Get the location description as TEAM [YARD LINE] from a game
      * @return The location description
      */
-    private fun Game.getLocationDescription(): String {
-        val location = this.ballLocation
+    fun getLocationDescription(game: Game): String {
+        val location = game.ballLocation
         return when {
-            location > 50 && this.possession == TeamSide.HOME -> "${this.awayTeam} ${100 - location}"
-            location > 50 && this.possession == TeamSide.AWAY -> "${this.homeTeam} ${100 - location}"
-            location < 50 && this.possession == TeamSide.HOME -> "${this.homeTeam} $location"
-            location < 50 && this.possession == TeamSide.AWAY -> "${this.awayTeam} $location"
+            location > 50 && game.possession == TeamSide.HOME -> "${game.awayTeam} ${100 - location}"
+            location > 50 && game.possession == TeamSide.AWAY -> "${game.homeTeam} ${100 - location}"
+            location < 50 && game.possession == TeamSide.HOME -> "${game.homeTeam} $location"
+            location < 50 && game.possession == TeamSide.AWAY -> "${game.awayTeam} $location"
             else -> "50"
         }
     }
@@ -412,7 +414,7 @@ class GameUtils(
     private fun Game.getDownAndDistanceDescription(): String {
         val downDescription = toOrdinal(this.down)
         val yardsToGoDescription = if ((this.yardsToGo.plus(this.ballLocation)) >= 100) "goal" else "${this.yardsToGo}"
-        val locationDescription = getLocationDescription()
+        val locationDescription = getLocationDescription(this)
 
         return "It's $downDescription & $yardsToGoDescription on the $locationDescription."
     }
@@ -545,7 +547,7 @@ class GameUtils(
      * @param game The game object
      * @param embedContent The embed content
      */
-    fun getScorebugEmbed(
+    suspend fun getScorebugEmbed(
         scorebug: ByteArray?,
         game: Game,
         embedContent: String?,
@@ -579,7 +581,7 @@ class GameUtils(
             title = Optional("${game.homeTeam} vs ${game.awayTeam}"),
             description = Optional(embedContent.orEmpty()),
             image = Optional(EmbedImageData(url = Optional(scorebugUrl))),
-            footer = Optional(EmbedFooterData(text = "Game ID: ${game.gameId}")),
+            footer = Optional(EmbedFooterData(text = getFormattedFooterText(game))),
         )
     }
 
@@ -592,6 +594,94 @@ class GameUtils(
             game.homeTeam
         } else {
             game.awayTeam
+        }
+    }
+
+    /**
+     * Get win probability chart embed
+     * @param chartData The chart byte array
+     * @param game The game object
+     * @param embedContent Optional embed content
+     * @return The embed data
+     */
+    suspend fun getWinProbabilityChartEmbed(
+        chartData: ByteArray?,
+        game: Game,
+        embedContent: String?,
+    ): EmbedData? {
+        if (chartData == null) {
+            return null
+        }
+
+        val chartUrl =
+            saveChartToFile(chartData, "win_probability", game.gameId)
+                ?: return null
+
+        return EmbedData(
+            title = Optional("Win Probability Chart - ${game.homeTeam} vs ${game.awayTeam}"),
+            description = Optional(embedContent.orEmpty()),
+            image = Optional(EmbedImageData(url = Optional(chartUrl))),
+            footer = Optional(EmbedFooterData(text = getFormattedFooterText(game))),
+        )
+    }
+
+    /**
+     * Get score chart embed
+     * @param chartData The chart byte array
+     * @param game The game object
+     * @param embedContent Optional embed content
+     * @return The embed data
+     */
+    suspend fun getScoreChartEmbed(
+        chartData: ByteArray?,
+        game: Game,
+        embedContent: String?,
+    ): EmbedData? {
+        if (chartData == null) {
+            return null
+        }
+
+        val chartUrl =
+            saveChartToFile(chartData, "score_chart", game.gameId)
+                ?: return null
+
+        return EmbedData(
+            title = Optional("Score Chart - ${game.homeTeam} vs ${game.awayTeam}"),
+            description = Optional(embedContent.orEmpty()),
+            image = Optional(EmbedImageData(url = Optional(chartUrl))),
+            footer = Optional(EmbedFooterData(text = getFormattedFooterText(game))),
+        )
+    }
+
+    /**
+     * Save chart data to a file
+     * @param chartData The chart byte array
+     * @param chartType The type of chart (win_probability or score_chart)
+     * @param gameId The game ID
+     * @return The file path or null if failed
+     */
+    fun saveChartToFile(
+        chartData: ByteArray,
+        chartType: String,
+        gameId: Int,
+    ): String? {
+        val fileName = "images/${gameId}_$chartType.png"
+        val file = File(fileName)
+        return try {
+            // Ensure the images directory exists
+            val imagesDir = File("images")
+            if (!imagesDir.exists()) {
+                if (imagesDir.mkdirs()) {
+                    Logger.info("Created images directory: ${imagesDir.absolutePath}")
+                } else {
+                    Logger.info("Failed to create images directory.")
+                }
+            }
+            Files.write(file.toPath(), chartData, StandardOpenOption.CREATE)
+            file.path
+        } catch (e: Exception) {
+            Logger.error("Failed to write chart image: ${e.stackTraceToString()}")
+            null
         }
     }
 
@@ -622,5 +712,37 @@ class GameUtils(
         val formattedHomeTeam = if (homeTeamRank != null && homeTeamRank != 0) "#$homeTeamRank ${game.homeTeam}" else game.homeTeam
         val formattedAwayTeam = if (awayTeamRank != null && awayTeamRank != 0) "#$awayTeamRank ${game.awayTeam}" else game.awayTeam
         return Pair(formattedHomeTeam, formattedAwayTeam)
+    }
+
+    /**
+     * Get the home team abbreviation for a game
+     * @param game The game object
+     * @return The home team abbreviation or null if not found
+     */
+    suspend fun getTeamAbbreviation(teamName: String): String? {
+        return try {
+            val apiResponse = teamClient.getTeamByName(teamName)
+            val team = apiResponse.keys.firstOrNull()
+            team?.abbreviation
+        } catch (e: Exception) {
+            Logger.error("Failed to get team abbreviation for $teamName: ${e.message}", e)
+            null
+        }
+    }
+
+    /**
+     * Get formatted footer text with game ID and spread information
+     * @param game The game object
+     * @return Formatted footer text
+     */
+    suspend fun getFormattedFooterText(game: Game): String {
+        val homeTeamAbbreviation = getTeamAbbreviation(game.homeTeam)
+        val spread = game.homeVegasSpread
+
+        return if (homeTeamAbbreviation != null && spread != null) {
+            "Game ID: ${game.gameId} | Spread: $homeTeamAbbreviation ${if (spread > 0) "+" else ""}$spread"
+        } else {
+            "Game ID: ${game.gameId}"
+        }
     }
 }

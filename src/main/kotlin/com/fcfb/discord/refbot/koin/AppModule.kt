@@ -1,6 +1,7 @@
 package com.fcfb.discord.refbot.koin
 
 import com.fcfb.discord.refbot.FCFBDiscordRefBot
+import com.fcfb.discord.refbot.api.game.ChartClient
 import com.fcfb.discord.refbot.api.game.GameClient
 import com.fcfb.discord.refbot.api.game.GameWriteupClient
 import com.fcfb.discord.refbot.api.game.PlayClient
@@ -20,10 +21,13 @@ import com.fcfb.discord.refbot.commands.game.EndAllGamesCommand
 import com.fcfb.discord.refbot.commands.game.EndGameCommand
 import com.fcfb.discord.refbot.commands.game.GameInfoCommand
 import com.fcfb.discord.refbot.commands.game.MessageAllGamesCommand
+import com.fcfb.discord.refbot.commands.game.PreviousPlayCommand
 import com.fcfb.discord.refbot.commands.game.RestartGameCommand
 import com.fcfb.discord.refbot.commands.game.RollbackCommand
+import com.fcfb.discord.refbot.commands.game.ScoreChartCommand
 import com.fcfb.discord.refbot.commands.game.StartGameCommand
 import com.fcfb.discord.refbot.commands.game.StartScrimmageCommand
+import com.fcfb.discord.refbot.commands.game.WinProbabilityCommand
 import com.fcfb.discord.refbot.commands.infrastructure.CommandRegistry
 import com.fcfb.discord.refbot.commands.system.HelpCommand
 import com.fcfb.discord.refbot.commands.user.GetRoleCommand
@@ -58,8 +62,10 @@ val appModule =
         single { HealthChecks() }
         single { Properties() }
         single { SystemUtils() }
+        single { get<Properties>().getDiscordProperties() }
 
         // Classes with dependencies
+        single { ChartClient() }
         single { GameClient(get()) }
         single { GameWriteupClient(get()) }
         single { PlayClient(get()) }
@@ -67,7 +73,7 @@ val appModule =
         single { TeamClient(get()) }
         single { FCFBUserClient(get()) }
         single { ErrorHandler(get()) }
-        single { TextChannelThreadHandler(get(), get(), get(), get()) }
+        single { TextChannelThreadHandler(get(), get(), get(), get(), get()) }
         single { GameUtils(get()) }
         single { StartGameRequest(get(), get()) }
         single { KtorServerConfig(get(), get(), get(), get()) }
@@ -93,12 +99,15 @@ val appModule =
         single { GetRoleCommand(get()) }
         single { GetTeamCoachesCommand(get()) }
         single { RollbackCommand(get(), get(), get(), get(), get(), get()) }
+        single { ScoreChartCommand(get(), get(), get(), get()) }
+        single { WinProbabilityCommand(get(), get(), get(), get()) }
+        single { PreviousPlayCommand(get(), get(), get()) }
         single {
             CommandRegistry(
                 get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(),
-                get(), get(), get(), get(), get(), get(), get(),
+                get(), get(), get(), get(), get(), get(), get(), get(), get(), get(),
             )
         }
         single { FCFBDiscordRefBot(get(), get(), get(), get()) }
-        single { DiscordMessageHandler(get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get()) }
+        single { DiscordMessageHandler(get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get()) }
     }

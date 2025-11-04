@@ -1,5 +1,6 @@
 package com.fcfb.discord.refbot.handlers.discord
 
+import com.fcfb.discord.refbot.api.game.ChartClient
 import com.fcfb.discord.refbot.api.game.GameClient
 import com.fcfb.discord.refbot.api.game.GameWriteupClient
 import com.fcfb.discord.refbot.api.game.ScorebugClient
@@ -15,7 +16,7 @@ import com.fcfb.discord.refbot.model.enums.message.Info
 import com.fcfb.discord.refbot.model.enums.message.MessageType
 import com.fcfb.discord.refbot.model.enums.play.ActualResult
 import com.fcfb.discord.refbot.model.enums.play.PlayCall
-import com.fcfb.discord.refbot.model.enums.play.PlayType
+import com.fcfb.discord.refbot.model.enums.play.PlayType.KICKOFF
 import com.fcfb.discord.refbot.model.enums.play.Scenario
 import com.fcfb.discord.refbot.model.enums.play.Scenario.PLAY_RESULT
 import com.fcfb.discord.refbot.model.enums.system.Platform
@@ -45,6 +46,7 @@ import dev.kord.core.entity.channel.MessageChannel
 import dev.kord.core.entity.channel.thread.TextChannelThread
 import dev.kord.rest.builder.message.EmbedBuilder
 import dev.kord.rest.builder.message.addFile
+import java.nio.file.Paths
 import kotlin.io.path.Path
 
 class DiscordMessageHandler(
@@ -53,6 +55,7 @@ class DiscordMessageHandler(
     private val fcfbUserClient: FCFBUserClient,
     private val gameWriteupClient: GameWriteupClient,
     private val scorebugClient: ScorebugClient,
+    private val chartClient: ChartClient,
     private val logClient: LogClient,
     private val gameUtils: GameUtils,
     private val systemUtils: SystemUtils,
@@ -522,6 +525,93 @@ class DiscordMessageHandler(
                 ?: return postGameScoreWithoutScorebug(scoreChannel, messageContent + embedContent)
 
         sendMessageFromChannelObject(scoreChannel, messageContent, embedData)
+
+        // Post charts after the score
+        postGameCharts(client, game)
+    }
+
+    /**
+     * Apply placeholder replacements to a text string
+     * @param text The text to process
+     * @param replacements Map of placeholder to replacement value
+     * @return Text with placeholders replaced
+     */
+    private fun applyPlaceholderReplacements(
+        text: String?,
+        replacements: Map<String, String?>,
+    ): String {
+        if (text == null) return ""
+
+        var processedText: String = text
+        replacements.forEach { (placeholder, replacement) ->
+            if (placeholder in processedText) {
+                processedText = processedText.replace(placeholder, replacement ?: "")
+            }
+        }
+        return processedText
+    }
+
+    /**
+     * Post game charts (win probability and score chart) to the game thread
+     * @param client The Discord client
+     * @param game The game object
+     */
+    private suspend fun postGameCharts(
+        client: Kord,
+        game: Game,
+    ) {
+        try {
+            Logger.info("Posting game charts for game ID: ${game.gameId}")
+
+            // Get the game thread
+            val gameThread =
+                when {
+                    game.homePlatform == Platform.DISCORD ->
+                        client.getChannel(
+                            Snowflake(game.homePlatformId.toString()),
+                        ) as? TextChannelThread
+                    game.awayPlatform == Platform.DISCORD ->
+                        client.getChannel(
+                            Snowflake(game.awayPlatformId.toString()),
+                        ) as? TextChannelThread
+                    else -> null
+                }
+
+            if (gameThread == null) {
+                Logger.error("Could not find game thread for game ${game.gameId}")
+                return
+            }
+
+            // Get win probability chart
+            val winProbabilityChart = chartClient.getWinProbabilityChartByGameId(game.gameId)
+            Logger.info("Win probability chart result: ${if (winProbabilityChart != null) "Success" else "Failed"}")
+            if (winProbabilityChart != null) {
+                val chartUrl = gameUtils.saveChartToFile(winProbabilityChart, "win_probability", game.gameId)
+                Logger.info("Win probability chart saved to: $chartUrl")
+                if (chartUrl != null) {
+                    gameThread.createMessage {
+                        addFile(Paths.get(chartUrl))
+                    }
+                    Logger.info("Win probability chart posted to game thread")
+                }
+            }
+
+            // Get score chart
+            val scoreChart = chartClient.getScoreChartByGameId(game.gameId)
+            Logger.info("Score chart result: ${if (scoreChart != null) "Success" else "Failed"}")
+            if (scoreChart != null) {
+                val chartUrl = gameUtils.saveChartToFile(scoreChart, "score_chart", game.gameId)
+                Logger.info("Score chart saved to: $chartUrl")
+                if (chartUrl != null) {
+                    gameThread.createMessage {
+                        addFile(Paths.get(chartUrl))
+                    }
+                    Logger.info("Score chart posted to game thread")
+                }
+            }
+        } catch (e: Exception) {
+            Logger.error("Failed to post game charts: ${e.message}", e)
+        }
     }
 
     /**
@@ -572,7 +662,7 @@ class DiscordMessageHandler(
                     }
                     val messageContent =
                         messageContentApiResponse.keys.firstOrNull()
-                            ?: throw NoMessageContentFoundException(Scenario.PLAY_RESULT.description)
+                            ?: throw NoMessageContentFoundException(PLAY_RESULT.description)
                     messageContent to null
                 }
                 play?.playCall in
@@ -591,13 +681,13 @@ class DiscordMessageHandler(
                             ?: throw NoMessageContentFoundException(scenario.description)
 
                     // Get message content
-                    val messageContentApiResponse = gameWriteupClient.getGameMessageByScenario(Scenario.PLAY_RESULT, null)
+                    val messageContentApiResponse = gameWriteupClient.getGameMessageByScenario(PLAY_RESULT, null)
                     if (messageContentApiResponse.keys.firstOrNull() == null) {
-                        throw NoMessageContentFoundException(Scenario.PLAY_RESULT.description)
+                        throw NoMessageContentFoundException(PLAY_RESULT.description)
                     }
                     val messageContent =
                         messageContentApiResponse.keys.firstOrNull()
-                            ?: throw NoMessageContentFoundException(Scenario.PLAY_RESULT.description)
+                            ?: throw NoMessageContentFoundException(PLAY_RESULT.description)
                     messageContent to writeup
                 }
                 else -> {
@@ -631,48 +721,92 @@ class DiscordMessageHandler(
         val awayCoaches = game.awayCoachDiscordIds.map { client.getUser(Snowflake(it)) }
 
         // Determine which team has possession and their coaches
+        val (writeupOffensiveCoaches, writeupDefensiveCoaches) =
+            if (play != null) {
+                when {
+                    play.possession == TeamSide.HOME && gameUtils.isKickoff(play.playCall) -> homeCoaches to awayCoaches
+                    play.possession == TeamSide.AWAY && gameUtils.isKickoff(play.playCall) -> awayCoaches to homeCoaches
+                    play.possession == TeamSide.HOME -> homeCoaches to awayCoaches
+                    play.possession == TeamSide.AWAY -> awayCoaches to homeCoaches
+                    else -> throw CouldNotDetermineCoachPossessionException(game.gameId)
+                }
+            } else {
+                when {
+                    game.possession == TeamSide.HOME && game.currentPlayType == KICKOFF -> homeCoaches to awayCoaches
+                    game.possession == TeamSide.AWAY && game.currentPlayType == KICKOFF -> awayCoaches to homeCoaches
+                    game.possession == TeamSide.HOME -> homeCoaches to awayCoaches
+                    game.possession == TeamSide.AWAY -> awayCoaches to homeCoaches
+                    else -> throw CouldNotDetermineCoachPossessionException(game.gameId)
+                }
+            }
+
+        val (offensiveTeam, defensiveTeam) =
+            if (play != null) {
+                when {
+                    play.possession == TeamSide.HOME && gameUtils.isKickoff(play.playCall) -> game.homeTeam to game.awayTeam
+                    play.possession == TeamSide.AWAY && gameUtils.isKickoff(play.playCall) -> game.awayTeam to game.homeTeam
+                    play.possession == TeamSide.HOME -> game.homeTeam to game.awayTeam
+                    play.possession == TeamSide.AWAY -> game.awayTeam to game.homeTeam
+                    else -> throw CouldNotDetermineTeamPossessionException(game.gameId)
+                }
+            } else {
+                when {
+                    game.possession == TeamSide.HOME && game.currentPlayType == KICKOFF -> game.homeTeam to game.awayTeam
+                    game.possession == TeamSide.AWAY && game.currentPlayType == KICKOFF -> game.awayTeam to game.homeTeam
+                    game.possession == TeamSide.HOME -> game.homeTeam to game.awayTeam
+                    game.possession == TeamSide.AWAY -> game.awayTeam to game.homeTeam
+                    else -> throw CouldNotDetermineTeamPossessionException(game.gameId)
+                }
+            }
+
         val (offensiveCoaches, defensiveCoaches) =
             when {
-                game.possession == TeamSide.HOME && gameUtils.isKickoff(play?.playCall) -> homeCoaches to awayCoaches
-                game.possession == TeamSide.AWAY && gameUtils.isKickoff(play?.playCall) -> awayCoaches to homeCoaches
-                game.possession == TeamSide.HOME && game.currentPlayType == PlayType.KICKOFF -> homeCoaches to awayCoaches
-                game.possession == TeamSide.AWAY && game.currentPlayType == PlayType.KICKOFF -> awayCoaches to homeCoaches
+                game.possession == TeamSide.HOME && game.currentPlayType == KICKOFF -> homeCoaches to awayCoaches
+                game.possession == TeamSide.AWAY && game.currentPlayType == KICKOFF -> awayCoaches to homeCoaches
                 game.possession == TeamSide.HOME -> homeCoaches to awayCoaches
                 game.possession == TeamSide.AWAY -> awayCoaches to homeCoaches
                 else -> throw CouldNotDetermineCoachPossessionException(game.gameId)
             }
 
-        val (offensiveTeam, defensiveTeam) =
-            when {
-                game.possession == TeamSide.HOME && game.currentPlayType == PlayType.KICKOFF -> game.awayTeam to game.homeTeam
-                game.possession == TeamSide.AWAY && game.currentPlayType == PlayType.KICKOFF -> game.homeTeam to game.awayTeam
-                game.possession == TeamSide.HOME -> game.homeTeam to game.awayTeam
-                game.possession == TeamSide.AWAY -> game.awayTeam to game.homeTeam
-                else -> throw CouldNotDetermineTeamPossessionException(game.gameId)
+        val offensiveNumber = play?.offensiveNumber ?: "None"
+        val defensiveNumber = play?.defensiveNumber ?: "None"
+        val difference = play?.difference?.toString() ?: "None"
+        val actualResult =
+            if (play?.actualResult != null) {
+                play.actualResult.description
+            } else {
+                "None"
+            }
+        val result =
+            if (play?.result != null) {
+                play.result.name
+            } else {
+                "None"
             }
 
         // Build placeholders for message replacement
         val replacements =
             mapOf(
                 "{kicking_team}" to offensiveTeam,
+                "{receiving_team}" to defensiveTeam,
                 "{home_coach}" to joinMentions(homeCoaches),
                 "{away_coach}" to joinMentions(awayCoaches),
-                "{offensive_coach}" to joinMentions(offensiveCoaches),
-                "{defensive_coach}" to joinMentions(defensiveCoaches),
+                "{offensive_coach}" to joinMentions(writeupOffensiveCoaches),
+                "{defensive_coach}" to joinMentions(writeupDefensiveCoaches),
                 "{offensive_team}" to offensiveTeam,
                 "{defensive_team}" to defensiveTeam,
-                "{play_writeup}" to playWriteup,
                 "{clock_info}" to gameUtils.getClockInfo(game),
                 "{play_time}" to gameUtils.getPlayTimeInfo(game, play),
                 "{clock}" to game.clock,
                 "{quarter}" to gameUtils.toOrdinal(game.quarter),
-                "{offensive_number}" to play?.offensiveNumber.toString(),
-                "{defensive_number}" to play?.defensiveNumber.toString(),
-                "{difference}" to play?.difference.toString(),
-                "{actual_result}" to play?.actualResult?.description,
-                "{result}" to play?.result?.name,
+                "{offensive_number}" to offensiveNumber,
+                "{defensive_number}" to defensiveNumber,
+                "{difference}" to difference,
+                "{actual_result}" to actualResult,
+                "{result}" to result,
                 "{timeout_called}" to gameUtils.getTimeoutMessage(game, play, timeoutCalled),
                 "{clock_status}" to if (game.clockStopped) "The clock is stopped." else "The clock is running.",
+                "{ball_location}" to gameUtils.getLocationDescription(game),
                 "{ball_location_scenario}" to gameUtils.getBallLocationScenarioMessage(game, play),
                 "{dog_deadline}" to game.gameTimer.toString(),
                 "{play_options}" to gameUtils.getPlayOptions(game),
@@ -682,15 +816,20 @@ class DiscordMessageHandler(
                 "<br>" to "\n",
             )
 
+        // Apply placeholder replacements to playWriteup first
+        val processedPlayWriteup = applyPlaceholderReplacements(playWriteup, replacements)
+
+        // Add the processed playWriteup to replacements
+        val finalReplacements = replacements + mapOf("{play_writeup}" to processedPlayWriteup)
+
         // Replace placeholders with actual values
-        replacements.forEach { (placeholder, replacement) ->
+        finalReplacements.forEach { (placeholder, replacement) ->
             if (placeholder in messageContent) {
                 messageContent = messageContent.replace(placeholder, replacement ?: "")
             }
         }
 
-        messageContent += "\n\n[Game Details & Play List](https://fakecollegefootball.com/game-details/${game.gameId})\n" +
-            "[Game Stats](https://fakecollegefootball.com/game-stats/${game.gameId})\n" +
+        messageContent += "\n\n[Game Details](https://fakecollegefootball.com/game-details/${game.gameId})\n" +
             "[Ranges](https://docs.google.com/spreadsheets/d/1yXG2Xe1W_G5uq_1Tus3AbP4u8HOwjgmJ1LOQDV-dhvc/edit#gid=1822037032)"
 
         // If no scorebug was found, generate one and try to read it again
@@ -764,7 +903,7 @@ class DiscordMessageHandler(
             EmbedData(
                 title = Optional("${game.homeTeam} vs ${game.awayTeam}"),
                 description = Optional(messageContent + ""),
-                footer = Optional(EmbedFooterData(text = "Game ID: ${game.gameId}")),
+                footer = Optional(EmbedFooterData(text = gameUtils.getFormattedFooterText(game))),
             )
 
         val messageToSend = appendUserPings(game, scenario, homeCoaches, awayCoaches, offensiveCoaches)
@@ -803,7 +942,7 @@ class DiscordMessageHandler(
             EmbedData(
                 title = Optional("${game.homeTeam} vs ${game.awayTeam}"),
                 description = Optional(messageContent + textScorebug),
-                footer = Optional(EmbedFooterData(text = "Game ID: ${game.gameId}")),
+                footer = Optional(EmbedFooterData(text = gameUtils.getFormattedFooterText(game))),
             )
 
         val messageToSend = appendUserPings(game, scenario, homeCoaches, awayCoaches, offensiveCoaches)

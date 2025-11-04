@@ -12,10 +12,13 @@ import com.fcfb.discord.refbot.commands.game.EndAllGamesCommand
 import com.fcfb.discord.refbot.commands.game.EndGameCommand
 import com.fcfb.discord.refbot.commands.game.GameInfoCommand
 import com.fcfb.discord.refbot.commands.game.MessageAllGamesCommand
+import com.fcfb.discord.refbot.commands.game.PreviousPlayCommand
 import com.fcfb.discord.refbot.commands.game.RestartGameCommand
 import com.fcfb.discord.refbot.commands.game.RollbackCommand
+import com.fcfb.discord.refbot.commands.game.ScoreChartCommand
 import com.fcfb.discord.refbot.commands.game.StartGameCommand
 import com.fcfb.discord.refbot.commands.game.StartScrimmageCommand
+import com.fcfb.discord.refbot.commands.game.WinProbabilityCommand
 import com.fcfb.discord.refbot.commands.system.HelpCommand
 import com.fcfb.discord.refbot.commands.user.GetRoleCommand
 import com.fcfb.discord.refbot.commands.user.PingCommand
@@ -45,30 +48,36 @@ class CommandRegistry(
     private val subCoachCommand: SubCoachCommand,
     private val getRoleCommand: GetRoleCommand,
     private val rollbackCommand: RollbackCommand,
+    private val scoreChartCommand: ScoreChartCommand,
+    private val winProbabilityCommand: WinProbabilityCommand,
+    private val previousPlayCommand: PreviousPlayCommand,
 ) {
     suspend fun registerCommands(client: Kord) {
-//        // Delete old commands just in case of changes
-//        client.getGlobalApplicationCommands().collect { it.delete() }
+        // Delete old commands just in case of changes
+        // client.getGlobalApplicationCommands().collect { it.delete() }
 
         // Register all commands
         chewGameCommand.register(client)
         deleteGameCommand.register(client)
-        restartGameCommand.register(client)
-        endGameCommand.register(client)
         endAllGamesCommand.register(client)
+        endGameCommand.register(client)
         fireCoachCommand.register(client)
         gameInfoCommand.register(client)
+        getRoleCommand.register(client)
+        getTeamCoachesCommand.register(client)
         helpCommand.register(client)
         hireCoachCommand.register(client)
         hireInterimCoachCommand.register(client)
         messageAllGamesCommand.register(client)
         pingCommand.register(client)
+        previousPlayCommand.register(client)
+        restartGameCommand.register(client)
+        rollbackCommand.register(client)
+        scoreChartCommand.register(client)
         startGameCommand.register(client)
         startScrimmageCommand.register(client)
         subCoachCommand.register(client)
-        getRoleCommand.register(client)
-        rollbackCommand.register(client)
-        getTeamCoachesCommand.register(client)
+        winProbabilityCommand.register(client)
     }
 
     suspend fun executeCommand(interaction: ChatInputCommandInteraction) {
@@ -107,11 +116,14 @@ class CommandRegistry(
             "hire_interim_coach" -> hireInterimCoachCommand.execute(interaction)
             "message_all_games" -> messageAllGamesCommand.execute(interaction)
             "ping" -> pingCommand.execute(interaction)
+            "previous_play" -> previousPlayCommand.execute(interaction)
             "start_game" -> startGameCommand.execute(interaction)
             "start_scrimmage" -> startScrimmageCommand.execute(interaction)
             "sub_coach" -> subCoachCommand.execute(interaction)
             "get_role" -> getRoleCommand.execute(interaction)
             "rollback" -> rollbackCommand.execute(interaction)
+            "score_chart" -> scoreChartCommand.handle(interaction)
+            "win_probability" -> winProbabilityCommand.handle(interaction)
         }
     }
 }

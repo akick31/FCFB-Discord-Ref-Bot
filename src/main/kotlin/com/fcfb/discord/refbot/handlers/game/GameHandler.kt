@@ -118,6 +118,7 @@ class GameHandler(
         val runoffType = gameUtils.parseRunoffTypeFromMessage(game, message)
         val timeoutCalled = gameUtils.parseTimeoutFromMessage(message)
         val offensiveSubmitter = message.author?.username ?: return errorHandler.invalidOffensiveSubmitter(message)
+        val offensiveSubmitterId = message.author?.id?.value.toString()
 
         // Handle overtime specifics
         if (game.gameStatus == GameStatus.OVERTIME) {
@@ -136,6 +137,7 @@ class GameHandler(
             playClient.submitOffensiveNumber(
                 game.gameId,
                 offensiveSubmitter,
+                offensiveSubmitterId,
                 number,
                 playCall,
                 runoffType,
@@ -144,12 +146,21 @@ class GameHandler(
         if (playApiResponse.keys.firstOrNull() == null) {
             return errorHandler.customErrorMessage(message, playApiResponse.values.firstOrNull() ?: "Could not determine error")
         }
-        val playOutcome = playApiResponse.keys.firstOrNull() ?: return errorHandler.invalidOffensiveNumberSubmission(message)
+        var playOutcome = playApiResponse.keys.firstOrNull() ?: return errorHandler.invalidOffensiveNumberSubmission(message)
 
-        val gameApiResponse =
-            gameClient.getGameByRequestMessageId(
-                message.referencedMessage?.id?.value.toString(),
-            )
+        // Verify the play outcome is for the correct game to prevent race conditions
+        // If it's not, fetch the correct play for this game
+        if (playOutcome.gameId != game.gameId) {
+            val correctPlayResponse = playClient.getPreviousPlay(game.gameId)
+            playOutcome = correctPlayResponse.keys.firstOrNull()
+                ?: return errorHandler.customErrorMessage(
+                    message,
+                    "Error: Could not retrieve play outcome. Please call \"/previous_play\" to see the play result. " +
+                        "The game will continue as if the play was posted.",
+                )
+        }
+
+        val gameApiResponse = gameClient.getGameByGameId(game.gameId.toString())
         if (gameApiResponse.keys.firstOrNull() == null) {
             return errorHandler.customErrorMessage(message, gameApiResponse.values.firstOrNull() ?: "Could not determine error")
         }
@@ -212,11 +223,13 @@ class GameHandler(
             }
         val timeoutCalled = gameUtils.parseTimeoutFromMessage(message)
         val defensiveSubmitter = message.author?.username ?: return errorHandler.invalidDefensiveSubmitter(message)
+        val defensiveSubmitterId = message.author?.id?.value.toString()
 
         val playApiResponse =
             playClient.submitDefensiveNumber(
                 game.gameId,
                 defensiveSubmitter,
+                defensiveSubmitterId,
                 number,
                 timeoutCalled,
             )
@@ -283,7 +296,7 @@ class GameHandler(
             return errorHandler.invalidCoinTossWinner(message)
         }
         val coinTossChoice = message.content
-        if (message.author !in coinTossWinningCoachList && !gameUtils.isValidCoinTossChoice(coinTossChoice)) {
+        if (message.author !in coinTossWinningCoachList || !gameUtils.isValidCoinTossChoice(coinTossChoice)) {
             return errorHandler.waitingOnCoinTossChoiceError(message)
         }
 
