@@ -43,6 +43,16 @@ class StartGameCommand(
                     choice("FS1", "FS1"),
                     choice("FS2", "FS2"),
                     choice("NBC", "NBC"),
+                    choice("ACC Network", "ACC Network"),
+                    choice("Big Ten Network","Big Ten Network"),
+                    choice("CBS Sports Network","CBS Sports Network"),
+                    choice("The CW","The CW"),
+                    choice("ESPNU","ESPNU"),
+                    choice("ESPN+","ESPN+"),
+                    choice("SEC Network"),
+                    choice("TNT","TNT"),
+                    choice("PAC-12 Network","PAC-12 Network"),
+                    choice("Peacock","Peacock"),
                 )
             }
             string("game_type", "Game Type") {
@@ -136,6 +146,15 @@ class StartGameCommand(
                 }
                 "SEC Network" -> {
                     TVChannel.SEC_NETWORK
+                }
+                "TNT" -> {
+                    TVChannel.TNT
+                }
+                "PAC-12 Network" -> {
+                    TVChannel.PAC_12_NETWORK
+                }
+                "Peacock" -> {
+                    TVChannel.PEACOCK
                 }
                 else -> null
             }

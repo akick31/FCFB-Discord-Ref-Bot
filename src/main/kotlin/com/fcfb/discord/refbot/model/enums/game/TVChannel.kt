@@ -16,4 +16,7 @@ enum class TVChannel(val description: String) {
     ESPNU("ESPNU"),
     ESPN_PLUS("ESPN+"),
     SEC_NETWORK("SEC Network"),
+    TNT("TNT"),
+	PAC_12_NETWORK("PAC-12 Network"),
+	PEACOCK("Peacock")
 }
