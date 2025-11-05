@@ -52,8 +52,19 @@ jobs:
             echo "Formatting issues found — committing fixes..."
             git add .
             git commit -m "chore: apply ktlint format via CI"
-            git push origin HEAD:${{ github.ref_name }}
-            echo "✅ Formatting fixes pushed. Exiting early — new workflow will run automatically."
+
+            # Detect correct branch to push to
+            if [ -n "${{ github.head_ref }}" ]; then
+              # We're in a PR context (detached HEAD)
+              echo "Pushing formatting fixes to PR branch: ${{ github.head_ref }}"
+              git push origin HEAD:${{ github.head_ref }}
+            else
+              # We're on a normal branch push (e.g., main)
+              echo "Pushing formatting fixes to current branch: ${{ github.ref_name }}"
+              git push origin HEAD:${{ github.ref_name }}
+            fi
+
+            echo "Formatting fixes pushed. Exiting early — new workflow will run automatically."
             exit 0
           else
             echo "No formatting changes to commit."
