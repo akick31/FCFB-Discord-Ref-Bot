@@ -64,8 +64,12 @@ jobs:
               git push origin HEAD:${{ github.ref_name }}
             fi
 
-            echo "Formatting fixes pushed. Exiting early — new workflow will run automatically."
+            if [ -n "${{ github.head_ref }}" ]; then
+              echo "Formatting fixes pushed to PR branch. Not exiting early to keep PR check green."
+            else
+              echo "Formatting fixes pushed to main branch. Exiting early — new workflow will run automatically."
             exit 0
+            fi
           else
             echo "No formatting changes to commit."
           fi
