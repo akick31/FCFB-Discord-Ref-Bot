@@ -178,7 +178,7 @@ jobs:
             PATCH=0
           fi
 
-          # Determine version increment based on commit messages
+          # Determine initial version increment based on commit messages
           if git log -1 --pretty=%B | grep -q "MAJOR:"; then
             NEW_MAJOR=$((MAJOR + 1))
             NEW_MINOR=0
@@ -193,11 +193,67 @@ jobs:
             NEW_PATCH=$((PATCH + 1))
           fi
 
-          NEW_TAG="${NEW_MAJOR}.${NEW_MINOR}.${NEW_PATCH}"
+          # Keep incrementing until we find an available tag
+          while true; do
+            NEW_TAG="${NEW_MAJOR}.${NEW_MINOR}.${NEW_PATCH}"
+            
+            # Check if tag already exists
+            if git rev-parse "$NEW_TAG" >/dev/null 2>&1; then
+              echo "Tag $NEW_TAG already exists, trying next version..."
+              # Increment PATCH version
+              NEW_PATCH=$((NEW_PATCH + 1))
+            else
+              # Tag doesn't exist, we can use it
+              echo "Tag $NEW_TAG is available, creating it..."
+              break
+            fi
+          done
+
           echo "New tag will be: ${NEW_TAG}"
 
-          git tag $NEW_TAG
-          git push origin $NEW_TAG
+          # Create and push the tag
+          echo "Creating new tag: $NEW_TAG"
+          if git tag $NEW_TAG 2>/dev/null; then
+            # Successfully created tag, now push it
+            if git push origin $NEW_TAG; then
+              echo "Tag $NEW_TAG created and pushed successfully."
+            else
+              echo "Warning: Failed to push tag $NEW_TAG. It may have been created by another workflow run."
+              # Fetch and check if tag now exists remotely
+              git fetch --tags
+              if git rev-parse "$NEW_TAG" >/dev/null 2>&1; then
+                echo "Tag $NEW_TAG exists remotely, skipping push."
+              else
+                echo "Error: Tag creation succeeded but push failed."
+                exit 1
+              fi
+            fi
+          else
+            # Tag creation failed - likely because it was created by another workflow between check and create
+            echo "Tag $NEW_TAG was created by another workflow run. Fetching latest tags and finding next available..."
+            git fetch --tags
+            
+            # If tag exists, increment and try again
+            if git rev-parse "$NEW_TAG" >/dev/null 2>&1; then
+              NEW_PATCH=$((NEW_PATCH + 1))
+              NEW_TAG="${NEW_MAJOR}.${NEW_MINOR}.${NEW_PATCH}"
+              
+              # Keep incrementing until we find an available tag
+              while git rev-parse "$NEW_TAG" >/dev/null 2>&1; do
+                echo "Tag $NEW_TAG also exists, trying next version..."
+                NEW_PATCH=$((NEW_PATCH + 1))
+                NEW_TAG="${NEW_MAJOR}.${NEW_MINOR}.${NEW_PATCH}"
+              done
+              
+              echo "Creating tag: $NEW_TAG"
+              git tag $NEW_TAG
+              git push origin $NEW_TAG
+              echo "Tag $NEW_TAG created and pushed successfully."
+            else
+              echo "Error: Failed to create tag and it doesn't exist after fetch."
+              exit 1
+            fi
+          fi
 
   jenkins:
     name: Trigger Jenkins Build
