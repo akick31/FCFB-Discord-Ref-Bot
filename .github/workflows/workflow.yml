@@ -1,0 +1,233 @@
+name: 'CI/CD Pipeline'
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - '**'
+
+permissions:
+  contents: write
+
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checkout
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.PAT_SECRET || secrets.GITHUB_TOKEN }}
+
+      # Set up JDK
+      - name: Set up JDK 17
+        uses: actions/setup-java@v2
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      # Cache Gradle dependencies
+      - name: Cache Gradle packages
+        uses: actions/cache@v3
+        with:
+          path: ~/.gradle/caches
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
+      # Run ktlintFormat to auto-fix issues
+      - name: Run ktlintFormat
+        run: ./gradlew ktlintFormat
+
+      # Commit and push formatting fixes (if any)
+      - name: Commit and push ktlint changes
+        run: |
+          git config user.name "GitHub Actions Bot"
+          git config user.email "actions@github.com"
+
+          if [ -n "$(git status --porcelain)" ]; then
+            echo "Formatting issues found — committing fixes..."
+            
+            # Determine the branch to work with
+            BRANCH_NAME="${{ github.head_ref || github.ref_name }}"
+            echo "Working with branch: $BRANCH_NAME"
+            
+            # Fetch latest changes
+            git fetch origin $BRANCH_NAME
+            
+            # Ensure we're on the correct branch and up to date
+            git checkout -B $BRANCH_NAME origin/$BRANCH_NAME || git checkout -B $BRANCH_NAME
+            
+            # Pull with rebase to avoid merge conflicts
+            git pull --rebase origin $BRANCH_NAME || echo "No rebase needed or already up to date"
+            
+            # Re-run ktlintFormat after ensuring we have latest code
+            ./gradlew ktlintFormat
+            
+            # Check if there are still formatting changes after rebase
+            if [ -n "$(git status --porcelain)" ]; then
+              git add .
+              git commit -m "chore: apply ktlint format via CI"
+              
+              # Configure git to use PAT for pushing (this allows triggering new workflow runs)
+              if [ -n "${{ secrets.PAT_SECRET }}" ]; then
+                git remote set-url origin https://x-access-token:${{ secrets.PAT_SECRET }}@github.com/${{ github.repository }}.git
+              else
+                git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git
+              fi
+              
+              # Push to trigger new workflow run
+              echo "Pushing formatting fixes to branch: $BRANCH_NAME"
+              if git push origin $BRANCH_NAME; then
+                echo "Successfully pushed formatting fixes. New workflow run will be triggered."
+              else
+                echo "Failed to push to branch. This may be a forked PR or permission issue."
+                exit 1
+              fi
+            else
+              echo "No formatting changes after rebase - likely already formatted in newer commits"
+            fi
+            
+            # After pushing formatting changes, the new commit will trigger a fresh workflow run
+            # We need to ensure this workflow run completes so status is reported
+            # Continue to ktlintCheck which will pass since we just formatted
+          else
+            echo "No formatting changes needed."
+          fi
+
+      # Run ktlintCheck to ensure code is clean (only if we didn't just commit formatting)
+      - name: Run ktlintCheck
+        if: "!contains(github.event.head_commit.message, 'chore: apply ktlint format via CI')"
+        run: ./gradlew ktlintCheck
+
+  build:
+    name: Build
+    needs: [lint]
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checkout code
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      # Set up JDK
+      - name: Set up JDK 17
+        uses: actions/setup-java@v2
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      # Cache Gradle dependencies
+      - name: Cache Gradle packages
+        uses: actions/cache@v3
+        with:
+          path: ~/.gradle/caches
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
+      # Build project
+      - name: Build with Gradle
+        run: ./gradlew build
+
+      # Run tests
+      - name: Run tests
+        run: ./gradlew test
+
+  tag:
+    name: Tag and Version
+    needs: [build]
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      # Checkout code
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      # Calculate new version and tag
+      - name: Tag and push new version
+        id: tag_logic
+        run: |
+          git fetch --tags
+
+          # Get latest tag
+          TAG=$(git describe --tags $(git rev-list --tags --max-count=1) 2>/dev/null || echo "1.0.0")
+          echo "Latest tag: ${TAG}"
+
+          VERSION_REGEX="^([0-9]+)\.([0-9]+)\.([0-9]+)$"
+          if [[ $TAG =~ $VERSION_REGEX ]]; then
+            MAJOR="${BASH_REMATCH[1]}"
+            MINOR="${BASH_REMATCH[2]}"
+            PATCH="${BASH_REMATCH[3]}"
+          else
+            echo "No valid version found, starting with 1.0.0"
+            MAJOR=1
+            MINOR=0
+            PATCH=0
+          fi
+
+          # Determine version increment based on commit messages
+          if git log -1 --pretty=%B | grep -q "MAJOR:"; then
+            NEW_MAJOR=$((MAJOR + 1))
+            NEW_MINOR=0
+            NEW_PATCH=0
+          elif git log -1 --pretty=%B | grep -q "MINOR:"; then
+            NEW_MAJOR=$MAJOR
+            NEW_MINOR=$((MINOR + 1))
+            NEW_PATCH=0
+          else
+            NEW_MAJOR=$MAJOR
+            NEW_MINOR=$MINOR
+            NEW_PATCH=$((PATCH + 1))
+          fi
+
+          NEW_TAG="${NEW_MAJOR}.${NEW_MINOR}.${NEW_PATCH}"
+          echo "New tag will be: ${NEW_TAG}"
+
+          git tag $NEW_TAG
+          git push origin $NEW_TAG
+
+  jenkins:
+    name: Trigger Jenkins Build
+    needs: [tag]
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      # Checkout code
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      # Get Jenkins crumb
+      - name: Get Jenkins crumb
+        id: get_crumb
+        run: |
+          CRUMB=$(curl -u "${{ secrets.JENKINS_USER }}:${{ secrets.JENKINS_API_TOKEN }}" -X GET "http://51.81.32.234:8080/crumbIssuer/api/json" | jq -r .crumb)
+          echo "::set-output name=crumb::$CRUMB"
+
+      # Trigger Jenkins build
+      - name: Trigger Jenkins build
+        run: |
+          curl -X POST "http://51.81.32.234:8080/job/FCFB-Arceus-PRD/build?token=${{ secrets.JENKINS_TOKEN }}" \
+            -u "${{ secrets.JENKINS_USER }}:${{ secrets.JENKINS_API_TOKEN }}" \
+            -H "Jenkins-Crumb: ${{ steps.get_crumb.outputs.crumb }}"
+        env:
+          JENKINS_USER: ${{ secrets.JENKINS_USER }}
+          JENKINS_TOKEN: ${{ secrets.JENKINS_API_TOKEN }}
+
