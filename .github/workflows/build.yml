@@ -68,7 +68,7 @@ jobs:
               echo "Formatting fixes pushed to PR branch. Not exiting early to keep PR check green."
             else
               echo "Formatting fixes pushed to main branch. Exiting early — new workflow will run automatically."
-            exit 0
+              exit 0
             fi
           else
             echo "No formatting changes to commit."
