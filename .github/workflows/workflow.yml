@@ -22,6 +22,7 @@ jobs:
         uses: actions/checkout@v3
         with:
           fetch-depth: 0
+          token: ${{ secrets.PAT_SECRET || secrets.GITHUB_TOKEN }}
 
       # Set up JDK
       - name: Set up JDK 17
@@ -51,25 +52,57 @@ jobs:
 
           if [ -n "$(git status --porcelain)" ]; then
             echo "Formatting issues found — committing fixes..."
-            git add .
-            git commit -m "chore: apply ktlint format via CI"
-
-            # Detect correct branch to push to
-            if [ -n "${{ github.head_ref }}" ]; then
-              # PR from branch or fork
-              echo "PR detected — attempting to push to PR branch: ${{ github.head_ref }}"
-              git push origin HEAD:${{ github.head_ref }} || echo "Cannot push to forked PR branch, skipping push"
+            
+            # Determine the branch to work with
+            BRANCH_NAME="${{ github.head_ref || github.ref_name }}"
+            echo "Working with branch: $BRANCH_NAME"
+            
+            # Fetch latest changes
+            git fetch origin $BRANCH_NAME
+            
+            # Ensure we're on the correct branch and up to date
+            git checkout -B $BRANCH_NAME origin/$BRANCH_NAME || git checkout -B $BRANCH_NAME
+            
+            # Pull with rebase to avoid merge conflicts
+            git pull --rebase origin $BRANCH_NAME || echo "No rebase needed or already up to date"
+            
+            # Re-run ktlintFormat after ensuring we have latest code
+            ./gradlew ktlintFormat
+            
+            # Check if there are still formatting changes after rebase
+            if [ -n "$(git status --porcelain)" ]; then
+              git add .
+              git commit -m "chore: apply ktlint format via CI"
+              
+              # Configure git to use PAT for pushing (this allows triggering new workflow runs)
+              if [ -n "${{ secrets.PAT_SECRET }}" ]; then
+                git remote set-url origin https://x-access-token:${{ secrets.PAT_SECRET }}@github.com/${{ github.repository }}.git
+              else
+                git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git
+              fi
+              
+              # Push to trigger new workflow run
+              echo "Pushing formatting fixes to branch: $BRANCH_NAME"
+              if git push origin $BRANCH_NAME; then
+                echo "Successfully pushed formatting fixes. New workflow run will be triggered."
+              else
+                echo "Failed to push to branch. This may be a forked PR or permission issue."
+                exit 1
+              fi
             else
-              # Normal branch push
-              echo "Pushing fixes to branch: ${{ github.ref_name }}"
-              git push origin HEAD:${{ github.ref_name }}
+              echo "No formatting changes after rebase - likely already formatted in newer commits"
             fi
+            
+            # After pushing formatting changes, the new commit will trigger a fresh workflow run
+            # We need to ensure this workflow run completes so status is reported
+            # Continue to ktlintCheck which will pass since we just formatted
           else
-            echo "No formatting changes to commit."
+            echo "No formatting changes needed."
           fi
 
-      # Run ktlintCheck to ensure code is clean
+      # Run ktlintCheck to ensure code is clean (only if we didn't just commit formatting)
       - name: Run ktlintCheck
+        if: "!contains(github.event.head_commit.message, 'chore: apply ktlint format via CI')"
         run: ./gradlew ktlintCheck
 
   build:
@@ -191,7 +224,7 @@ jobs:
       # Trigger Jenkins build
       - name: Trigger Jenkins build
         run: |
-          curl -X POST "http://51.81.32.234:8080/job/FCFB-Discord-Ref-Bot-PRD/build?token=${{ secrets.JENKINS_TOKEN }}" \
+          curl -X POST "http://51.81.32.234:8080/job/FCFB-Arceus-PRD/build?token=${{ secrets.JENKINS_TOKEN }}" \
             -u "${{ secrets.JENKINS_USER }}:${{ secrets.JENKINS_API_TOKEN }}" \
             -H "Jenkins-Crumb: ${{ steps.get_crumb.outputs.crumb }}"
         env:

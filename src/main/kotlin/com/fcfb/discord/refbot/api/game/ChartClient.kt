@@ -84,6 +84,7 @@ class ChartClient {
         }
     }
 
+    
     /**
      * Get win probability chart by team names and season
      * @param firstTeam
