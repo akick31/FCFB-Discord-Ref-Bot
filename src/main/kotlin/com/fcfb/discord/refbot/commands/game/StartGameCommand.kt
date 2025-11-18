@@ -53,6 +53,7 @@ class StartGameCommand(
                     choice("TNT", "TNT"),
                     choice("PAC-12 Network", "PAC-12 Network"),
                     choice("Peacock", "Peacock"),
+                    choice("ESPNEWS", "ESPNEWS"),
                 )
             }
             string("game_type", "Game Type") {
@@ -155,6 +156,9 @@ class StartGameCommand(
                 }
                 "Peacock" -> {
                     TVChannel.PEACOCK
+                }
+                "ESPNEWS" -> {
+                    TVChannel.ESPNEWS
                 }
                 else -> null
             }
