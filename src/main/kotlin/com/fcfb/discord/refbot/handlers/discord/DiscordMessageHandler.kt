@@ -806,7 +806,7 @@ class DiscordMessageHandler(
                 "{result}" to result,
                 "{timeout_called}" to gameUtils.getTimeoutMessage(game, play, timeoutCalled),
                 "{clock_status}" to if (game.clockStopped) "The clock is stopped." else "The clock is running.",
-                "{game_status}" to if (game.gameMode == GameMode.CHEW) "The game is in chew mode" else "",
+                "{game_status}" to if (game.gameMode == GameMode.CHEW) "The game is in chew mode." else "",
                 "{ball_location}" to gameUtils.getLocationDescription(game),
                 "{ball_location_scenario}" to gameUtils.getBallLocationScenarioMessage(game, play),
                 "{dog_deadline}" to game.gameTimer.toString(),
