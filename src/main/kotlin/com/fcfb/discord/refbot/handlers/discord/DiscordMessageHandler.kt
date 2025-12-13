@@ -9,6 +9,7 @@ import com.fcfb.discord.refbot.api.user.FCFBUserClient
 import com.fcfb.discord.refbot.handlers.system.FileHandler
 import com.fcfb.discord.refbot.model.domain.Game
 import com.fcfb.discord.refbot.model.domain.Play
+import com.fcfb.discord.refbot.model.enums.game.GameMode
 import com.fcfb.discord.refbot.model.enums.game.GameStatus
 import com.fcfb.discord.refbot.model.enums.game.GameType
 import com.fcfb.discord.refbot.model.enums.message.Error
