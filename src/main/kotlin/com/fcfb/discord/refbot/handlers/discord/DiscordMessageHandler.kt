@@ -9,6 +9,7 @@ import com.fcfb.discord.refbot.api.user.FCFBUserClient
 import com.fcfb.discord.refbot.handlers.system.FileHandler
 import com.fcfb.discord.refbot.model.domain.Game
 import com.fcfb.discord.refbot.model.domain.Play
+import com.fcfb.discord.refbot.model.enums.game.GameMode
 import com.fcfb.discord.refbot.model.enums.game.GameStatus
 import com.fcfb.discord.refbot.model.enums.game.GameType
 import com.fcfb.discord.refbot.model.enums.message.Error
@@ -806,6 +807,7 @@ class DiscordMessageHandler(
                 "{result}" to result,
                 "{timeout_called}" to gameUtils.getTimeoutMessage(game, play, timeoutCalled),
                 "{clock_status}" to if (game.clockStopped) "The clock is stopped." else "The clock is running.",
+                "{game_status}" to if (game.gameMode == GameMode.CHEW) " The game is in chew mode." else "",
                 "{ball_location}" to gameUtils.getLocationDescription(game),
                 "{ball_location_scenario}" to gameUtils.getBallLocationScenarioMessage(game, play),
                 "{dog_deadline}" to game.gameTimer.toString(),
