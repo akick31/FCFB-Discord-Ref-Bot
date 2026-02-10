@@ -5,13 +5,17 @@ import com.fcfb.discord.refbot.utils.formatting.ProgressBarUtils
 import com.fcfb.discord.refbot.utils.system.Logger
 import dev.kord.core.behavior.interaction.response.DeferredPublicMessageInteractionResponseBehavior
 import dev.kord.core.behavior.interaction.response.respond
-import dev.kord.core.entity.interaction.ChatInputCommandInteraction
 import kotlinx.coroutines.delay
 
 object GameWeekPollingUtils {
-    private const val POLL_INTERVAL_MS = 5000L
-    private const val MAX_POLL_ATTEMPTS = 720
+    const val POLL_INTERVAL_MS = 5000L
+    const val MAX_POLL_ATTEMPTS = 720
     private const val DISCORD_TOKEN_LIFETIME_MS = 15 * 60 * 1000L // 15 minutes
+
+    /**
+     * Calculate the timeout duration in minutes for display purposes.
+     */
+    fun getTimeoutMinutes(): Int = (MAX_POLL_ATTEMPTS * POLL_INTERVAL_MS / 1000 / 60).toInt()
 
     data class PollingResult(
         val jobCompleted: Boolean,
@@ -36,7 +40,6 @@ object GameWeekPollingUtils {
      */
     suspend fun pollGameWeekJob(
         gameClient: GameClient,
-        interaction: ChatInputCommandInteraction,
         response: DeferredPublicMessageInteractionResponseBehavior,
         config: PollingConfig,
     ): PollingResult {
@@ -55,11 +58,12 @@ object GameWeekPollingUtils {
 
             val status = gameClient.getGameWeekJobStatus(config.jobId) ?: continue
 
+            // Use snake_case keys to match API response (readTree/readValue don't apply naming strategy)
             val jobStatus = status["status"] as? String ?: "UNKNOWN"
-            totalGames = (status["totalGames"] as? Number)?.toInt() ?: 0
-            startedGames = (status["startedGames"] as? Number)?.toInt() ?: 0
-            failedGames = (status["failedGames"] as? Number)?.toInt() ?: 0
-            currentIndex = (status["currentIndex"] as? Number)?.toInt() ?: 0
+            totalGames = (status["total_games"] as? Number)?.toInt() ?: (status["totalGames"] as? Number)?.toInt() ?: 0
+            startedGames = (status["started_games"] as? Number)?.toInt() ?: (status["startedGames"] as? Number)?.toInt() ?: 0
+            failedGames = (status["failed_games"] as? Number)?.toInt() ?: (status["failedGames"] as? Number)?.toInt() ?: 0
+            currentIndex = (status["current_index"] as? Number)?.toInt() ?: (status["currentIndex"] as? Number)?.toInt() ?: 0
 
             val progressBar = ProgressBarUtils.buildProgressBar(currentIndex, totalGames)
 
@@ -124,7 +128,7 @@ object GameWeekPollingUtils {
 
         // Send timeout message if job didn't complete (only if token hasn't expired)
         if (!jobCompleted && !tokenExpired) {
-            val timeoutMinutes = MAX_POLL_ATTEMPTS * POLL_INTERVAL_MS / 1000 / 60
+            val timeoutMinutes = getTimeoutMinutes()
             Logger.warn("Polling timeout: Job ${config.jobId} did not complete within $timeoutMinutes minutes")
             val timeoutMessage = config.onTimeout(config.jobId)
 
@@ -137,7 +141,7 @@ object GameWeekPollingUtils {
             }
         } else if (!jobCompleted) {
             // Log timeout even if we can't send a message
-            val timeoutMinutes = MAX_POLL_ATTEMPTS * POLL_INTERVAL_MS / 1000 / 60
+            val timeoutMinutes = getTimeoutMinutes()
             Logger.warn(
                 "Polling timeout: Job ${config.jobId} did not complete within $timeoutMinutes minutes (token expired, message not sent)",
             )

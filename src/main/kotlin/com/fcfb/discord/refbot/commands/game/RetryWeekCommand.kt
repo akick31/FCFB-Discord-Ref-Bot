@@ -62,7 +62,6 @@ class RetryWeekCommand(
             val pollingResult =
                 GameWeekPollingUtils.pollGameWeekJob(
                     gameClient = gameClient,
-                    interaction = interaction,
                     response = response,
                     config =
                         GameWeekPollingUtils.PollingConfig(
@@ -81,8 +80,8 @@ class RetryWeekCommand(
                                 }
                             },
                             onTimeout = { retryJobId ->
-                                val timeoutMinutes = 720 * 5000L / 1000 / 60
-                                "**⚠️ Polling Timeout**\n\n" +
+                                val timeoutMinutes = GameWeekPollingUtils.getTimeoutMinutes()
+                                "**Polling Timeout**\n\n" +
                                     "Polling stopped after $timeoutMinutes minutes. " +
                                     "The retry job may still be running in the background.\n\n" +
                                     "Retry Job ID: `$retryJobId`\n" +

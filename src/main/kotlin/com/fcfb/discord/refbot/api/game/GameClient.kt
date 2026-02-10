@@ -270,7 +270,8 @@ class GameClient(
             }
             val objectMapper = JacksonConfig().configureGameMapping()
             val node = objectMapper.readTree(jsonResponse)
-            val jobId = node.get("jobId")?.asText()
+            // Use snake_case key to match API response (readTree doesn't apply naming strategy)
+            val jobId = node.get("job_id")?.asText() ?: node.get("jobId")?.asText()
             mapOf(jobId to null)
         } catch (e: Exception) {
             Logger.error(e.message ?: "Unknown error occurred while starting week")
@@ -317,7 +318,8 @@ class GameClient(
             }
             val objectMapper = JacksonConfig().configureGameMapping()
             val node = objectMapper.readTree(jsonResponse)
-            val newJobId = node.get("jobId")?.asText()
+            // Use snake_case key to match API response (readTree doesn't apply naming strategy)
+            val newJobId = node.get("job_id")?.asText() ?: node.get("jobId")?.asText()
             mapOf(newJobId to null)
         } catch (e: Exception) {
             Logger.error(e.message ?: "Unknown error occurred while retrying failed games")

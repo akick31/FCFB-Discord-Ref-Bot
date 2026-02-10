@@ -61,7 +61,6 @@ class StartWeekCommand(
             val pollingResult =
                 GameWeekPollingUtils.pollGameWeekJob(
                     gameClient = gameClient,
-                    interaction = interaction,
                     response = response,
                     config =
                         GameWeekPollingUtils.PollingConfig(
@@ -80,12 +79,12 @@ class StartWeekCommand(
                                     }
                                 }
                             },
-                            onTimeout = { jobId ->
-                                val timeoutMinutes = 720 * 5000L / 1000 / 60
-                                "**⚠️ Polling Timeout**\n\n" +
+                            onTimeout = { timeoutJobId ->
+                                val timeoutMinutes = GameWeekPollingUtils.getTimeoutMinutes()
+                                "**Polling Timeout**\n\n" +
                                     "Polling stopped after $timeoutMinutes minutes. " +
                                     "The job may still be running in the background.\n\n" +
-                                    "Job ID: `$jobId`\n" +
+                                    "Job ID: `$timeoutJobId`\n" +
                                     "Check the website or use `/retry_week` with this job ID to check status."
                             },
                         ),
