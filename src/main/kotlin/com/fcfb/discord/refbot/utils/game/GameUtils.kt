@@ -578,23 +578,7 @@ class GameUtils(
                 file.path
             }
 
-        val title =
-            when {
-                game.gameType == GameType.BOWL && game.bowlGameName?.isNotBlank() == true -> {
-                    "${game.homeTeam} vs ${game.awayTeam} | ${game.bowlGameName}"
-                }
-                game.gameType == GameType.CONFERENCE_CHAMPIONSHIP -> {
-                    val conferenceName = getConferenceName(game.homeTeam)
-                    if (conferenceName != null) {
-                        "${game.homeTeam} vs ${game.awayTeam} | $conferenceName Championship"
-                    } else {
-                        "${game.homeTeam} vs ${game.awayTeam} | Conference Championship"
-                    }
-                }
-                else -> {
-                    "${game.homeTeam} vs ${game.awayTeam}"
-                }
-            }
+        val title = getGameEmbedTitle(game)
         return EmbedData(
             title = Optional(title),
             description = Optional(embedContent.orEmpty()),

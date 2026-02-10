@@ -1,6 +1,7 @@
 package com.fcfb.discord.refbot.commands.game
 
 import com.fcfb.discord.refbot.api.game.GameClient
+import com.fcfb.discord.refbot.utils.ProgressBarUtils
 import com.fcfb.discord.refbot.utils.system.Logger
 import dev.kord.core.Kord
 import dev.kord.core.behavior.interaction.response.respond
@@ -74,7 +75,7 @@ class StartWeekCommand(
                 val failedGames = (status["failedGames"] as? Number)?.toInt() ?: 0
                 val currentIndex = (status["currentIndex"] as? Number)?.toInt() ?: 0
 
-                val progressBar = buildProgressBar(currentIndex, totalGames)
+                val progressBar = ProgressBarUtils.buildProgressBar(currentIndex, totalGames)
 
                 val message =
                     buildString {
@@ -116,14 +117,4 @@ class StartWeekCommand(
         }
     }
 
-    private fun buildProgressBar(
-        current: Int,
-        total: Int,
-    ): String {
-        if (total == 0) return "`[--------------------] 0%`"
-        val percent = (current.toDouble() / total * 100).toInt().coerceIn(0, 100)
-        val filled = (percent / 5).coerceIn(0, 20)
-        val empty = 20 - filled
-        return "`[${"#".repeat(filled)}${"-".repeat(empty)}] $percent%`"
-    }
 }
