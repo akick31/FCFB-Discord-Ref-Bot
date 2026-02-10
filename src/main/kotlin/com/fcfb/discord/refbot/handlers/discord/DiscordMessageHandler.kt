@@ -904,9 +904,9 @@ class DiscordMessageHandler(
         val title = gameUtils.getGameEmbedTitle(game)
         val embedData =
             EmbedData(
-                title = Optional(title),
-                description = Optional(messageContent + ""),
-                footer = Optional(EmbedFooterData(text = gameUtils.getFormattedFooterText(game))),
+                title = Optional.Value(title),
+                description = Optional.Value(messageContent ?: ""),
+                footer = Optional.Value(EmbedFooterData(text = gameUtils.getFormattedFooterText(game))),
             )
 
         val messageToSend = appendUserPings(game, scenario, homeCoaches, awayCoaches, offensiveCoaches)
@@ -944,9 +944,9 @@ class DiscordMessageHandler(
         val title = gameUtils.getGameEmbedTitle(game)
         val embedData =
             EmbedData(
-                title = Optional(title),
-                description = Optional(messageContent + textScorebug),
-                footer = Optional(EmbedFooterData(text = gameUtils.getFormattedFooterText(game))),
+                title = Optional.Value(title),
+                description = Optional.Value(messageContent + textScorebug),
+                footer = Optional.Value(EmbedFooterData(text = gameUtils.getFormattedFooterText(game))),
             )
 
         val messageToSend = appendUserPings(game, scenario, homeCoaches, awayCoaches, offensiveCoaches)
