@@ -62,6 +62,7 @@ class RetryWeekCommand(
                 this.content = "Retry job started: `$newJobId`\nPolling for progress..."
             }
 
+            var jobCompleted = false
             for (attempt in 1..MAX_POLL_ATTEMPTS) {
                 delay(POLL_INTERVAL_MS)
 
@@ -104,7 +105,20 @@ class RetryWeekCommand(
 
                 if (jobStatus == "COMPLETED" || jobStatus == "FAILED") {
                     Logger.info("Retry job $newJobId finished: $jobStatus (started=$startedGames, failed=$failedGames)")
+                    jobCompleted = true
                     break
+                }
+            }
+
+            if (!jobCompleted) {
+                Logger.warn("Polling timeout: Retry job $newJobId did not complete within ${MAX_POLL_ATTEMPTS * POLL_INTERVAL_MS / 1000 / 60} minutes")
+                response.respond {
+                    this.content = "**⚠️ Polling Timeout**\n\n" +
+                        "Polling stopped after ${MAX_POLL_ATTEMPTS * POLL_INTERVAL_MS / 1000 / 60} minutes. " +
+                        "The retry job may still be running in the background.\n\n" +
+                        "Retry Job ID: `$newJobId`\n" +
+                        "Original Job ID: `$jobId`\n" +
+                        "Check the website or use `/retry_week` with the retry job ID to check status."
                 }
             }
         } catch (e: Exception) {

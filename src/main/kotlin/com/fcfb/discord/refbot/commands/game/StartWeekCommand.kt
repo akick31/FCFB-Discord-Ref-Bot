@@ -64,6 +64,7 @@ class StartWeekCommand(
 
             Logger.info("Job $jobId created for Season $season, Week $week")
 
+            var jobCompleted = false
             for (attempt in 1..MAX_POLL_ATTEMPTS) {
                 delay(POLL_INTERVAL_MS)
 
@@ -106,7 +107,19 @@ class StartWeekCommand(
 
                 if (jobStatus == "COMPLETED" || jobStatus == "FAILED") {
                     Logger.info("Job $jobId finished: $jobStatus (started=$startedGames, failed=$failedGames)")
+                    jobCompleted = true
                     break
+                }
+            }
+
+            if (!jobCompleted) {
+                Logger.warn("Polling timeout: Job $jobId did not complete within ${MAX_POLL_ATTEMPTS * POLL_INTERVAL_MS / 1000 / 60} minutes")
+                response.respond {
+                    this.content = "**⚠️ Polling Timeout**\n\n" +
+                        "Polling stopped after ${MAX_POLL_ATTEMPTS * POLL_INTERVAL_MS / 1000 / 60} minutes. " +
+                        "The job may still be running in the background.\n\n" +
+                        "Job ID: `$jobId`\n" +
+                        "Check the website or use `/retry_week` with this job ID to check status."
                 }
             }
         } catch (e: Exception) {
