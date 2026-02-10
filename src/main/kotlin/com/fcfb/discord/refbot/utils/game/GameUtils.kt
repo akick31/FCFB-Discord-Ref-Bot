@@ -7,6 +7,7 @@ import com.fcfb.discord.refbot.model.domain.Team
 import com.fcfb.discord.refbot.model.enums.game.GameMode
 import com.fcfb.discord.refbot.model.enums.game.GameStatus
 import com.fcfb.discord.refbot.model.enums.game.GameStatus.END_OF_REGULATION
+import com.fcfb.discord.refbot.model.enums.game.GameType
 import com.fcfb.discord.refbot.model.enums.play.ActualResult
 import com.fcfb.discord.refbot.model.enums.play.PlayCall
 import com.fcfb.discord.refbot.model.enums.play.PlayType
@@ -577,8 +578,25 @@ class GameUtils(
                 file.path
             }
 
+        val title =
+            when {
+                game.gameType == GameType.BOWL && game.bowlGameName?.isNotBlank() == true -> {
+                    "${game.homeTeam} vs ${game.awayTeam} | ${game.bowlGameName}"
+                }
+                game.gameType == GameType.CONFERENCE_CHAMPIONSHIP -> {
+                    val conferenceName = getConferenceName(game.homeTeam)
+                    if (conferenceName != null) {
+                        "${game.homeTeam} vs ${game.awayTeam} | $conferenceName Championship"
+                    } else {
+                        "${game.homeTeam} vs ${game.awayTeam} | Conference Championship"
+                    }
+                }
+                else -> {
+                    "${game.homeTeam} vs ${game.awayTeam}"
+                }
+            }
         return EmbedData(
-            title = Optional("${game.homeTeam} vs ${game.awayTeam}"),
+            title = Optional(title),
             description = Optional(embedContent.orEmpty()),
             image = Optional(EmbedImageData(url = Optional(scorebugUrl))),
             footer = Optional(EmbedFooterData(text = getFormattedFooterText(game))),
@@ -726,6 +744,22 @@ class GameUtils(
             team?.abbreviation
         } catch (e: Exception) {
             Logger.error("Failed to get team abbreviation for $teamName: ${e.message}", e)
+            null
+        }
+    }
+
+    /**
+     * Get the conference name for a team
+     * @param teamName The team name
+     * @return The conference name (uppercase) or null if not found
+     */
+    suspend fun getConferenceName(teamName: String): String? {
+        return try {
+            val apiResponse = teamClient.getTeamByName(teamName)
+            val team = apiResponse.keys.firstOrNull()
+            team?.conference?.description?.uppercase()
+        } catch (e: Exception) {
+            Logger.error("Failed to get conference name for $teamName: ${e.message}", e)
             null
         }
     }

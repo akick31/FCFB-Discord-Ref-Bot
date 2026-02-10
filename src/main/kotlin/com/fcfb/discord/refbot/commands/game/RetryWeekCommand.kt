@@ -74,24 +74,28 @@ class RetryWeekCommand(
 
                 val progressBar = buildProgressBar(currentIndex, totalGames)
 
-                val message = buildString {
-                    appendLine("**Retry Job -- `$newJobId`**")
-                    appendLine("(Original job: `$jobId`)")
-                    appendLine()
-                    appendLine(progressBar)
-                    appendLine()
-                    appendLine("**Progress:** $currentIndex / $totalGames games processed")
-                    appendLine("Started: $startedGames | Failed: $failedGames")
-
-                    if (jobStatus == "COMPLETED" || jobStatus == "FAILED") {
+                val message =
+                    buildString {
+                        appendLine("**Retry Job -- `$newJobId`**")
+                        appendLine("(Original job: `$jobId`)")
                         appendLine()
-                        if (failedGames > 0) {
-                            appendLine("Retry completed with $failedGames failure(s). Use `/retry_week` again with job ID `$newJobId` to retry remaining failures.")
-                        } else {
-                            appendLine("All $startedGames retried games started successfully!")
+                        appendLine(progressBar)
+                        appendLine()
+                        appendLine("**Progress:** $currentIndex / $totalGames games processed")
+                        appendLine("Started: $startedGames | Failed: $failedGames")
+
+                        if (jobStatus == "COMPLETED" || jobStatus == "FAILED") {
+                            appendLine()
+                            if (failedGames > 0) {
+                                appendLine(
+                                    "Retry completed with $failedGames failure(s). " +
+                                        "Use `/retry_week` again with job ID `$newJobId` to retry remaining failures.",
+                                )
+                            } else {
+                                appendLine("All $startedGames retried games started successfully!")
+                            }
                         }
                     }
-                }
 
                 response.respond {
                     this.content = message
@@ -110,7 +114,10 @@ class RetryWeekCommand(
         }
     }
 
-    private fun buildProgressBar(current: Int, total: Int): String {
+    private fun buildProgressBar(
+        current: Int,
+        total: Int,
+    ): String {
         if (total == 0) return "`[--------------------] 0%`"
         val percent = (current.toDouble() / total * 100).toInt().coerceIn(0, 100)
         val filled = (percent / 5).coerceIn(0, 20)

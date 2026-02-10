@@ -901,9 +901,26 @@ class DiscordMessageHandler(
         offensiveCoaches: List<User?>,
         defensiveCoaches: List<User?>,
     ): Pair<Pair<String, EmbedData?>, List<User?>> {
+        val title =
+            when {
+                game.gameType == GameType.BOWL && game.bowlGameName?.isNotBlank() == true -> {
+                    "${game.homeTeam} vs ${game.awayTeam} | ${game.bowlGameName}"
+                }
+                game.gameType == GameType.CONFERENCE_CHAMPIONSHIP -> {
+                    val conferenceName = gameUtils.getConferenceName(game.homeTeam)
+                    if (conferenceName != null) {
+                        "${game.homeTeam} vs ${game.awayTeam} | $conferenceName Championship"
+                    } else {
+                        "${game.homeTeam} vs ${game.awayTeam} | Conference Championship"
+                    }
+                }
+                else -> {
+                    "${game.homeTeam} vs ${game.awayTeam}"
+                }
+            }
         val embedData =
             EmbedData(
-                title = Optional("${game.homeTeam} vs ${game.awayTeam}"),
+                title = Optional(title),
                 description = Optional(messageContent + ""),
                 footer = Optional(EmbedFooterData(text = gameUtils.getFormattedFooterText(game))),
             )
@@ -940,9 +957,26 @@ class DiscordMessageHandler(
                 append("**" + game.awayTeam).append(":** ").append(game.awayScore).append("\n")
                 append("----------------\n")
             }
+        val title =
+            when {
+                game.gameType == GameType.BOWL && game.bowlGameName?.isNotBlank() == true -> {
+                    "${game.homeTeam} vs ${game.awayTeam} | ${game.bowlGameName}"
+                }
+                game.gameType == GameType.CONFERENCE_CHAMPIONSHIP -> {
+                    val conferenceName = gameUtils.getConferenceName(game.homeTeam)
+                    if (conferenceName != null) {
+                        "${game.homeTeam} vs ${game.awayTeam} | $conferenceName Championship"
+                    } else {
+                        "${game.homeTeam} vs ${game.awayTeam} | Conference Championship"
+                    }
+                }
+                else -> {
+                    "${game.homeTeam} vs ${game.awayTeam}"
+                }
+            }
         val embedData =
             EmbedData(
-                title = Optional("${game.homeTeam} vs ${game.awayTeam}"),
+                title = Optional(title),
                 description = Optional(messageContent + textScorebug),
                 footer = Optional(EmbedFooterData(text = gameUtils.getFormattedFooterText(game))),
             )

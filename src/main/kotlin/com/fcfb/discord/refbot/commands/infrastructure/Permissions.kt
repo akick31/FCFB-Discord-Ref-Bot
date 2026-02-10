@@ -18,6 +18,8 @@ object Permissions {
     private val adminCommands =
         setOf(
             "start_game",
+            "start_week",
+            "retry_week",
             "end_game",
             "end_all",
             "delete_game",

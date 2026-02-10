@@ -76,24 +76,28 @@ class StartWeekCommand(
 
                 val progressBar = buildProgressBar(currentIndex, totalGames)
 
-                val message = buildString {
-                    appendLine("**Game Week Start -- Season $season, Week $week**")
-                    appendLine()
-                    appendLine(progressBar)
-                    appendLine()
-                    appendLine("**Progress:** $currentIndex / $totalGames games processed")
-                    appendLine("Started: $startedGames | Failed: $failedGames")
-
-                    if (jobStatus == "COMPLETED" || jobStatus == "FAILED") {
+                val message =
+                    buildString {
+                        appendLine("**Game Week Start -- Season $season, Week $week**")
                         appendLine()
-                        if (failedGames > 0) {
-                            appendLine("Completed with $failedGames failure(s). Use `/retry_week` or the website to retry failed games.")
-                            appendLine("Job ID: `$jobId`")
-                        } else {
-                            appendLine("All $startedGames games started successfully!")
+                        appendLine(progressBar)
+                        appendLine()
+                        appendLine("**Progress:** $currentIndex / $totalGames games processed")
+                        appendLine("Started: $startedGames | Failed: $failedGames")
+
+                        if (jobStatus == "COMPLETED" || jobStatus == "FAILED") {
+                            appendLine()
+                            if (failedGames > 0) {
+                                appendLine(
+                                    "Completed with $failedGames failure(s). " +
+                                        "Use `/retry_week` or the website to retry failed games.",
+                                )
+                                appendLine("Job ID: `$jobId`")
+                            } else {
+                                appendLine("All $startedGames games started successfully!")
+                            }
                         }
                     }
-                }
 
                 response.respond {
                     this.content = message
@@ -112,7 +116,10 @@ class StartWeekCommand(
         }
     }
 
-    private fun buildProgressBar(current: Int, total: Int): String {
+    private fun buildProgressBar(
+        current: Int,
+        total: Int,
+    ): String {
         if (total == 0) return "`[--------------------] 0%`"
         val percent = (current.toDouble() / total * 100).toInt().coerceIn(0, 100)
         val filled = (percent / 5).coerceIn(0, 20)
