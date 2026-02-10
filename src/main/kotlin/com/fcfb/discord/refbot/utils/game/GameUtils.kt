@@ -7,6 +7,7 @@ import com.fcfb.discord.refbot.model.domain.Team
 import com.fcfb.discord.refbot.model.enums.game.GameMode
 import com.fcfb.discord.refbot.model.enums.game.GameStatus
 import com.fcfb.discord.refbot.model.enums.game.GameStatus.END_OF_REGULATION
+import com.fcfb.discord.refbot.model.enums.game.GameType
 import com.fcfb.discord.refbot.model.enums.play.ActualResult
 import com.fcfb.discord.refbot.model.enums.play.PlayCall
 import com.fcfb.discord.refbot.model.enums.play.PlayType
@@ -543,6 +544,29 @@ class GameUtils(
     }
 
     /**
+     * Get the embed title for a game based on its type.
+     * Handles bowl games, conference championships, and regular games.
+     */
+    suspend fun getGameEmbedTitle(game: Game): String {
+        return when {
+            game.gameType == GameType.BOWL && game.bowlGameName?.isNotBlank() == true -> {
+                "${game.homeTeam} vs ${game.awayTeam} | ${game.bowlGameName}"
+            }
+            game.gameType == GameType.CONFERENCE_CHAMPIONSHIP -> {
+                val conferenceName = getConferenceName(game.homeTeam)
+                if (conferenceName != null) {
+                    "${game.homeTeam} vs ${game.awayTeam} | $conferenceName Championship"
+                } else {
+                    "${game.homeTeam} vs ${game.awayTeam} | Conference Championship"
+                }
+            }
+            else -> {
+                "${game.homeTeam} vs ${game.awayTeam}"
+            }
+        }
+    }
+
+    /**
      * Get the scorebug embed for a game
      * @param game The game object
      * @param embedContent The embed content
@@ -577,11 +601,12 @@ class GameUtils(
                 file.path
             }
 
+        val title = getGameEmbedTitle(game)
         return EmbedData(
-            title = Optional("${game.homeTeam} vs ${game.awayTeam}"),
-            description = Optional(embedContent.orEmpty()),
-            image = Optional(EmbedImageData(url = Optional(scorebugUrl))),
-            footer = Optional(EmbedFooterData(text = getFormattedFooterText(game))),
+            title = Optional.Value(title),
+            description = Optional.Value(embedContent.orEmpty()),
+            image = Optional.Value(EmbedImageData(url = Optional.Value(scorebugUrl))),
+            footer = Optional.Value(EmbedFooterData(text = getFormattedFooterText(game))),
         )
     }
 
@@ -618,10 +643,10 @@ class GameUtils(
                 ?: return null
 
         return EmbedData(
-            title = Optional("Win Probability Chart - ${game.homeTeam} vs ${game.awayTeam}"),
-            description = Optional(embedContent.orEmpty()),
-            image = Optional(EmbedImageData(url = Optional(chartUrl))),
-            footer = Optional(EmbedFooterData(text = getFormattedFooterText(game))),
+            title = Optional.Value("Win Probability Chart - ${game.homeTeam} vs ${game.awayTeam}"),
+            description = Optional.Value(embedContent.orEmpty()),
+            image = Optional.Value(EmbedImageData(url = Optional.Value(chartUrl))),
+            footer = Optional.Value(EmbedFooterData(text = getFormattedFooterText(game))),
         )
     }
 
@@ -646,10 +671,10 @@ class GameUtils(
                 ?: return null
 
         return EmbedData(
-            title = Optional("Score Chart - ${game.homeTeam} vs ${game.awayTeam}"),
-            description = Optional(embedContent.orEmpty()),
-            image = Optional(EmbedImageData(url = Optional(chartUrl))),
-            footer = Optional(EmbedFooterData(text = getFormattedFooterText(game))),
+            title = Optional.Value("Score Chart - ${game.homeTeam} vs ${game.awayTeam}"),
+            description = Optional.Value(embedContent.orEmpty()),
+            image = Optional.Value(EmbedImageData(url = Optional.Value(chartUrl))),
+            footer = Optional.Value(EmbedFooterData(text = getFormattedFooterText(game))),
         )
     }
 
@@ -726,6 +751,22 @@ class GameUtils(
             team?.abbreviation
         } catch (e: Exception) {
             Logger.error("Failed to get team abbreviation for $teamName: ${e.message}", e)
+            null
+        }
+    }
+
+    /**
+     * Get the conference name for a team
+     * @param teamName The team name
+     * @return The conference name (uppercase) or null if not found
+     */
+    suspend fun getConferenceName(teamName: String): String? {
+        return try {
+            val apiResponse = teamClient.getTeamByName(teamName)
+            val team = apiResponse.keys.firstOrNull()
+            team?.conference?.description?.uppercase()
+        } catch (e: Exception) {
+            Logger.error("Failed to get conference name for $teamName: ${e.message}", e)
             null
         }
     }

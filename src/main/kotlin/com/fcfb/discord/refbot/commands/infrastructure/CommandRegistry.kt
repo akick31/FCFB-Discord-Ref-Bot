@@ -14,10 +14,12 @@ import com.fcfb.discord.refbot.commands.game.GameInfoCommand
 import com.fcfb.discord.refbot.commands.game.MessageAllGamesCommand
 import com.fcfb.discord.refbot.commands.game.PreviousPlayCommand
 import com.fcfb.discord.refbot.commands.game.RestartGameCommand
+import com.fcfb.discord.refbot.commands.game.RetryWeekCommand
 import com.fcfb.discord.refbot.commands.game.RollbackCommand
 import com.fcfb.discord.refbot.commands.game.ScoreChartCommand
 import com.fcfb.discord.refbot.commands.game.StartGameCommand
 import com.fcfb.discord.refbot.commands.game.StartScrimmageCommand
+import com.fcfb.discord.refbot.commands.game.StartWeekCommand
 import com.fcfb.discord.refbot.commands.game.WinProbabilityCommand
 import com.fcfb.discord.refbot.commands.system.HelpCommand
 import com.fcfb.discord.refbot.commands.user.GetRoleCommand
@@ -45,6 +47,8 @@ class CommandRegistry(
     private val pingCommand: PingCommand,
     private val startGameCommand: StartGameCommand,
     private val startScrimmageCommand: StartScrimmageCommand,
+    private val startWeekCommand: StartWeekCommand,
+    private val retryWeekCommand: RetryWeekCommand,
     private val subCoachCommand: SubCoachCommand,
     private val getRoleCommand: GetRoleCommand,
     private val rollbackCommand: RollbackCommand,
@@ -76,6 +80,8 @@ class CommandRegistry(
         scoreChartCommand.register(client)
         startGameCommand.register(client)
         startScrimmageCommand.register(client)
+        startWeekCommand.register(client)
+        retryWeekCommand.register(client)
         subCoachCommand.register(client)
         winProbabilityCommand.register(client)
     }
@@ -119,6 +125,8 @@ class CommandRegistry(
             "previous_play" -> previousPlayCommand.execute(interaction)
             "start_game" -> startGameCommand.execute(interaction)
             "start_scrimmage" -> startScrimmageCommand.execute(interaction)
+            "start_week" -> startWeekCommand.execute(interaction)
+            "retry_week" -> retryWeekCommand.execute(interaction)
             "sub_coach" -> subCoachCommand.execute(interaction)
             "get_role" -> getRoleCommand.execute(interaction)
             "rollback" -> rollbackCommand.execute(interaction)

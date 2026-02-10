@@ -23,10 +23,12 @@ import com.fcfb.discord.refbot.commands.game.GameInfoCommand
 import com.fcfb.discord.refbot.commands.game.MessageAllGamesCommand
 import com.fcfb.discord.refbot.commands.game.PreviousPlayCommand
 import com.fcfb.discord.refbot.commands.game.RestartGameCommand
+import com.fcfb.discord.refbot.commands.game.RetryWeekCommand
 import com.fcfb.discord.refbot.commands.game.RollbackCommand
 import com.fcfb.discord.refbot.commands.game.ScoreChartCommand
 import com.fcfb.discord.refbot.commands.game.StartGameCommand
 import com.fcfb.discord.refbot.commands.game.StartScrimmageCommand
+import com.fcfb.discord.refbot.commands.game.StartWeekCommand
 import com.fcfb.discord.refbot.commands.game.WinProbabilityCommand
 import com.fcfb.discord.refbot.commands.infrastructure.CommandRegistry
 import com.fcfb.discord.refbot.commands.system.HelpCommand
@@ -95,6 +97,8 @@ val appModule =
         single { PingCommand(get(), get(), get()) }
         single { StartGameCommand(get()) }
         single { StartScrimmageCommand(get()) }
+        single { StartWeekCommand(get()) }
+        single { RetryWeekCommand(get()) }
         single { SubCoachCommand(get(), get(), get()) }
         single { GetRoleCommand(get()) }
         single { GetTeamCoachesCommand(get()) }
@@ -105,7 +109,7 @@ val appModule =
         single {
             CommandRegistry(
                 get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(),
-                get(), get(), get(), get(), get(), get(), get(), get(), get(), get(),
+                get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(),
             )
         }
         single { FCFBDiscordRefBot(get(), get(), get(), get()) }

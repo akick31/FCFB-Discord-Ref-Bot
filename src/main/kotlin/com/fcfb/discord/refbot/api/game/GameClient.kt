@@ -253,6 +253,85 @@ class GameClient(
     }
 
     /**
+     * Start all games for a given season and week (async).
+     * Returns immediately with a job ID. Use [getGameWeekJobStatus] to poll progress.
+     */
+    internal suspend fun startWeek(
+        season: Int,
+        week: Int,
+    ): Map<String?, String?> {
+        val endpointUrl = "$baseUrl/game/week?season=$season&week=$week"
+        return try {
+            val response: HttpResponse = httpClient.post(endpointUrl)
+            val jsonResponse = response.bodyAsText()
+            if (jsonResponse.contains("error")) {
+                val error = apiUtils.readError(jsonResponse)
+                return mapOf(null to error)
+            }
+            val objectMapper = JacksonConfig().configureGameMapping()
+            val node = objectMapper.readTree(jsonResponse)
+            // Use snake_case key to match API response (readTree doesn't apply naming strategy)
+            val jobId = node.get("job_id")?.asText() ?: node.get("jobId")?.asText()
+            mapOf(jobId to null)
+        } catch (e: Exception) {
+            Logger.error(e.message ?: "Unknown error occurred while starting week")
+            if (e.message!!.contains("Connection refused")) {
+                mapOf(null to "Connection refused. Arceus API is likely not running.")
+            } else {
+                mapOf(null to e.message)
+            }
+        }
+    }
+
+    /**
+     * Poll the status of a game week start job.
+     * Returns a map with job status JSON fields.
+     */
+    internal suspend fun getGameWeekJobStatus(jobId: String): Map<String, Any?>? {
+        val endpointUrl = "$baseUrl/game/week/status/$jobId"
+        return try {
+            val response =
+                httpClient.get(endpointUrl) {
+                    contentType(ContentType.Application.Json)
+                }
+            val jsonResponse = response.bodyAsText()
+            val objectMapper = JacksonConfig().configureGameMapping()
+            objectMapper.readValue(jsonResponse, object : com.fasterxml.jackson.core.type.TypeReference<Map<String, Any?>>() {})
+        } catch (e: Exception) {
+            Logger.error("Error polling job status: ${e.message}")
+            null
+        }
+    }
+
+    /**
+     * Retry failed games from a previously completed job.
+     * Returns immediately with a new job ID.
+     */
+    internal suspend fun retryFailedGames(jobId: String): Map<String?, String?> {
+        val endpointUrl = "$baseUrl/game/week/retry/$jobId"
+        return try {
+            val response: HttpResponse = httpClient.post(endpointUrl)
+            val jsonResponse = response.bodyAsText()
+            if (jsonResponse.contains("error")) {
+                val error = apiUtils.readError(jsonResponse)
+                return mapOf(null to error)
+            }
+            val objectMapper = JacksonConfig().configureGameMapping()
+            val node = objectMapper.readTree(jsonResponse)
+            // Use snake_case key to match API response (readTree doesn't apply naming strategy)
+            val newJobId = node.get("job_id")?.asText() ?: node.get("jobId")?.asText()
+            mapOf(newJobId to null)
+        } catch (e: Exception) {
+            Logger.error(e.message ?: "Unknown error occurred while retrying failed games")
+            if (e.message!!.contains("Connection refused")) {
+                mapOf(null to "Connection refused. Arceus API is likely not running.")
+            } else {
+                mapOf(null to e.message)
+            }
+        }
+    }
+
+    /**
      * Call a put request to the game endpoint and return a game
      * @param endpointUrl
      * @return Game
