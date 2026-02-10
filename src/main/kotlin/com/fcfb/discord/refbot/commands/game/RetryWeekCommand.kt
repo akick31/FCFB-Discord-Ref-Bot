@@ -111,7 +111,10 @@ class RetryWeekCommand(
             }
 
             if (!jobCompleted) {
-                Logger.warn("Polling timeout: Retry job $newJobId did not complete within ${MAX_POLL_ATTEMPTS * POLL_INTERVAL_MS / 1000 / 60} minutes")
+                val timeoutMinutes = MAX_POLL_ATTEMPTS * POLL_INTERVAL_MS / 1000 / 60
+                Logger.warn(
+                    "Polling timeout: Retry job $newJobId did not complete within $timeoutMinutes minutes",
+                )
                 response.respond {
                     this.content = "**⚠️ Polling Timeout**\n\n" +
                         "Polling stopped after ${MAX_POLL_ATTEMPTS * POLL_INTERVAL_MS / 1000 / 60} minutes. " +
@@ -128,5 +131,4 @@ class RetryWeekCommand(
             }
         }
     }
-
 }

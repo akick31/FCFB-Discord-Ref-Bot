@@ -113,7 +113,9 @@ class StartWeekCommand(
             }
 
             if (!jobCompleted) {
-                Logger.warn("Polling timeout: Job $jobId did not complete within ${MAX_POLL_ATTEMPTS * POLL_INTERVAL_MS / 1000 / 60} minutes")
+                Logger.warn(
+                    "Polling timeout: Job $jobId did not complete within ${MAX_POLL_ATTEMPTS * POLL_INTERVAL_MS / 1000 / 60} minutes",
+                )
                 response.respond {
                     this.content = "**⚠️ Polling Timeout**\n\n" +
                         "Polling stopped after ${MAX_POLL_ATTEMPTS * POLL_INTERVAL_MS / 1000 / 60} minutes. " +
@@ -129,5 +131,4 @@ class StartWeekCommand(
             }
         }
     }
-
 }
