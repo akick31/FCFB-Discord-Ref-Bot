@@ -1,22 +1,16 @@
 package com.fcfb.discord.refbot.commands.game
 
 import com.fcfb.discord.refbot.api.game.GameClient
-import com.fcfb.discord.refbot.utils.ProgressBarUtils
+import com.fcfb.discord.refbot.utils.polling.GameWeekPollingUtils
 import com.fcfb.discord.refbot.utils.system.Logger
 import dev.kord.core.Kord
 import dev.kord.core.behavior.interaction.response.respond
 import dev.kord.core.entity.interaction.ChatInputCommandInteraction
 import dev.kord.rest.builder.interaction.string
-import kotlinx.coroutines.delay
 
 class RetryWeekCommand(
     private val gameClient: GameClient,
 ) {
-    companion object {
-        private const val POLL_INTERVAL_MS = 5000L
-        private const val MAX_POLL_ATTEMPTS = 720
-    }
-
     suspend fun register(client: Kord) {
         client.createGlobalChatInputCommand(
             "retry_week",
@@ -44,9 +38,9 @@ class RetryWeekCommand(
         }
 
         try {
-            val result = gameClient.retryFailedGames(jobId)
-            val newJobId = result.keys.firstOrNull()
-            val error = result.values.firstOrNull()
+            val retryResult = gameClient.retryFailedGames(jobId)
+            val newJobId = retryResult.keys.firstOrNull()
+            val error = retryResult.values.firstOrNull()
 
             if (newJobId == null) {
                 response.respond {
@@ -62,67 +56,44 @@ class RetryWeekCommand(
                 this.content = "Retry job started: `$newJobId`\nPolling for progress..."
             }
 
-            var jobCompleted = false
-            for (attempt in 1..MAX_POLL_ATTEMPTS) {
-                delay(POLL_INTERVAL_MS)
-
-                val status = gameClient.getGameWeekJobStatus(newJobId) ?: continue
-
-                val jobStatus = status["status"] as? String ?: "UNKNOWN"
-                val totalGames = (status["totalGames"] as? Number)?.toInt() ?: 0
-                val startedGames = (status["startedGames"] as? Number)?.toInt() ?: 0
-                val failedGames = (status["failedGames"] as? Number)?.toInt() ?: 0
-                val currentIndex = (status["currentIndex"] as? Number)?.toInt() ?: 0
-
-                val progressBar = ProgressBarUtils.buildProgressBar(currentIndex, totalGames)
-
-                val message =
-                    buildString {
-                        appendLine("**Retry Job -- `$newJobId`**")
-                        appendLine("(Original job: `$jobId`)")
-                        appendLine()
-                        appendLine(progressBar)
-                        appendLine()
-                        appendLine("**Progress:** $currentIndex / $totalGames games processed")
-                        appendLine("Started: $startedGames | Failed: $failedGames")
-
-                        if (jobStatus == "COMPLETED" || jobStatus == "FAILED") {
-                            appendLine()
-                            if (failedGames > 0) {
-                                appendLine(
-                                    "Retry completed with $failedGames failure(s). " +
-                                        "Use `/retry_week` again with job ID `$newJobId` to retry remaining failures.",
-                                )
-                            } else {
-                                appendLine("All $startedGames retried games started successfully!")
-                            }
-                        }
-                    }
-
-                response.respond {
-                    this.content = message
-                }
-
-                if (jobStatus == "COMPLETED" || jobStatus == "FAILED") {
-                    Logger.info("Retry job $newJobId finished: $jobStatus (started=$startedGames, failed=$failedGames)")
-                    jobCompleted = true
-                    break
-                }
-            }
-
-            if (!jobCompleted) {
-                val timeoutMinutes = MAX_POLL_ATTEMPTS * POLL_INTERVAL_MS / 1000 / 60
-                Logger.warn(
-                    "Polling timeout: Retry job $newJobId did not complete within $timeoutMinutes minutes",
+            val pollingResult =
+                GameWeekPollingUtils.pollGameWeekJob(
+                    gameClient = gameClient,
+                    interaction = interaction,
+                    response = response,
+                    config =
+                        GameWeekPollingUtils.PollingConfig(
+                            jobId = newJobId,
+                            title = "Retry Job -- `$newJobId`\n(Original job: `$jobId`)",
+                            onComplete = { pollingResult ->
+                                buildString {
+                                    if (pollingResult.failedGames > 0) {
+                                        appendLine(
+                                            "Retry completed with ${pollingResult.failedGames} failure(s). " +
+                                                "Use `/retry_week` again with job ID `$newJobId` to retry remaining failures.",
+                                        )
+                                    } else {
+                                        appendLine("All ${pollingResult.startedGames} retried games started successfully!")
+                                    }
+                                }
+                            },
+                            onTimeout = { jobId ->
+                                val timeoutMinutes = 720 * 5000L / 1000 / 60
+                                "**⚠️ Polling Timeout**\n\n" +
+                                    "Polling stopped after $timeoutMinutes minutes. " +
+                                    "The retry job may still be running in the background.\n\n" +
+                                    "Retry Job ID: `$newJobId`\n" +
+                                    "Original Job ID: `$jobId`\n" +
+                                    "Check the website or use `/retry_week` with the retry job ID to check status."
+                            },
+                        ),
                 )
-                response.respond {
-                    this.content = "**⚠️ Polling Timeout**\n\n" +
-                        "Polling stopped after ${MAX_POLL_ATTEMPTS * POLL_INTERVAL_MS / 1000 / 60} minutes. " +
-                        "The retry job may still be running in the background.\n\n" +
-                        "Retry Job ID: `$newJobId`\n" +
-                        "Original Job ID: `$jobId`\n" +
-                        "Check the website or use `/retry_week` with the retry job ID to check status."
-                }
+
+            if (pollingResult.jobCompleted) {
+                Logger.info(
+                    "Retry job $newJobId finished: ${pollingResult.finalStatus} " +
+                        "(started=${pollingResult.startedGames}, failed=${pollingResult.failedGames})",
+                )
             }
         } catch (e: Exception) {
             Logger.error("Error in retry week command: ${e.message}")

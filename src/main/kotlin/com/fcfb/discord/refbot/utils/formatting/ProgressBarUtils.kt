@@ -1,4 +1,4 @@
-package com.fcfb.discord.refbot.utils
+package com.fcfb.discord.refbot.utils.formatting
 
 object ProgressBarUtils {
     /**
