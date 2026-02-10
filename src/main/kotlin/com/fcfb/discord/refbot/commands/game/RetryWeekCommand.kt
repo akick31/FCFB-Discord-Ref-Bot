@@ -56,6 +56,9 @@ class RetryWeekCommand(
                 this.content = "Retry job started: `$newJobId`\nPolling for progress..."
             }
 
+            // Capture original job ID to avoid shadowing in lambda
+            val originalJobId = jobId
+
             val pollingResult =
                 GameWeekPollingUtils.pollGameWeekJob(
                     gameClient = gameClient,
@@ -64,7 +67,7 @@ class RetryWeekCommand(
                     config =
                         GameWeekPollingUtils.PollingConfig(
                             jobId = newJobId,
-                            title = "Retry Job -- `$newJobId`\n(Original job: `$jobId`)",
+                            title = "Retry Job -- `$newJobId`\n(Original job: `$originalJobId`)",
                             onComplete = { pollingResult ->
                                 buildString {
                                     if (pollingResult.failedGames > 0) {
@@ -77,13 +80,13 @@ class RetryWeekCommand(
                                     }
                                 }
                             },
-                            onTimeout = { jobId ->
+                            onTimeout = { retryJobId ->
                                 val timeoutMinutes = 720 * 5000L / 1000 / 60
                                 "**⚠️ Polling Timeout**\n\n" +
                                     "Polling stopped after $timeoutMinutes minutes. " +
                                     "The retry job may still be running in the background.\n\n" +
-                                    "Retry Job ID: `$newJobId`\n" +
-                                    "Original Job ID: `$jobId`\n" +
+                                    "Retry Job ID: `$retryJobId`\n" +
+                                    "Original Job ID: `$originalJobId`\n" +
                                     "Check the website or use `/retry_week` with the retry job ID to check status."
                             },
                         ),
