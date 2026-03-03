@@ -30,7 +30,8 @@ class HelpCommand {
             "Welcome to the FCFB Discord Ref Bot! Here are the available commands:\n" +
                 "`/help` - Display this help message\n" +
                 "`/register` - Register as a new user\n" +
-                "`/start_scrimmage` - Start a new game as a scrimmage\n"
+                "`/start_scrimmage` - Start a new game as a scrimmage\n" +
+                "`/generate_dog_report` - Show Delay of Game counts by team\n"
         if (userRole != UserRole.USER) {
             message += "\n" +
                 "`/start_game` - Start a new game\n" +
