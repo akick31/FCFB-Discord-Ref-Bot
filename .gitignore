@@ -43,6 +43,9 @@ bin/
 /nbdist/
 /.nb-gradle/
 
+### Claude ###
+.claude/
+
 ### VS Code ###
 .vscode/
 
