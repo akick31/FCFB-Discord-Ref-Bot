@@ -1,5 +1,6 @@
 package com.fcfb.discord.refbot.api.game
 
+import com.fasterxml.jackson.core.type.TypeReference
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fcfb.discord.refbot.api.utils.ApiUtils
 import com.fcfb.discord.refbot.api.utils.HttpClientConfig
@@ -109,7 +110,7 @@ class PlayClient(
      */
     internal suspend fun getPreviousPlay(gameId: Int): Map<Play?, String?> {
         val endpointUrl = "$baseUrl/play/previous?gameId=$gameId"
-        return getRequest(endpointUrl)
+        return getRequest(endpointUrl, object : TypeReference<Play>() {})
     }
 
     /**
@@ -118,7 +119,20 @@ class PlayClient(
      */
     internal suspend fun getCurrentPlay(gameId: Int): Map<Play?, String?> {
         val endpointUrl = "$baseUrl/play/current?gameId=$gameId"
-        return getRequest(endpointUrl)
+        return getRequest(endpointUrl, object : TypeReference<Play>() {})
+    }
+
+    /**
+     * Get delay of game counts grouped by team for a given season and week
+     * @param season
+     * @param week
+     */
+    internal suspend fun getDelayOfGameCountsByWeek(
+        season: Int,
+        week: Int,
+    ): Map<Map<String, Int>?, String?> {
+        val endpointUrl = "$baseUrl/play/delay-of-game?season=$season&week=$week"
+        return getRequest(endpointUrl, object : TypeReference<Map<String, Int>>() {})
     }
 
     /**
@@ -172,11 +186,14 @@ class PlayClient(
     }
 
     /**
-     * Make a get request to the play endpoint and return a play
+     * Make a get request to the play endpoint and return the deserialized response
      * @param endpointUrl
-     * @return Play
+     * @param typeRef TypeReference for deserialization
      */
-    private suspend fun getRequest(endpointUrl: String): Map<Play?, String?> {
+    private suspend fun <T : Any> getRequest(
+        endpointUrl: String,
+        typeRef: TypeReference<T>,
+    ): Map<T?, String?> {
         return try {
             val response = httpClient.get(endpointUrl)
             val jsonResponse = response.bodyAsText()
@@ -184,7 +201,7 @@ class PlayClient(
                 val error = apiUtils.readError(jsonResponse)
                 return mapOf(null to error)
             }
-            mapOf(ObjectMapper().readValue(jsonResponse, Play::class.java) to null)
+            mapOf(ObjectMapper().readValue(jsonResponse, typeRef) to null)
         } catch (e: Exception) {
             Logger.error(e.message ?: "Unknown error occurred while making a get request to the play endpoint")
             if (e.message!!.contains("Connection refused")) {
