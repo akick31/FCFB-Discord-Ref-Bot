@@ -764,7 +764,7 @@ class GameUtils(
         return try {
             val apiResponse = teamClient.getTeamByName(teamName)
             val team = apiResponse.keys.firstOrNull()
-            team?.conference?.description?.uppercase()
+            team?.conference?.description
         } catch (e: Exception) {
             Logger.error("Failed to get conference name for $teamName: ${e.message}", e)
             null
