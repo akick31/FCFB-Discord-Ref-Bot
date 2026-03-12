@@ -1,11 +1,11 @@
 package com.fcfb.discord.refbot.commands.system
 
-import com.fcfb.discord.refbot.api.team.TeamClient
-import com.fcfb.discord.refbot.api.user.FCFBUserClient
+import com.fcfb.discord.refbot.api.game.PlayClient
 import com.fcfb.discord.refbot.utils.system.Logger
 import dev.kord.core.Kord
 import dev.kord.core.behavior.interaction.response.respond
 import dev.kord.core.entity.interaction.ChatInputCommandInteraction
+import dev.kord.rest.builder.interaction.integer
 import dev.kord.rest.builder.message.addFile
 import java.awt.Color
 import java.awt.Font
@@ -19,86 +19,66 @@ import java.nio.file.StandardOpenOption
 import javax.imageio.ImageIO
 
 class DogReportCommand(
-    private val fcfbUserClient: FCFBUserClient,
-    private val teamClient: TeamClient,
+    private val playClient: PlayClient,
 ) {
     companion object {
         const val COMMAND_NAME = "generate_dog_report"
-        const val COMMAND_DESCRIPTION = "Generate a Delay of Game report grouped by team"
+        const val COMMAND_DESCRIPTION = "Generate a Delay of Game report grouped by team for a given week"
+
+        const val SEASON_OPTION = "season"
+        const val SEASON_DESCRIPTION = "Season number"
+
+        const val WEEK_OPTION = "week"
+        const val WEEK_DESCRIPTION = "Week number"
     }
 
     suspend fun register(client: Kord) {
         client.createGlobalChatInputCommand(
             COMMAND_NAME,
             COMMAND_DESCRIPTION,
-        )
+        ) {
+            integer(SEASON_OPTION, SEASON_DESCRIPTION) {
+                required = true
+            }
+            integer(WEEK_OPTION, WEEK_DESCRIPTION) {
+                required = true
+            }
+        }
     }
 
     suspend fun execute(interaction: ChatInputCommandInteraction) {
-        Logger.info("${interaction.user.username} requested a Delay of Game report")
+        val season = interaction.command.integers[SEASON_OPTION]!!.toInt()
+        val week = interaction.command.integers[WEEK_OPTION]!!.toInt()
+
+        Logger.info("${interaction.user.username} requested a Delay of Game report for season $season week $week")
         val response = interaction.deferPublicResponse()
 
         try {
-            val usersResult = fcfbUserClient.getAllUsers()
-            val users = usersResult.keys.firstOrNull()
-            val usersError = usersResult.values.firstOrNull()
+            val result = playClient.getDelayOfGameCountsByWeek(season, week)
+            val dogByTeam = result.keys.firstOrNull()
+            val error = result.values.firstOrNull()
 
-            if (users == null) {
+            if (dogByTeam == null) {
                 response.respond {
-                    content = usersError ?: "Failed to load users for Delay of Game report."
+                    content = error ?: "Failed to load Delay of Game data."
                 }
                 return
             }
-
-            val teamsResult = teamClient.getAllTeams()
-            val teams = teamsResult.keys.firstOrNull()
-            val teamsError = teamsResult.values.firstOrNull()
-
-            if (teams == null) {
-                response.respond {
-                    content = teamsError ?: "Failed to load teams for Delay of Game report."
-                }
-                return
-            }
-
-            val activeTeams = teams.filter { it.active }
-
-            // Aggregate delay-of-game instances by team name (only users with > 0)
-            val dogByTeam =
-                users
-                    .filter { !it.team.isNullOrBlank() && it.delayOfGameInstances > 0 }
-                    .groupBy { it.team!! }
-                    .mapValues { (_, teamUsers) -> teamUsers.sumOf { it.delayOfGameInstances } }
 
             if (dogByTeam.isEmpty()) {
                 response.respond {
-                    content = "No Delay of Game instances have been recorded for any team this season."
+                    content = "No Delay of Game instances recorded for season $season, week $week."
                 }
                 return
             }
 
-            // Only include active teams that have at least one DOG
             val rows =
-                activeTeams
-                    .mapNotNull { team ->
-                        val name = team.name ?: return@mapNotNull null
-                        val count = dogByTeam[name] ?: return@mapNotNull null
-                        name to count
-                    }
-                    .sortedWith(
-                        compareByDescending<Pair<String, Int>> { it.second }
-                            .thenBy { it.first },
-                    )
+                dogByTeam.entries
+                    .sortedWith(compareByDescending<Map.Entry<String, Int>> { it.value }.thenBy { it.key })
+                    .map { it.key to it.value }
 
-            if (rows.isEmpty()) {
-                response.respond {
-                    content = "No active teams currently have any Delay of Game instances."
-                }
-                return
-            }
-
-            val imageBytes = generateReportImage(rows)
-            val filePath = saveImageToFile(imageBytes)
+            val imageBytes = generateReportImage(rows, season, week)
+            val filePath = saveImageToFile(imageBytes, season, week)
 
             response.respond {
                 addFile(Paths.get(filePath))
@@ -111,7 +91,7 @@ class DogReportCommand(
         }
     }
 
-    private fun generateReportImage(rows: List<Pair<String, Int>>): ByteArray {
+    private fun generateReportImage(rows: List<Pair<String, Int>>, season: Int, week: Int): ByteArray {
         val paddingH = 24
         val paddingV = 20
         val rowHeight = 32
@@ -138,7 +118,7 @@ class DogReportCommand(
         // Subtitle
         g.color = Color(148, 155, 164)
         g.font = Font("SansSerif", Font.PLAIN, 13)
-        g.drawString("Active teams with DOG infractions this season", paddingH, paddingV + 48)
+        g.drawString("Season $season — Week $week", paddingH, paddingV + 48)
 
         // Header background
         val headerY = paddingV + titleHeight
@@ -167,7 +147,7 @@ class DogReportCommand(
             g.font = Font("SansSerif", Font.PLAIN, 13)
             g.drawString(team, paddingH, rowY + 21)
 
-            // DOG count — red if 3+, otherwise normal
+            // DOG count — red if 3 (max per week), otherwise normal
             val countStr = count.toString()
             g.color = if (count >= 3) Color(240, 71, 71) else Color(220, 221, 222)
             g.font = Font("SansSerif", Font.BOLD, 13)
@@ -185,7 +165,7 @@ class DogReportCommand(
         return baos.toByteArray()
     }
 
-    private fun saveImageToFile(imageBytes: ByteArray): String {
+    private fun saveImageToFile(imageBytes: ByteArray, season: Int, week: Int): String {
         val imagesDir = File("images")
         if (!imagesDir.exists()) {
             if (imagesDir.mkdirs()) {
@@ -194,7 +174,7 @@ class DogReportCommand(
                 Logger.error("Failed to create images directory.")
             }
         }
-        val fileName = "images/dog_report_${System.currentTimeMillis()}.png"
+        val fileName = "images/dog_report_s${season}_w${week}_${System.currentTimeMillis()}.png"
         Files.write(Paths.get(fileName), imageBytes, StandardOpenOption.CREATE)
         return fileName
     }

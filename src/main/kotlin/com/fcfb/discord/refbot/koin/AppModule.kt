@@ -96,7 +96,7 @@ val appModule =
         single { HireInterimCoachCommand(get()) }
         single { MessageAllGamesCommand(get(), get()) }
         single { PingCommand(get(), get(), get()) }
-        single { DogReportCommand(get(), get()) }
+        single { DogReportCommand(get()) }
         single { StartGameCommand(get()) }
         single { StartScrimmageCommand(get()) }
         single { StartWeekCommand(get()) }

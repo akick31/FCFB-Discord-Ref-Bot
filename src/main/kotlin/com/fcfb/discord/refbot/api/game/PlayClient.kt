@@ -1,5 +1,6 @@
 package com.fcfb.discord.refbot.api.game
 
+import com.fasterxml.jackson.core.type.TypeReference
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fcfb.discord.refbot.api.utils.ApiUtils
 import com.fcfb.discord.refbot.api.utils.HttpClientConfig
@@ -119,6 +120,32 @@ class PlayClient(
     internal suspend fun getCurrentPlay(gameId: Int): Map<Play?, String?> {
         val endpointUrl = "$baseUrl/play/current?gameId=$gameId"
         return getRequest(endpointUrl)
+    }
+
+    /**
+     * Get delay of game counts grouped by team for a given season and week
+     * @param season
+     * @param week
+     */
+    internal suspend fun getDelayOfGameCountsByWeek(season: Int, week: Int): Map<Map<String, Int>?, String?> {
+        val endpointUrl = "$baseUrl/play/delay-of-game?season=$season&week=$week"
+        return try {
+            val response = httpClient.get(endpointUrl)
+            val jsonResponse = response.bodyAsText()
+            if (jsonResponse.contains("error")) {
+                val error = apiUtils.readError(jsonResponse)
+                return mapOf(null to error)
+            }
+            val typeRef = object : TypeReference<Map<String, Int>>() {}
+            mapOf(ObjectMapper().readValue(jsonResponse, typeRef) to null)
+        } catch (e: Exception) {
+            Logger.error(e.message ?: "Unknown error occurred fetching DOG counts")
+            if (e.message!!.contains("Connection refused")) {
+                mapOf(null to "Connection refused. Arceus API is likely not running.")
+            } else {
+                mapOf(null to e.message)
+            }
+        }
     }
 
     /**
