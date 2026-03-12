@@ -91,7 +91,11 @@ class DogReportCommand(
         }
     }
 
-    private fun generateReportImage(rows: List<Pair<String, Int>>, season: Int, week: Int): ByteArray {
+    private fun generateReportImage(
+        rows: List<Pair<String, Int>>,
+        season: Int,
+        week: Int,
+    ): ByteArray {
         val paddingH = 24
         val paddingV = 20
         val rowHeight = 32
@@ -165,7 +169,11 @@ class DogReportCommand(
         return baos.toByteArray()
     }
 
-    private fun saveImageToFile(imageBytes: ByteArray, season: Int, week: Int): String {
+    private fun saveImageToFile(
+        imageBytes: ByteArray,
+        season: Int,
+        week: Int,
+    ): String {
         val imagesDir = File("images")
         if (!imagesDir.exists()) {
             if (imagesDir.mkdirs()) {
