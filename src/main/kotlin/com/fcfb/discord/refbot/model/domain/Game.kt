@@ -83,4 +83,5 @@ data class Game(
     @JsonProperty("away_vegas_spread") val awayVegasSpread: Double?,
     @JsonProperty("bowl_game_name") val bowlGameName: String?,
     @JsonProperty("postseason_game_logo") val postseasonGameLogo: String?,
+    @JsonProperty("postseason_game_name") val postseasonGameName: String?,
 )
