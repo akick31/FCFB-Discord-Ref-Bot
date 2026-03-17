@@ -263,7 +263,7 @@ class TextChannelThreadHandler(
                 return "PLAYOFFS || $teamMatchup"
             }
             GameType.BOWL -> {
-                val bowlName = game.bowlGameName?.takeIf { it.isNotBlank() }
+                val bowlName = game.postseasonGameName?.takeIf { it.isNotBlank() }
                 return if (bowlName != null) {
                     "BOWL | $teamMatchup | $bowlName"
                 } else {
@@ -316,7 +316,7 @@ class TextChannelThreadHandler(
                 return "PLAYOFFS || $teamMatchup"
             }
             GameType.BOWL -> {
-                val bowlName = game.bowlGameName?.takeIf { it.isNotBlank() }
+                val bowlName = game.postseasonGameName?.takeIf { it.isNotBlank() }
                 return if (bowlName != null) {
                     "BOWL | $teamMatchup | $bowlName"
                 } else {

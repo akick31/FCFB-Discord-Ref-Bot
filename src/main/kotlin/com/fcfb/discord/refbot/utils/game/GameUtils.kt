@@ -549,8 +549,8 @@ class GameUtils(
      */
     suspend fun getGameEmbedTitle(game: Game): String {
         return when {
-            game.gameType == GameType.BOWL && game.bowlGameName?.isNotBlank() == true -> {
-                "${game.homeTeam} vs ${game.awayTeam} | ${game.bowlGameName}"
+            game.gameType == GameType.BOWL && game.postseasonGameName?.isNotBlank() == true -> {
+                "${game.homeTeam} vs ${game.awayTeam} | ${game.postseasonGameName}"
             }
             game.gameType == GameType.CONFERENCE_CHAMPIONSHIP -> {
                 val conferenceName = getConferenceName(game.homeTeam)
