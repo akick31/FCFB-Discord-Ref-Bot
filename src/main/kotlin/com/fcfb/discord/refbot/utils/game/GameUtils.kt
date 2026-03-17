@@ -549,8 +549,8 @@ class GameUtils(
      */
     suspend fun getGameEmbedTitle(game: Game): String {
         return when {
-            game.gameType == GameType.BOWL && game.bowlGameName?.isNotBlank() == true -> {
-                "${game.homeTeam} vs ${game.awayTeam} | ${game.bowlGameName}"
+            game.gameType == GameType.BOWL && game.postseasonGameName?.isNotBlank() == true -> {
+                "${game.homeTeam} vs ${game.awayTeam} | ${game.postseasonGameName}"
             }
             game.gameType == GameType.CONFERENCE_CHAMPIONSHIP -> {
                 val conferenceName = getConferenceName(game.homeTeam)
@@ -764,7 +764,7 @@ class GameUtils(
         return try {
             val apiResponse = teamClient.getTeamByName(teamName)
             val team = apiResponse.keys.firstOrNull()
-            team?.conference?.description?.uppercase()
+            team?.conference?.description
         } catch (e: Exception) {
             Logger.error("Failed to get conference name for $teamName: ${e.message}", e)
             null
