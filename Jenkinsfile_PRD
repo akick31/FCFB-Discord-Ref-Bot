@@ -4,6 +4,7 @@ pipeline {
     environment {
         IMAGE_NAME = 'fcfb-discord-ref-bot-prd'
         CONTAINER_NAME = 'FCFB-Discord-Ref-Bot-PRD'
+        CONTAINER_NAME_BLUE = 'FCFB-Discord-Ref-Bot-PRD-BLUE'
         DOCKERFILE = 'Dockerfile_PRD'
         APP_PROPERTIES = "${env.WORKSPACE}/src/main/resources/application.properties"
         DISCORD_TOKEN = credentials('REFBOT_DISCORD_TOKEN')
@@ -38,17 +39,6 @@ pipeline {
                     // Set the build description
                     currentBuild.description = "Version: ${env.VERSION}"
                     currentBuild.displayName = "Build #${env.BUILD_NUMBER} - Version: ${env.VERSION}"
-                }
-            }
-        }
-        stage('Stop and Remove Existing Bot') {
-            steps {
-                script {
-                    echo 'Stopping and removing the existing Ref Bot instance...'
-                    sh """
-                        docker stop ${CONTAINER_NAME} || echo "Ref Bot is not running."
-                        docker rm ${CONTAINER_NAME} || echo "No old Ref Bot instance to remove."
-                    """
                 }
             }
         }
@@ -96,21 +86,70 @@ pipeline {
             }
         }
 
-        stage('Run New Ref Bot Container') {
+        stage('Start Blue Container') {
             steps {
                 script {
                     if (!fileExists("${env.APP_PROPERTIES}")) {
                         error("application.properties was not created!")
                     }
 
+                    sh "docker rm -f ${CONTAINER_NAME_BLUE} || true"
                     sh """
-                        docker run --network="host" -d --restart=always --name ${CONTAINER_NAME} \\
+                        docker run -d --name ${CONTAINER_NAME_BLUE} \\
+                            -p 11311:1211 \\
                             -v ${env.APP_PROPERTIES}:/app/application.properties \\
                             ${IMAGE_NAME}:${DOCKERFILE}
                     """
+                }
+            }
+        }
 
+        stage('Health Check') {
+            steps {
+                script {
+                    sleep(time: 40, unit: 'SECONDS')
+                    def healthy = false
+                    def attempts = 0
+                    def maxAttempts = 30
+                    while (!healthy && attempts < maxAttempts) {
+                        attempts++
+                        try {
+                            def body = sh(
+                                script: "docker exec ${env.CONTAINER_NAME_BLUE} curl -sf --max-time 15 http://127.0.0.1:1211/fcfb_discord/health 2>/dev/null || true",
+                                returnStdout: true
+                            ).trim()
+                            if (body.contains('"status":"UP"')) {
+                                healthy = true
+                                echo "Blue container is healthy (attempt ${attempts})"
+                            }
+                        } catch (e) {
+                            // not ready yet
+                        }
+                        if (!healthy) {
+                            echo "Waiting for health check... attempt ${attempts}/${maxAttempts}"
+                            sleep(time: 5, unit: 'SECONDS')
+                        }
+                    }
+                    if (!healthy) {
+                        sh "docker logs ${CONTAINER_NAME_BLUE} --tail=50"
+                        sh "docker rm -f ${CONTAINER_NAME_BLUE} || true"
+                        error("Blue container failed to become healthy after ${maxAttempts * 5}s - rolled back")
+                    }
+                }
+            }
+        }
+
+        stage('Swap Containers') {
+            steps {
+                script {
                     sh """
-                        docker exec ${CONTAINER_NAME} ls -la /app
+                        docker stop ${CONTAINER_NAME} || true
+                        docker rm ${CONTAINER_NAME} || true
+                        docker stop ${CONTAINER_NAME_BLUE} || true
+                        docker rm ${CONTAINER_NAME_BLUE} || true
+                        docker run --network="host" -d --restart=always --name ${CONTAINER_NAME} \\
+                            -v ${env.APP_PROPERTIES}:/app/application.properties \\
+                            ${IMAGE_NAME}:${DOCKERFILE}
                     """
                 }
             }
@@ -132,6 +171,7 @@ pipeline {
         }
         failure {
             echo 'An error occurred during the Ref Bot deployment.'
+            sh "docker rm -f ${CONTAINER_NAME_BLUE} || true"
         }
     }
 }
