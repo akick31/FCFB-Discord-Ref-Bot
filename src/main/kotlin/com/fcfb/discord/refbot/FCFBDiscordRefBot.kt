@@ -134,7 +134,11 @@ class FCFBDiscordRefBot(
      */
     private suspend fun initializeBot() {
         client = Kord(properties.getDiscordProperties().token)
-        commandRegistry.registerCommands(client)
+        try {
+            commandRegistry.registerCommands(client)
+        } catch (e: Exception) {
+            Logger.error("Failed to register commands: ${e.message}", e)
+        }
         setupEventHandlers()
         Logger.info("FCFB Discord Ref Bot initialized successfully!")
     }
