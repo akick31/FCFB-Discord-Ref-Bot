@@ -30,9 +30,9 @@ class HealthChecks {
      */
     fun getMemoryStatus(): Pair<Long, Long> {
         val runtime = Runtime.getRuntime()
-        val totalMemory = runtime.totalMemory() / 1024 / 1024 // Convert to MB
-        val freeMemory = runtime.freeMemory() / 1024 / 1024 // Convert to MB
-        val usedMemory = totalMemory - freeMemory
+        val maxMemory = runtime.maxMemory() / 1024 / 1024 // Convert to MB
+        val usedMemory = (runtime.totalMemory() - runtime.freeMemory()) / 1024 / 1024 // Convert to MB
+        val freeMemory = maxMemory - usedMemory
         return Pair(usedMemory, freeMemory)
     }
 
