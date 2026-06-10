@@ -121,8 +121,8 @@ pipeline {
                             def body = sh(
                                 script: "docker exec ${env.CONTAINER_NAME_BLUE} curl -sf --max-time 15 http://127.0.0.1:1312/fcfb_discord/health 2>/dev/null || true",
                                 returnStdout: true
-                            ).trim()
-                            if (body.contains('"status":"UP"')) {
+                            ).trim().replaceAll("\\s", "")
+                            if (body.startsWith('{"status":"UP"')) {
                                 healthy = true
                                 echo "Blue container is healthy (attempt ${attempts})"
                             }
