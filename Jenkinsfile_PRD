@@ -1,6 +1,10 @@
 pipeline {
     agent any
 
+    options {
+        disableConcurrentBuilds()
+    }
+
     environment {
         IMAGE_NAME = 'fcfb-discord-ref-bot-prd'
         CONTAINER_NAME = 'FCFB-Discord-Ref-Bot-PRD'
