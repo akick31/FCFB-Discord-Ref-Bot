@@ -1,6 +1,9 @@
 # Use a lightweight JDK 17 image
 FROM eclipse-temurin:17-jdk-jammy
 
+RUN apt-get update && apt-get install -y --no-install-recommends curl \
+    && rm -rf /var/lib/apt/lists/*
+
 # Set the working directory
 WORKDIR /app
 
