@@ -1281,17 +1281,18 @@ class DiscordMessageHandler(
                                 fcfbUserClient.getUserByDiscordId(it).keys.firstOrNull()
                             }
 
-                        if (homeCoachesFCFB.any { it?.delayOfGameWarningOptOut == true } &&
-                            awayCoachesFCFB.any { it?.delayOfGameWarningOptOut == true }
-                        ) {
-                            // No mentions – both opted out
-                        } else if (homeCoachesFCFB.any { it?.delayOfGameWarningOptOut == true }) {
-                            append("\n\n").append(joinMentions(awayCoaches))
-                        } else if (awayCoachesFCFB.any { it?.delayOfGameWarningOptOut == true }) {
-                            append("\n\n").append(joinMentions(homeCoaches))
-                        } else {
-                            append("\n\n").append(joinMentions(homeCoaches))
-                            append(" ").append(joinMentions(awayCoaches))
+                        val pingableHomeCoaches =
+                            homeCoaches.filterIndexed { index, _ ->
+                                homeCoachesFCFB.getOrNull(index)?.delayOfGameWarningOptOut != true
+                            }
+                        val pingableAwayCoaches =
+                            awayCoaches.filterIndexed { index, _ ->
+                                awayCoachesFCFB.getOrNull(index)?.delayOfGameWarningOptOut != true
+                            }
+
+                        val mentions = joinMentions(pingableHomeCoaches + pingableAwayCoaches)
+                        if (mentions.isNotEmpty()) {
+                            append("\n\n").append(mentions)
                         }
                     } else {
                         append("\n\n").append(joinMentions(homeCoaches))
