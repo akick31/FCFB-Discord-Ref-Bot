@@ -13,4 +13,4 @@ COPY ./build/libs/*.jar app.jar
 EXPOSE 1211
 
 # Run the Kotlin Spring Boot application
-ENTRYPOINT ["java", "-jar", "app.jar"]
+ENTRYPOINT ["java", "-Xmx768m", "-jar", "app.jar"]
