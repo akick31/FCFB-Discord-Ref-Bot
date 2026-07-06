@@ -142,7 +142,7 @@ class TeamClient(
             mapOf(teams to null)
         } catch (e: Exception) {
             Logger.error(e.message ?: "Unknown error occurred while making a get request to the team endpoint")
-            if (e.message!!.contains("Connection refused")) {
+            if (e.message?.contains("Connection refused") == true) {
                 Logger.error("Connection refused. Is the API running?")
                 mapOf(null to "Connection refused. Arceus API is likely not running.")
             } else {
@@ -168,7 +168,7 @@ class TeamClient(
             mapOf(objectMapper.readValue(jsonResponse, Team::class.java) to null)
         } catch (e: Exception) {
             Logger.error(e.message ?: "Unknown error occurred while making a get request to the team endpoint")
-            if (e.message!!.contains("Connection refused")) {
+            if (e.message?.contains("Connection refused") == true) {
                 Logger.error("Connection refused. Is the API running?")
                 mapOf(null to "Connection refused. Arceus API is likely not running.")
             } else {
@@ -194,7 +194,7 @@ class TeamClient(
             mapOf(objectMapper.readValue(jsonResponse, Team::class.java) to null)
         } catch (e: Exception) {
             Logger.error(e.message ?: "Unknown error occurred while making a post request to the team endpoint")
-            if (e.message!!.contains("Connection refused")) {
+            if (e.message?.contains("Connection refused") == true) {
                 Logger.error("Connection refused. Is the API running?")
                 mapOf(null to "Connection refused. Arceus API is likely not running.")
             } else {

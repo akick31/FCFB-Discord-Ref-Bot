@@ -39,7 +39,7 @@ class StartGameRequest(
             Logger.info("Game thread created: $gameThread")
             gameThread.id.value.toString() + "," + numberRequestMessage.id.value.toString()
         } catch (e: Exception) {
-            Logger.error(e.message!!)
+            Logger.error(e.message ?: "Unknown error occurred while starting game thread")
             gameThread?.delete()
             null
         }

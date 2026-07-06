@@ -327,7 +327,7 @@ class GameHandler(
             return errorHandler.invalidCoinTossWinner(message)
         }
         val coinTossChoice = message.content
-        if (message.author !in coinTossWinningCoachList && !gameUtils.isValidOvertimeCoinTossChoice(coinTossChoice)) {
+        if (message.author !in coinTossWinningCoachList || !gameUtils.isValidOvertimeCoinTossChoice(coinTossChoice)) {
             return errorHandler.waitingOnCoinTossChoiceError(message)
         }
 

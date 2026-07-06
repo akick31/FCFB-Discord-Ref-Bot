@@ -64,11 +64,6 @@ class SubCoachCommand(
             Logger.error("${interaction.user.username} failed to sub a new coach for ${command.options["team"]!!.value}")
         } else {
             Logger.info("${interaction.user.username} successfully subbed a new coach for ${command.options["team"]!!.value}")
-            val previousPlayApiResponse = playClient.getPreviousPlay(game.gameId)
-            if (previousPlayApiResponse.keys.firstOrNull() == null) {
-                response.respond { this.content = previousPlayApiResponse.values.firstOrNull() ?: "Could not determine error" }
-                return
-            }
             val currentPlayApiResponse = playClient.getCurrentPlay(game.gameId)
             val currentPlay = currentPlayApiResponse.keys.firstOrNull()
 

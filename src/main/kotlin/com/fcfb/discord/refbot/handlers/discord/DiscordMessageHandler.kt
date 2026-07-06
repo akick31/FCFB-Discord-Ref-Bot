@@ -1,68 +1,56 @@
 package com.fcfb.discord.refbot.handlers.discord
 
-import com.fcfb.discord.refbot.api.game.ChartClient
 import com.fcfb.discord.refbot.api.game.GameClient
-import com.fcfb.discord.refbot.api.game.GameWriteupClient
 import com.fcfb.discord.refbot.api.game.ScorebugClient
 import com.fcfb.discord.refbot.api.system.LogClient
-import com.fcfb.discord.refbot.api.user.FCFBUserClient
-import com.fcfb.discord.refbot.handlers.system.FileHandler
 import com.fcfb.discord.refbot.model.domain.Game
 import com.fcfb.discord.refbot.model.domain.Play
-import com.fcfb.discord.refbot.model.enums.game.GameMode
 import com.fcfb.discord.refbot.model.enums.game.GameStatus
 import com.fcfb.discord.refbot.model.enums.game.GameType
 import com.fcfb.discord.refbot.model.enums.message.Error
 import com.fcfb.discord.refbot.model.enums.message.Info
 import com.fcfb.discord.refbot.model.enums.message.MessageType
 import com.fcfb.discord.refbot.model.enums.play.ActualResult
-import com.fcfb.discord.refbot.model.enums.play.PlayCall
-import com.fcfb.discord.refbot.model.enums.play.PlayType.KICKOFF
 import com.fcfb.discord.refbot.model.enums.play.Scenario
-import com.fcfb.discord.refbot.model.enums.play.Scenario.PLAY_RESULT
 import com.fcfb.discord.refbot.model.enums.system.Platform
 import com.fcfb.discord.refbot.model.enums.team.TeamSide
-import com.fcfb.discord.refbot.utils.game.GameUtils
-import com.fcfb.discord.refbot.utils.system.CouldNotDetermineCoachPossessionException
-import com.fcfb.discord.refbot.utils.system.CouldNotDetermineTeamPossessionException
+import com.fcfb.discord.refbot.utils.game.GameDescriptionUtils
+import com.fcfb.discord.refbot.utils.game.GameStateUtils
 import com.fcfb.discord.refbot.utils.system.DefensiveNumberRequestFailedException
 import com.fcfb.discord.refbot.utils.system.GameMessageFailedException
 import com.fcfb.discord.refbot.utils.system.InvalidGameThreadException
 import com.fcfb.discord.refbot.utils.system.Logger
 import com.fcfb.discord.refbot.utils.system.MissingPlatformIdException
-import com.fcfb.discord.refbot.utils.system.NoMessageContentFoundException
+import com.fcfb.discord.refbot.utils.system.MissingPlayResultException
 import com.fcfb.discord.refbot.utils.system.OffensiveNumberRequestFailedException
 import com.fcfb.discord.refbot.utils.system.Properties
 import com.fcfb.discord.refbot.utils.system.SystemUtils
 import com.kotlindiscord.kord.extensions.utils.getJumpUrl
 import dev.kord.common.entity.Snowflake
-import dev.kord.common.entity.optional.Optional
 import dev.kord.core.Kord
-import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.cache.data.EmbedData
-import dev.kord.core.cache.data.EmbedFooterData
 import dev.kord.core.entity.Message
 import dev.kord.core.entity.User
 import dev.kord.core.entity.channel.MessageChannel
 import dev.kord.core.entity.channel.thread.TextChannelThread
-import dev.kord.rest.builder.message.EmbedBuilder
-import dev.kord.rest.builder.message.addFile
-import java.nio.file.Paths
-import kotlin.io.path.Path
 
+/**
+ * Orchestrates sending game-related Discord messages. Delegates low-level delivery to
+ * [DiscordMessageSender], content/embed construction to [GameMessageContentBuilder], and
+ * score/chart posting to [GameScorePoster].
+ */
 class DiscordMessageHandler(
-    private val embedBuilder: EmbedBuilder,
     private val gameClient: GameClient,
-    private val fcfbUserClient: FCFBUserClient,
-    private val gameWriteupClient: GameWriteupClient,
-    private val scorebugClient: ScorebugClient,
-    private val chartClient: ChartClient,
     private val logClient: LogClient,
-    private val gameUtils: GameUtils,
+    private val scorebugClient: ScorebugClient,
+    private val gameStateUtils: GameStateUtils,
+    private val gameDescriptionUtils: GameDescriptionUtils,
     private val systemUtils: SystemUtils,
-    private val fileHandler: FileHandler,
     private val textChannelThreadHandler: TextChannelThreadHandler,
     private val properties: Properties,
+    private val messageSender: DiscordMessageSender,
+    private val contentBuilder: GameMessageContentBuilder,
+    private val scorePoster: GameScorePoster,
 ) {
     suspend fun sendNotificationToCommissioners(
         client: Kord,
@@ -76,7 +64,7 @@ class DiscordMessageHandler(
                 ),
             ) as MessageChannel
 
-        return sendMessageFromChannelObject(channel, messageContent, null)
+        return messageSender.sendMessageFromChannelObject(channel, messageContent, null)
     }
 
     /**
@@ -101,11 +89,11 @@ class DiscordMessageHandler(
         // Append user pings
         val homeCoaches = game.homeCoachDiscordIds.map { client.getUser(Snowflake(it)) }
         val awayCoaches = game.awayCoachDiscordIds.map { client.getUser(Snowflake(it)) }
-        var updatedMessageContent = joinMentions(homeCoaches)
-        updatedMessageContent += joinMentions(awayCoaches)
+        var updatedMessageContent = gameDescriptionUtils.joinMentions(homeCoaches)
+        updatedMessageContent += gameDescriptionUtils.joinMentions(awayCoaches)
         updatedMessageContent += "\n\n" + messageContent
 
-        return sendMessageFromTextChannelObject(channel, updatedMessageContent, null)
+        return messageSender.sendMessageFromTextChannelObject(channel, updatedMessageContent, null)
     }
 
     /**
@@ -128,11 +116,11 @@ class DiscordMessageHandler(
         timeoutCalled: Boolean = false,
     ): Message {
         if (message != null && gameThread == null) {
-            val gameMessage = createGameMessage(client, game, scenario, play, timeoutCalled)
-            return sendMessageFromMessageObject(message, gameMessage.first.first, gameMessage.first.second)
+            val gameMessage = contentBuilder.createGameMessage(client, game, scenario, play, timeoutCalled)
+            return messageSender.sendMessageFromMessageObject(message, gameMessage.first.first, gameMessage.first.second)
         } else if (message == null && gameThread != null) {
-            val gameMessage = createGameMessage(client, game, scenario, play, timeoutCalled)
-            return sendMessageFromTextChannelObject(gameThread, gameMessage.first.first, gameMessage.first.second)
+            val gameMessage = contentBuilder.createGameMessage(client, game, scenario, play, timeoutCalled)
+            return messageSender.sendMessageFromTextChannelObject(gameThread, gameMessage.first.first, gameMessage.first.second)
         } else {
             throw GameMessageFailedException(game.gameId)
         }
@@ -152,7 +140,7 @@ class DiscordMessageHandler(
         play: Play?,
         previousMessage: Message? = null,
     ): List<Message?> {
-        val gameMessage = createGameMessage(client, game, scenario, play, false)
+        val gameMessage = contentBuilder.createGameMessage(client, game, scenario, play, false)
 
         val (messageContent, embedData) = gameMessage.first
         val defensiveCoaches = gameMessage.second
@@ -160,8 +148,17 @@ class DiscordMessageHandler(
         return try {
             val numberRequestMessage =
                 systemUtils.retry {
-                    sendPrivateMessage(defensiveCoaches, embedData, messageContent, previousMessage)
+                    val result = messageSender.sendPrivateMessage(defensiveCoaches, embedData, messageContent, previousMessage)
+                    if (result.none { it != null }) {
+                        throw DefensiveNumberRequestFailedException(game.gameId)
+                    }
+                    result
                 }
+
+            if (numberRequestMessage.none { it != null }) {
+                throw DefensiveNumberRequestFailedException(game.gameId)
+            }
+
             gameClient.updateRequestMessageId(game.gameId, numberRequestMessage)
             gameClient.updateLastMessageTimestamp(game.gameId)
 
@@ -178,7 +175,12 @@ class DiscordMessageHandler(
             numberRequestMessage
         } catch (e: Exception) {
             Logger.error("Failed to send number request message: ${e.message}")
-            previousMessage?.let { sendErrorMessage(it, Error.FAILED_TO_SEND_NUMBER_REQUEST_MESSAGE) }
+            previousMessage?.let {
+                sendCustomErrorMessage(
+                    it,
+                    "${gameDescriptionUtils.joinMentions(defensiveCoaches)} ${Error.FAILED_TO_SEND_NUMBER_REQUEST_MESSAGE.message}",
+                )
+            }
             throw DefensiveNumberRequestFailedException(game.gameId)
         }
     }
@@ -199,13 +201,12 @@ class DiscordMessageHandler(
     ): Message {
         val gameThread =
             when {
-                game.homePlatform == Platform.DISCORD -> client.getChannel(Snowflake(game.homePlatformId.toString())) as TextChannelThread
-                game.awayPlatform == Platform.DISCORD -> client.getChannel(Snowflake(game.awayPlatformId.toString())) as TextChannelThread
-                else ->
-                    previousMessage?.let {
-                        sendErrorMessage(it, Error.INVALID_GAME_THREAD)
-                        throw InvalidGameThreadException(game.gameId)
-                    }
+                game.homePlatform == Platform.DISCORD -> client.getChannel(Snowflake(game.homePlatformId.toString())) as? TextChannelThread
+                game.awayPlatform == Platform.DISCORD -> client.getChannel(Snowflake(game.awayPlatformId.toString())) as? TextChannelThread
+                else -> null
+            } ?: run {
+                previousMessage?.let { sendErrorMessage(it, Error.INVALID_GAME_THREAD) }
+                throw InvalidGameThreadException(game.gameId)
             }
 
         return try {
@@ -261,7 +262,7 @@ class DiscordMessageHandler(
             } else {
                 baseMessage
             }
-        return sendMessageFromMessageObject(message, messageContent, null)
+        return messageSender.sendMessageFromMessageObject(message, messageContent, null)
     }
 
     /**
@@ -277,7 +278,12 @@ class DiscordMessageHandler(
         playOutcome: Play,
         message: Message?,
     ): Message {
-        val scenario = if (playOutcome.actualResult == ActualResult.TOUCHDOWN) Scenario.TOUCHDOWN else playOutcome.result!!
+        val scenario =
+            if (playOutcome.actualResult == ActualResult.TOUCHDOWN) {
+                Scenario.TOUCHDOWN
+            } else {
+                playOutcome.result ?: throw MissingPlayResultException(game.gameId)
+            }
         return sendGameMessage(
             client,
             game,
@@ -359,7 +365,7 @@ class DiscordMessageHandler(
     ) {
         val coinTossWinningCoachList: List<User?>
         try {
-            coinTossWinningCoachList = gameUtils.getCoinTossWinners(client, game)
+            coinTossWinningCoachList = gameStateUtils.getCoinTossWinners(client, game)
         } catch (e: Exception) {
             return sendErrorMessage(message, Error.INVALID_COIN_TOSS_WINNER)
         }
@@ -367,16 +373,16 @@ class DiscordMessageHandler(
         val coinTossOutcomeMessage =
             when (game.gameStatus) {
                 GameStatus.PREGAME -> {
-                    sendMessageFromMessageObject(
+                    messageSender.sendMessageFromMessageObject(
                         message,
-                        Info.COIN_TOSS_OUTCOME.message.format(joinMentions(coinTossWinningCoachList)),
+                        Info.COIN_TOSS_OUTCOME.message.format(gameDescriptionUtils.joinMentions(coinTossWinningCoachList)),
                         null,
                     )
                 }
                 GameStatus.END_OF_REGULATION -> {
-                    sendMessageFromMessageObject(
+                    messageSender.sendMessageFromMessageObject(
                         message,
-                        Info.OVERTIME_COIN_TOSS_OUTCOME.message.format(joinMentions(coinTossWinningCoachList)),
+                        Info.OVERTIME_COIN_TOSS_OUTCOME.message.format(gameDescriptionUtils.joinMentions(coinTossWinningCoachList)),
                         null,
                     )
                 }
@@ -437,7 +443,7 @@ class DiscordMessageHandler(
 
         // No need to post scrimmage scores
         if (game.gameType != GameType.SCRIMMAGE) {
-            postGameScore(client, game, message)
+            scorePoster.postGameScore(client, game, message)
         }
     }
 
@@ -456,667 +462,20 @@ class DiscordMessageHandler(
     ): Message {
         val scorebug =
             scorebugClient.getScorebugByGameId(game.gameId)
-                ?: return sendMessageFromChannelObject(
+                ?: return messageSender.sendMessageFromChannelObject(
                     redZoneChannel,
                     messageContent + message?.getJumpUrl(),
                     null,
                 )
         val embedData =
-            gameUtils.getScorebugEmbed(scorebug, game, message?.getJumpUrl())
-                ?: return sendMessageFromChannelObject(
+            gameDescriptionUtils.getScorebugEmbed(scorebug, game, message?.getJumpUrl())
+                ?: return messageSender.sendMessageFromChannelObject(
                     redZoneChannel,
                     messageContent + message?.getJumpUrl(),
                     null,
                 )
 
-        return sendMessageFromChannelObject(redZoneChannel, messageContent, embedData)
-    }
-
-    /**
-     * Send an error message to a user and log the error
-     * @param message The message object
-     * @param error The error object
-     */
-    suspend fun sendErrorMessage(
-        message: Message?,
-        error: Error,
-    ) {
-        sendMessageFromMessageObject(message, error.message, null)
-    }
-
-    /**
-     * Send a custom error message to a user
-     * @param message The message object
-     * @param errorMessage The error message
-     */
-    suspend fun sendCustomErrorMessage(
-        message: Message?,
-        errorMessage: String,
-    ) {
-        sendMessageFromMessageObject(message, errorMessage, null)
-    }
-
-    /**
-     * Post the game score to the message channel
-     * @param client The Discord client
-     * @param game The game object
-     * @param message The message object
-     */
-    private suspend fun postGameScore(
-        client: Kord,
-        game: Game,
-        message: Message?,
-    ) {
-        val (formattedHomeTeam, formattedAwayTeam) = gameUtils.getFormattedTeamNames(game)
-
-        val messageContent =
-            if (game.homeScore > game.awayScore) {
-                "$formattedHomeTeam defeats $formattedAwayTeam ${game.homeScore}-${game.awayScore}\n"
-            } else {
-                "$formattedAwayTeam defeats $formattedHomeTeam ${game.awayScore}-${game.homeScore}\n"
-            }
-        val embedContent = message?.getJumpUrl()
-
-        val scoreChannel = client.getChannel(Snowflake(properties.getDiscordProperties().scoresChannelId)) as MessageChannel
-        val scorebug =
-            scorebugClient.getScorebugByGameId(game.gameId)
-                ?: return postGameScoreWithoutScorebug(scoreChannel, messageContent + embedContent)
-        val embedData =
-            gameUtils.getScorebugEmbed(scorebug, game, embedContent)
-                ?: return postGameScoreWithoutScorebug(scoreChannel, messageContent + embedContent)
-
-        sendMessageFromChannelObject(scoreChannel, messageContent, embedData)
-
-        // Post charts after the score
-        postGameCharts(client, game)
-    }
-
-    /**
-     * Apply placeholder replacements to a text string
-     * @param text The text to process
-     * @param replacements Map of placeholder to replacement value
-     * @return Text with placeholders replaced
-     */
-    private fun applyPlaceholderReplacements(
-        text: String?,
-        replacements: Map<String, String?>,
-    ): String {
-        if (text == null) return ""
-
-        var processedText: String = text
-        replacements.forEach { (placeholder, replacement) ->
-            if (placeholder in processedText) {
-                processedText = processedText.replace(placeholder, replacement ?: "")
-            }
-        }
-        return processedText
-    }
-
-    /**
-     * Post game charts (win probability and score chart) to the game thread
-     * @param client The Discord client
-     * @param game The game object
-     */
-    private suspend fun postGameCharts(
-        client: Kord,
-        game: Game,
-    ) {
-        try {
-            Logger.info("Posting game charts for game ID: ${game.gameId}")
-
-            // Get the game thread
-            val gameThread =
-                when {
-                    game.homePlatform == Platform.DISCORD ->
-                        client.getChannel(
-                            Snowflake(game.homePlatformId.toString()),
-                        ) as? TextChannelThread
-                    game.awayPlatform == Platform.DISCORD ->
-                        client.getChannel(
-                            Snowflake(game.awayPlatformId.toString()),
-                        ) as? TextChannelThread
-                    else -> null
-                }
-
-            if (gameThread == null) {
-                Logger.error("Could not find game thread for game ${game.gameId}")
-                return
-            }
-
-            // Get win probability chart
-            val winProbabilityChart = chartClient.getWinProbabilityChartByGameId(game.gameId)
-            Logger.info("Win probability chart result: ${if (winProbabilityChart != null) "Success" else "Failed"}")
-            if (winProbabilityChart != null) {
-                val chartUrl = gameUtils.saveChartToFile(winProbabilityChart, "win_probability", game.gameId)
-                Logger.info("Win probability chart saved to: $chartUrl")
-                if (chartUrl != null) {
-                    gameThread.createMessage {
-                        addFile(Paths.get(chartUrl))
-                    }
-                    Logger.info("Win probability chart posted to game thread")
-                }
-            }
-
-            // Get score chart
-            val scoreChart = chartClient.getScoreChartByGameId(game.gameId)
-            Logger.info("Score chart result: ${if (scoreChart != null) "Success" else "Failed"}")
-            if (scoreChart != null) {
-                val chartUrl = gameUtils.saveChartToFile(scoreChart, "score_chart", game.gameId)
-                Logger.info("Score chart saved to: $chartUrl")
-                if (chartUrl != null) {
-                    gameThread.createMessage {
-                        addFile(Paths.get(chartUrl))
-                    }
-                    Logger.info("Score chart posted to game thread")
-                }
-            }
-        } catch (e: Exception) {
-            Logger.error("Failed to post game charts: ${e.message}", e)
-        }
-    }
-
-    /**
-     * Post the game score to the message channel without the scorebug
-     * @param scoreChannel The message channel object
-     * @param messageContent The message content
-     */
-    private suspend fun postGameScoreWithoutScorebug(
-        scoreChannel: MessageChannel,
-        messageContent: String,
-    ) {
-        sendMessageFromChannelObject(scoreChannel, messageContent, null)
-    }
-
-    /**
-     * Get the message to send to a game for a given scenario
-     * @param client The Discord client
-     * @param game The game object
-     * @param scenario The scenario
-     * @param play The play object
-     * @param timeoutCalled Whether a timeout was called
-     * @return The message content and embed data
-     */
-    private suspend fun createGameMessage(
-        client: Kord,
-        game: Game,
-        scenario: Scenario,
-        play: Play?,
-        timeoutCalled: Boolean = false,
-    ): Pair<Pair<String, EmbedData?>, List<User?>> {
-        // Get message content but not play result for number requests, game start, and coin toss
-        var (messageContent, playWriteup) =
-            when {
-                scenario in
-                    listOf(
-                        Scenario.DM_NUMBER_REQUEST, Scenario.KICKOFF_NUMBER_REQUEST,
-                        Scenario.NORMAL_NUMBER_REQUEST, Scenario.GAME_START,
-                        Scenario.COIN_TOSS_CHOICE, Scenario.OVERTIME_COIN_TOSS_CHOICE,
-                        Scenario.OVERTIME_START, Scenario.GAME_OVER, Scenario.END_OF_HALF,
-                        Scenario.DELAY_OF_GAME, Scenario.FIRST_DELAY_OF_GAME_WARNING,
-                        Scenario.SECOND_DELAY_OF_GAME_WARNING, Scenario.DELAY_OF_GAME_NOTIFICATION,
-                        Scenario.CHEW_MODE_ENABLED,
-                    )
-                -> {
-                    val messageContentApiResponse = gameWriteupClient.getGameMessageByScenario(scenario, null)
-                    if (messageContentApiResponse.keys.firstOrNull() == null) {
-                        throw NoMessageContentFoundException(PLAY_RESULT.description)
-                    }
-                    val messageContent =
-                        messageContentApiResponse.keys.firstOrNull()
-                            ?: throw NoMessageContentFoundException(PLAY_RESULT.description)
-                    messageContent to null
-                }
-                play?.playCall in
-                    listOf(
-                        PlayCall.PASS, PlayCall.RUN, PlayCall.PUNT, PlayCall.FIELD_GOAL,
-                        PlayCall.KICKOFF_NORMAL, PlayCall.KICKOFF_SQUIB, PlayCall.KICKOFF_ONSIDE,
-                    )
-                -> {
-                    // Get play result writeup
-                    val playCallWriteupApiResponse = gameWriteupClient.getGameMessageByScenario(scenario, play?.playCall)
-                    if (playCallWriteupApiResponse.keys.firstOrNull() == null) {
-                        throw NoMessageContentFoundException(scenario.description)
-                    }
-                    val writeup =
-                        playCallWriteupApiResponse.keys.firstOrNull()
-                            ?: throw NoMessageContentFoundException(scenario.description)
-
-                    // Get message content
-                    val messageContentApiResponse = gameWriteupClient.getGameMessageByScenario(PLAY_RESULT, null)
-                    if (messageContentApiResponse.keys.firstOrNull() == null) {
-                        throw NoMessageContentFoundException(PLAY_RESULT.description)
-                    }
-                    val messageContent =
-                        messageContentApiResponse.keys.firstOrNull()
-                            ?: throw NoMessageContentFoundException(PLAY_RESULT.description)
-                    messageContent to writeup
-                }
-                else -> {
-                    // Get play result writeup
-                    val writeupApiResponse = gameWriteupClient.getGameMessageByScenario(scenario, null)
-                    if (writeupApiResponse.keys.firstOrNull() == null) {
-                        throw NoMessageContentFoundException(scenario.description)
-                    }
-                    val writeup =
-                        writeupApiResponse.keys.firstOrNull()
-                            ?: throw NoMessageContentFoundException(scenario.description)
-
-                    // Get message content
-                    val messageContentApiResponse = gameWriteupClient.getGameMessageByScenario(Scenario.PLAY_RESULT, null)
-                    if (messageContentApiResponse.keys.firstOrNull() == null) {
-                        throw NoMessageContentFoundException(Scenario.PLAY_RESULT.description)
-                    }
-                    val messageContent =
-                        messageContentApiResponse.keys.firstOrNull()
-                            ?: throw NoMessageContentFoundException(Scenario.PLAY_RESULT.description)
-                    messageContent to writeup
-                }
-            }
-
-        if (messageContent == "") {
-            throw NoMessageContentFoundException(scenario.description)
-        }
-
-        // Fetch Discord users
-        val homeCoaches = game.homeCoachDiscordIds.map { client.getUser(Snowflake(it)) }
-        val awayCoaches = game.awayCoachDiscordIds.map { client.getUser(Snowflake(it)) }
-
-        // Determine which team has possession and their coaches
-        val (writeupOffensiveCoaches, writeupDefensiveCoaches) =
-            if (play != null) {
-                when {
-                    play.possession == TeamSide.HOME && gameUtils.isKickoff(play.playCall) -> homeCoaches to awayCoaches
-                    play.possession == TeamSide.AWAY && gameUtils.isKickoff(play.playCall) -> awayCoaches to homeCoaches
-                    play.possession == TeamSide.HOME -> homeCoaches to awayCoaches
-                    play.possession == TeamSide.AWAY -> awayCoaches to homeCoaches
-                    else -> throw CouldNotDetermineCoachPossessionException(game.gameId)
-                }
-            } else {
-                when {
-                    game.possession == TeamSide.HOME && game.currentPlayType == KICKOFF -> homeCoaches to awayCoaches
-                    game.possession == TeamSide.AWAY && game.currentPlayType == KICKOFF -> awayCoaches to homeCoaches
-                    game.possession == TeamSide.HOME -> homeCoaches to awayCoaches
-                    game.possession == TeamSide.AWAY -> awayCoaches to homeCoaches
-                    else -> throw CouldNotDetermineCoachPossessionException(game.gameId)
-                }
-            }
-
-        val (offensiveTeam, defensiveTeam) =
-            if (play != null) {
-                when {
-                    play.possession == TeamSide.HOME && gameUtils.isKickoff(play.playCall) -> game.homeTeam to game.awayTeam
-                    play.possession == TeamSide.AWAY && gameUtils.isKickoff(play.playCall) -> game.awayTeam to game.homeTeam
-                    play.possession == TeamSide.HOME -> game.homeTeam to game.awayTeam
-                    play.possession == TeamSide.AWAY -> game.awayTeam to game.homeTeam
-                    else -> throw CouldNotDetermineTeamPossessionException(game.gameId)
-                }
-            } else {
-                when {
-                    game.possession == TeamSide.HOME && game.currentPlayType == KICKOFF -> game.homeTeam to game.awayTeam
-                    game.possession == TeamSide.AWAY && game.currentPlayType == KICKOFF -> game.awayTeam to game.homeTeam
-                    game.possession == TeamSide.HOME -> game.homeTeam to game.awayTeam
-                    game.possession == TeamSide.AWAY -> game.awayTeam to game.homeTeam
-                    else -> throw CouldNotDetermineTeamPossessionException(game.gameId)
-                }
-            }
-
-        val (offensiveCoaches, defensiveCoaches) =
-            when {
-                game.possession == TeamSide.HOME && game.currentPlayType == KICKOFF -> homeCoaches to awayCoaches
-                game.possession == TeamSide.AWAY && game.currentPlayType == KICKOFF -> awayCoaches to homeCoaches
-                game.possession == TeamSide.HOME -> homeCoaches to awayCoaches
-                game.possession == TeamSide.AWAY -> awayCoaches to homeCoaches
-                else -> throw CouldNotDetermineCoachPossessionException(game.gameId)
-            }
-
-        val offensiveNumber = play?.offensiveNumber ?: "None"
-        val defensiveNumber = play?.defensiveNumber ?: "None"
-        val difference = play?.difference?.toString() ?: "None"
-        val actualResult =
-            if (play?.actualResult != null) {
-                play.actualResult.description
-            } else {
-                "None"
-            }
-        val result =
-            if (play?.result != null) {
-                play.result.name
-            } else {
-                "None"
-            }
-
-        // Build placeholders for message replacement
-        val replacements =
-            mapOf(
-                "{kicking_team}" to offensiveTeam,
-                "{receiving_team}" to defensiveTeam,
-                "{home_coach}" to joinMentions(homeCoaches),
-                "{away_coach}" to joinMentions(awayCoaches),
-                "{offensive_coach}" to joinMentions(writeupOffensiveCoaches),
-                "{defensive_coach}" to joinMentions(writeupDefensiveCoaches),
-                "{offensive_team}" to offensiveTeam,
-                "{defensive_team}" to defensiveTeam,
-                "{clock_info}" to gameUtils.getClockInfo(game),
-                "{play_time}" to gameUtils.getPlayTimeInfo(game, play),
-                "{clock}" to game.clock,
-                "{quarter}" to gameUtils.toOrdinal(game.quarter),
-                "{offensive_number}" to offensiveNumber,
-                "{defensive_number}" to defensiveNumber,
-                "{difference}" to difference,
-                "{actual_result}" to actualResult,
-                "{result}" to result,
-                "{timeout_called}" to gameUtils.getTimeoutMessage(game, play, timeoutCalled),
-                "{clock_status}" to if (game.clockStopped) "The clock is stopped." else "The clock is running.",
-                "{game_status}" to if (game.gameMode == GameMode.CHEW) " The game is in chew mode." else "",
-                "{ball_location}" to gameUtils.getLocationDescription(game),
-                "{ball_location_scenario}" to gameUtils.getBallLocationScenarioMessage(game, play),
-                "{dog_deadline}" to game.gameTimer.toString(),
-                "{play_options}" to gameUtils.getPlayOptions(game),
-                "{outcome}" to gameUtils.getOutcomeMessage(game),
-                "{offending_team}" to gameUtils.getOffendingTeam(game),
-                "{previous_play}" to gameUtils.getPreviousPlayInfo(play),
-                "<br>" to "\n",
-            )
-
-        val processedPlayWriteup = applyPlaceholderReplacements(playWriteup, replacements)
-        val finalReplacements = replacements + mapOf("{play_writeup}" to processedPlayWriteup)
-
-        finalReplacements.forEach { (placeholder, replacement) ->
-            if (placeholder in messageContent) {
-                messageContent = messageContent.replace(placeholder, replacement ?: "")
-            }
-        }
-
-        messageContent += "\n\n[Game Details](https://fakecollegefootball.com/game-details/${game.gameId})\n" +
-            "[Ranges](https://docs.google.com/spreadsheets/d/1yXG2Xe1W_G5uq_1Tus3AbP4u8HOwjgmJ1LOQDV-dhvc/edit#gid=1822037032)"
-
-        val scorebug = scorebugClient.getScorebugByGameId(game.gameId)
-
-        if (scorebug != null &&
-            scenario != Scenario.NORMAL_NUMBER_REQUEST &&
-            scenario != Scenario.CHEW_MODE_ENABLED &&
-            scenario != Scenario.FIRST_DELAY_OF_GAME_WARNING &&
-            scenario != Scenario.SECOND_DELAY_OF_GAME_WARNING
-        ) {
-            return createGameMessageWithScorebug(
-                game,
-                scenario,
-                messageContent,
-                homeCoaches,
-                awayCoaches,
-                offensiveCoaches,
-                defensiveCoaches,
-                scorebug,
-            )
-        } else if (
-            scenario == Scenario.NORMAL_NUMBER_REQUEST ||
-            scenario == Scenario.CHEW_MODE_ENABLED ||
-            scenario == Scenario.FIRST_DELAY_OF_GAME_WARNING ||
-            scenario == Scenario.SECOND_DELAY_OF_GAME_WARNING
-        ) {
-            return createGameMessageWithoutScorebug(
-                game,
-                scenario,
-                messageContent,
-                homeCoaches,
-                awayCoaches,
-                offensiveCoaches,
-                defensiveCoaches,
-            )
-        } else {
-            return createGameMessageWithFallbackScorebug(
-                game,
-                scenario,
-                messageContent,
-                homeCoaches,
-                awayCoaches,
-                offensiveCoaches,
-                defensiveCoaches,
-            )
-        }
-    }
-
-    /**
-     * Get and return a game message without the scorebug as an embed
-     * @param game The game object
-     * @param scenario The scenario
-     * @param messageContent The message content
-     * @param homeCoaches The home team coaches
-     * @param awayCoaches The away team coaches
-     * @param offensiveCoaches The offensive team coaches
-     * @param defensiveCoaches The defensive team coaches
-     * @return The message content and embed data
-     */
-    private suspend fun createGameMessageWithoutScorebug(
-        game: Game,
-        scenario: Scenario,
-        messageContent: String?,
-        homeCoaches: List<User?>,
-        awayCoaches: List<User?>,
-        offensiveCoaches: List<User?>,
-        defensiveCoaches: List<User?>,
-    ): Pair<Pair<String, EmbedData?>, List<User?>> {
-        val title = gameUtils.getGameEmbedTitle(game)
-        val embedData =
-            EmbedData(
-                title = Optional.Value(title),
-                description = Optional.Value(messageContent ?: ""),
-                footer = Optional.Value(EmbedFooterData(text = gameUtils.getFormattedFooterText(game))),
-            )
-
-        val messageToSend = appendUserPings(game, scenario, homeCoaches, awayCoaches, offensiveCoaches)
-
-        return (messageToSend to embedData) to defensiveCoaches
-    }
-
-    /**
-     * Get and return a game message with the fallback scorebug as an embed
-     * @param game The game object
-     * @param scenario The scenario
-     * @param messageContent The message content
-     * @param homeCoaches The home team coaches
-     * @param awayCoaches The away team coaches
-     * @param offensiveCoaches The offensive team coaches
-     * @param defensiveCoaches The defensive team coaches
-     * @return The message content and embed data
-     */
-    private suspend fun createGameMessageWithFallbackScorebug(
-        game: Game,
-        scenario: Scenario,
-        messageContent: String?,
-        homeCoaches: List<User?>,
-        awayCoaches: List<User?>,
-        offensiveCoaches: List<User?>,
-        defensiveCoaches: List<User?>,
-    ): Pair<Pair<String, EmbedData?>, List<User?>> {
-        val textScorebug =
-            buildString {
-                append("\n\n----------------\n")
-                append("**" + game.homeTeam).append(":** ").append(game.homeScore).append("\n")
-                append("**" + game.awayTeam).append(":** ").append(game.awayScore).append("\n")
-                append("----------------\n")
-            }
-        val title = gameUtils.getGameEmbedTitle(game)
-        val embedData =
-            EmbedData(
-                title = Optional.Value(title),
-                description = Optional.Value(messageContent + textScorebug),
-                footer = Optional.Value(EmbedFooterData(text = gameUtils.getFormattedFooterText(game))),
-            )
-
-        val messageToSend = appendUserPings(game, scenario, homeCoaches, awayCoaches, offensiveCoaches)
-
-        return (messageToSend to embedData) to defensiveCoaches
-    }
-
-    /**
-     * Get and return a game message with the scorebug as an embed
-     * @param game The game object
-     * @param scenario The scenario
-     * @param scorebug The scorebug image
-     * @param messageContent The message content
-     * @param homeCoaches The home team coaches
-     * @param awayCoaches The away team coaches
-     * @param offensiveCoaches The offensive team coaches
-     * @param defensiveCoaches The defensive team coaches
-     * @return The message content and embed data
-     */
-    private suspend fun createGameMessageWithScorebug(
-        game: Game,
-        scenario: Scenario,
-        messageContent: String?,
-        homeCoaches: List<User?>,
-        awayCoaches: List<User?>,
-        offensiveCoaches: List<User?>,
-        defensiveCoaches: List<User?>,
-        scorebug: ByteArray,
-    ): Pair<Pair<String, EmbedData?>, List<User?>> {
-        val embedData =
-            gameUtils.getScorebugEmbed(scorebug, game, messageContent)
-                ?: return createGameMessageWithoutScorebug(
-                    game,
-                    scenario,
-                    messageContent,
-                    homeCoaches,
-                    awayCoaches,
-                    offensiveCoaches,
-                    defensiveCoaches,
-                )
-
-        val messageToSend = appendUserPings(game, scenario, homeCoaches, awayCoaches, offensiveCoaches)
-
-        return (messageToSend to embedData) to defensiveCoaches
-    }
-
-    /**
-     * Send a private message to a user via a user object
-     * @param userList The list of user objects
-     * @param embedData The embed data
-     * @param messageContent The message content
-     * @param previousMessage The previous message object
-     */
-    private suspend fun sendPrivateMessage(
-        userList: List<User?>,
-        embedData: EmbedData?,
-        messageContent: String,
-        previousMessage: Message? = null,
-    ): List<Message?> {
-        val submittedMessages = mutableListOf<Message?>()
-        for (user in userList) {
-            val submittedMessage =
-                user?.let {
-                    it.getDmChannel().createMessage {
-                        embedData?.let { embed ->
-                            if (embed.image.value?.url?.value == null) {
-                                embeds =
-                                    mutableListOf(
-                                        embedBuilder.apply {
-                                            title = embed.title.value
-                                            description = embed.description.value
-                                            footer {
-                                                text = embed.footer.value?.text ?: ""
-                                            }
-                                        },
-                                    )
-                            } else {
-                                val file = addFile(Path(embed.image.value?.url?.value.toString()))
-                                embeds =
-                                    mutableListOf(
-                                        embedBuilder.apply {
-                                            title = embed.title.value
-                                            description = embed.description.value
-                                            image = file.url
-                                            footer {
-                                                text = embed.footer.value?.text ?: ""
-                                            }
-                                        },
-                                    )
-                            }
-                        }
-                        content =
-                            if (previousMessage == null) {
-                                messageContent
-                            } else {
-                                (previousMessage.getJumpUrl()) + "\n" + messageContent
-                            }
-                    }
-                } ?: run {
-                    Logger.error(Error.PRIVATE_MESSAGE_EXCEPTION.message)
-                    return emptyList()
-                }
-            submittedMessages.add(submittedMessage)
-        }
-
-        if (embedData != null) {
-            fileHandler.deleteFile(embedData.image.value?.url?.value.toString())
-        }
-        return submittedMessages
-    }
-
-    /**
-     * Send a message to a game thread via a message object
-     * @param message The message object
-     * @param messageContent The message content
-     * @param embedData The embed data
-     */
-    private suspend fun sendMessageFromMessageObject(
-        message: Message?,
-        messageContent: String,
-        embedData: EmbedData?,
-    ): Message {
-        try {
-            val submittedMessage =
-                message?.let {
-                    it.getChannel().createMessage {
-                        embedData?.let { embed ->
-                            if (embed.image.value?.url?.value == null) {
-                                embeds =
-                                    mutableListOf(
-                                        embedBuilder.apply {
-                                            title = embed.title.value
-                                            description = embed.description.value
-                                            footer {
-                                                text = embed.footer.value?.text ?: ""
-                                            }
-                                        },
-                                    )
-                            } else {
-                                val file = addFile(Path(embed.image.value?.url?.value.toString()))
-                                embeds =
-                                    mutableListOf(
-                                        embedBuilder.apply {
-                                            title = embed.title.value
-                                            description = embed.description.value
-                                            image = file.url
-                                            footer {
-                                                text = embed.footer.value?.text ?: ""
-                                            }
-                                        },
-                                    )
-                            }
-                        }
-                        content = messageContent
-                    }
-                } ?: run {
-                    throw GameMessageFailedException()
-                }
-
-            if (embedData != null) {
-                fileHandler.deleteFile(embedData.image.value?.url?.value.toString())
-            }
-
-            return submittedMessage
-        } catch (e: Exception) {
-            Logger.error(
-                "Failed to send message to channel from message object.\n" +
-                    "Channel ID: ${message?.channelId?.value}\n" +
-                    "Message Content: $messageContent\n" +
-                    "Embed Data: $embedData\n" +
-                    "Error: ${e.message}",
-                e,
-            )
-            throw e
-        }
+        return messageSender.sendMessageFromChannelObject(redZoneChannel, messageContent, embedData)
     }
 
     /**
@@ -1129,183 +488,29 @@ class DiscordMessageHandler(
         channel: MessageChannel,
         messageContent: String,
         embedData: EmbedData?,
-    ): Message {
-        try {
-            val submittedMessage =
-                channel.createMessage {
-                    embedData?.let { embed ->
-                        if (embed.image.value?.url?.value == null) {
-                            embeds =
-                                mutableListOf(
-                                    embedBuilder.apply {
-                                        title = embed.title.value
-                                        description = embed.description.value
-                                        footer {
-                                            text = embed.footer.value?.text ?: ""
-                                        }
-                                    },
-                                )
-                        } else {
-                            val file = addFile(Path(embed.image.value?.url?.value.toString()))
-                            embeds =
-                                mutableListOf(
-                                    embedBuilder.apply {
-                                        title = embed.title.value
-                                        description = embed.description.value
-                                        image = file.url
-                                        footer {
-                                            text = embed.footer.value?.text ?: ""
-                                        }
-                                    },
-                                )
-                        }
-                    }
-                    content = messageContent
-                }
+    ): Message = messageSender.sendMessageFromChannelObject(channel, messageContent, embedData)
 
-            if (embedData != null) {
-                fileHandler.deleteFile(embedData.image.value?.url?.value.toString())
-            }
-
-            return submittedMessage
-        } catch (e: Exception) {
-            Logger.error(
-                "Failed to send message to channel from channel object.\n" +
-                    "Channel ID: ${channel.id.value}\n" +
-                    "Message Content: $messageContent\n" +
-                    "Embed Data: $embedData\n" +
-                    "Error: ${e.message}",
-                e,
-            )
-            throw e
-        }
+    /**
+     * Send an error message to a user and log the error
+     * @param message The message object
+     * @param error The error object
+     */
+    suspend fun sendErrorMessage(
+        message: Message?,
+        error: Error,
+    ) {
+        messageSender.sendMessageFromMessageObject(message, error.message, null)
     }
 
     /**
-     * Send a message to a game thread via a text channel object
-     * @param textChannel The text channel object
-     * @param messageContent The message content
-     * @param embedData The embed data
+     * Send a custom error message to a user
+     * @param message The message object
+     * @param errorMessage The error message
      */
-    private suspend fun sendMessageFromTextChannelObject(
-        textChannel: TextChannelThread?,
-        messageContent: String,
-        embedData: EmbedData?,
-    ): Message {
-        try {
-            val submittedMessage =
-                textChannel?.let {
-                    it.createMessage {
-                        embedData?.let { embed ->
-                            if (embed.image.value?.url?.value == null) {
-                                embeds =
-                                    mutableListOf(
-                                        embedBuilder.apply {
-                                            title = embed.title.value
-                                            description = embed.description.value
-                                            footer {
-                                                text = embed.footer.value?.text ?: ""
-                                            }
-                                        },
-                                    )
-                            } else {
-                                val file = addFile(Path(embed.image.value?.url?.value.toString()))
-                                embeds =
-                                    mutableListOf(
-                                        embedBuilder.apply {
-                                            title = embed.title.value
-                                            description = embed.description.value
-                                            image = file.url
-                                            footer {
-                                                text = embed.footer.value?.text ?: ""
-                                            }
-                                        },
-                                    )
-                            }
-                        }
-                        content = messageContent
-                    }
-                } ?: run {
-                    throw GameMessageFailedException()
-                }
-
-            if (embedData != null) {
-                fileHandler.deleteFile(embedData.image.value?.url?.value.toString())
-            }
-
-            return submittedMessage
-        } catch (e: Exception) {
-            Logger.error(
-                "Failed to send message from text channel object.\n" +
-                    "Channel ID: ${textChannel?.id?.value}\n" +
-                    "Message Content: $messageContent\n" +
-                    "Embed Data: $embedData\n" +
-                    "Error: ${e.message}",
-                e,
-            )
-            throw e
-        }
+    suspend fun sendCustomErrorMessage(
+        message: Message?,
+        errorMessage: String,
+    ) {
+        messageSender.sendMessageFromMessageObject(message, errorMessage, null)
     }
-
-    /**
-     * Append user pings to a message based on the scenario
-     * @param scenario The scenario
-     * @param homeCoaches The home team coaches
-     * @param awayCoaches The away team coaches
-     * @param offensiveCoaches The offensive team coaches
-     */
-    private suspend fun appendUserPings(
-        game: Game,
-        scenario: Scenario,
-        homeCoaches: List<User?>,
-        awayCoaches: List<User?>,
-        offensiveCoaches: List<User?>,
-    ): String {
-        return buildString {
-            when (scenario) {
-                Scenario.GAME_START, Scenario.COIN_TOSS_CHOICE, Scenario.GAME_OVER,
-                !in listOf(Scenario.DM_NUMBER_REQUEST, Scenario.NORMAL_NUMBER_REQUEST),
-                -> {
-                    if (scenario == Scenario.FIRST_DELAY_OF_GAME_WARNING) {
-                        val homeCoachesFCFB =
-                            game.homeCoachDiscordIds.map {
-                                fcfbUserClient.getUserByDiscordId(it).keys.firstOrNull()
-                            }
-                        val awayCoachesFCFB =
-                            game.awayCoachDiscordIds.map {
-                                fcfbUserClient.getUserByDiscordId(it).keys.firstOrNull()
-                            }
-
-                        val pingableHomeCoaches =
-                            homeCoaches.filterIndexed { index, _ ->
-                                homeCoachesFCFB.getOrNull(index)?.delayOfGameWarningOptOut != true
-                            }
-                        val pingableAwayCoaches =
-                            awayCoaches.filterIndexed { index, _ ->
-                                awayCoachesFCFB.getOrNull(index)?.delayOfGameWarningOptOut != true
-                            }
-
-                        val mentions = joinMentions(pingableHomeCoaches + pingableAwayCoaches)
-                        if (mentions.isNotEmpty()) {
-                            append("\n\n").append(mentions)
-                        }
-                    } else {
-                        append("\n\n").append(joinMentions(homeCoaches))
-                        append(" ").append(joinMentions(awayCoaches))
-                    }
-                }
-                Scenario.NORMAL_NUMBER_REQUEST -> {
-                    append("\n\n").append(joinMentions(offensiveCoaches))
-                }
-                else -> {}
-            }
-        }
-    }
-
-    /**
-     * Join a list of users into a string of mentions for a message
-     * @param userList The list of users
-     * @return The string of mentions
-     */
-    private fun joinMentions(userList: List<User?>) = userList.filterNotNull().joinToString(" ") { it.mention }
 }

@@ -12,7 +12,6 @@ import dev.kord.core.Kord
 import dev.kord.core.event.interaction.ChatInputCommandInteractionCreateEvent
 import dev.kord.core.event.message.MessageCreateEvent
 import dev.kord.core.on
-import dev.kord.gateway.Heartbeat
 import dev.kord.gateway.Intent
 import dev.kord.gateway.PrivilegedIntent
 import kotlinx.coroutines.CoroutineScope
@@ -22,6 +21,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.sync.Mutex
 import org.koin.core.context.startKoin
 import org.koin.mp.KoinPlatform.getKoin
 import java.time.ZoneId
@@ -39,6 +39,7 @@ class FCFBDiscordRefBot(
     private lateinit var client: Kord
     private var heartbeatJob: Job? = null
     private var restartJob: Job? = null
+    private val restartMutex = Mutex()
 
     /**
      * Start the Discord bot and it's services
@@ -65,7 +66,7 @@ class FCFBDiscordRefBot(
                 while (isActive) {
                     delay(15.seconds)
                     try {
-                        Heartbeat(15)
+                        client.getSelf()
                         val health = healthChecks.healthChecks(client, heartbeatJob, restartJob)
                         if (health.status == "DOWN") {
                             Logger.warn("Health checks failed: $health")
@@ -109,6 +110,10 @@ class FCFBDiscordRefBot(
      * Restart the Discord bot
      */
     private suspend fun restartBot() {
+        if (!restartMutex.tryLock()) {
+            Logger.warn("Restart already in progress, skipping duplicate restart request.")
+            return
+        }
         try {
             logoutOfDiscord()
             initializeBot()
@@ -116,6 +121,8 @@ class FCFBDiscordRefBot(
             Logger.info("Bot restarted successfully.")
         } catch (e: Exception) {
             Logger.error("Failed to restart bot: ${e.message}", e)
+        } finally {
+            restartMutex.unlock()
         }
     }
 
