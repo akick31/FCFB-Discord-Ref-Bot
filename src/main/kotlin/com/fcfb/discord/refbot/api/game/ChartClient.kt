@@ -112,7 +112,6 @@ class ChartClient {
                     val json = Json { ignoreUnknownKeys = true }
                     val imageArrays: List<List<Int>> = json.decodeFromString(jsonResponse)
 
-                    // Convert each integer array to ByteArray
                     imageArrays.map { intArray ->
                         intArray.map { it.toByte() }.toByteArray()
                     }
@@ -155,7 +154,6 @@ class ChartClient {
                     val json = Json { ignoreUnknownKeys = true }
                     val imageArrays: List<List<Int>> = json.decodeFromString(jsonResponse)
 
-                    // Convert each integer array to ByteArray
                     imageArrays.map { intArray ->
                         intArray.map { it.toByte() }.toByteArray()
                     }

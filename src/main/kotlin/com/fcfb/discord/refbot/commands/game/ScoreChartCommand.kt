@@ -162,13 +162,11 @@ class ScoreChartCommand(
                     }
 
                 if (index == 0) {
-                    // First chart: respond to the interaction
                     interaction.respondPublic {
                         addFile(Paths.get(chartUrl))
                         content = gameInfo
                     }
                 } else {
-                    // Subsequent charts: send as regular channel messages
                     interaction.channel.createMessage {
                         addFile(Paths.get(chartUrl))
                         content = gameInfo

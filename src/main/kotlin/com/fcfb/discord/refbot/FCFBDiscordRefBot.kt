@@ -59,13 +59,12 @@ class FCFBDiscordRefBot(
      * Start a coroutine to send regular heartbeats to Discord
      */
     private fun startHeartbeat() {
-        heartbeatJob?.cancel() // Cancel any existing heartbeat job
+        heartbeatJob?.cancel()
         heartbeatJob =
             CoroutineScope(Dispatchers.IO).launch {
                 while (isActive) {
                     delay(15.seconds)
                     try {
-                        // Attempt to fetch the bot's own user info as a "heartbeat" check
                         Heartbeat(15)
                         val health = healthChecks.healthChecks(client, heartbeatJob, restartJob)
                         if (health.status == "DOWN") {
@@ -86,7 +85,7 @@ class FCFBDiscordRefBot(
      * Schedule a restart for 4 AM EST every day
      */
     private fun startRestartJob() {
-        restartJob?.cancel() // Cancel any existing restart job
+        restartJob?.cancel()
         restartJob =
             CoroutineScope(Dispatchers.IO).launch {
                 while (isActive) {

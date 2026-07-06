@@ -818,13 +818,9 @@ class DiscordMessageHandler(
                 "<br>" to "\n",
             )
 
-        // Apply placeholder replacements to playWriteup first
         val processedPlayWriteup = applyPlaceholderReplacements(playWriteup, replacements)
-
-        // Add the processed playWriteup to replacements
         val finalReplacements = replacements + mapOf("{play_writeup}" to processedPlayWriteup)
 
-        // Replace placeholders with actual values
         finalReplacements.forEach { (placeholder, replacement) ->
             if (placeholder in messageContent) {
                 messageContent = messageContent.replace(placeholder, replacement ?: "")
@@ -834,7 +830,6 @@ class DiscordMessageHandler(
         messageContent += "\n\n[Game Details](https://fakecollegefootball.com/game-details/${game.gameId})\n" +
             "[Ranges](https://docs.google.com/spreadsheets/d/1yXG2Xe1W_G5uq_1Tus3AbP4u8HOwjgmJ1LOQDV-dhvc/edit#gid=1822037032)"
 
-        // If no scorebug was found, generate one and try to read it again
         val scorebug = scorebugClient.getScorebugByGameId(game.gameId)
 
         if (scorebug != null &&

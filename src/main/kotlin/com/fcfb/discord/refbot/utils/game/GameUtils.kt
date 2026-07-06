@@ -37,31 +37,25 @@ class GameUtils(
      * @return The valid number
      */
     fun parseValidNumberFromMessage(message: Message): Int {
-        // Regular expression to find numbers in the string
         val regex = Regex("\\d+")
 
-        // Find all occurrences of numbers in the message (regardless of validity)
         val allNumbers =
             regex.findAll(message.content)
-                .map { it.value.toInt() } // Convert to integer
+                .map { it.value.toInt() }
                 .toList()
 
-        // Log and return null if multiple numbers are found
         if (allNumbers.size > 1) {
             return -1
         }
 
-        // Filter valid numbers (between 1 and 1500)
         val validNumbers =
             allNumbers
-                .filter { it in 1..1500 } // Keep only valid numbers (1 to 1500)
+                .filter { it in 1..1500 }
 
-        // Log and return null if no valid numbers are found
         if (validNumbers.isEmpty()) {
             return -2
         }
 
-        // Return the valid number
         return validNumbers.first()
     }
 
@@ -71,7 +65,6 @@ class GameUtils(
      * @return True if a timeout was called
      */
     fun parseTimeoutFromMessage(message: Message): Boolean {
-        // Check if "timeout" (case-insensitive) is present in the message content
         val containsTimeout = message.content.contains("timeout", ignoreCase = true)
 
         return if (containsTimeout) {
@@ -141,9 +134,9 @@ class GameUtils(
     }
 
     /**
-     * Get the coin toss winner's Discord ID
+     * Get the Discord users for the coaches on the coin toss winning team
      * @param game The game object
-     * @return The coin toss winner's Discord ID
+     * @return The winning team's coach Discord users
      */
     internal suspend fun getCoinTossWinners(
         client: Kord,
