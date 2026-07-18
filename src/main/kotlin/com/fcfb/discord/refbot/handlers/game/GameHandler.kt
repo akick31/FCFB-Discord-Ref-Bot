@@ -19,6 +19,9 @@ import com.fcfb.discord.refbot.utils.game.GameUtils
 import dev.kord.core.Kord
 import dev.kord.core.entity.Message
 import dev.kord.core.entity.User
+import kotlinx.coroutines.slf4j.MDCContext
+import kotlinx.coroutines.withContext
+import org.slf4j.MDC
 
 class GameHandler(
     private val discordMessageHandler: DiscordMessageHandler,
@@ -46,18 +49,25 @@ class GameHandler(
             return errorHandler.customErrorMessage(message, response.values.firstOrNull() ?: "Could not determine error")
         }
         val game = response.keys.firstOrNull() ?: return errorHandler.noGameFoundError(message)
-        if (game.gameStatus == GameStatus.FINAL) {
-            return discordMessageHandler.sendErrorMessage(message, Error.GAME_OVER)
-        }
+        MDC.put("game_id", game.gameId.toString())
+        try {
+            withContext(MDCContext()) {
+                if (game.gameStatus == GameStatus.FINAL) {
+                    return@withContext discordMessageHandler.sendErrorMessage(message, Error.GAME_OVER)
+                }
 
-        when {
-            gameUtils.isPreGameBeforeCoinToss(game) -> handleCoinToss(client, game, message)
-            gameUtils.isPreGameAfterCoinToss(game) -> handleCoinTossChoice(client, game, message)
-            gameUtils.isOvertimeBeforeCoinToss(game) -> handleCoinToss(client, game, message)
-            gameUtils.isOvertimeAfterCoinToss(game) -> handleOvertimeCoinTossChoice(client, game, message)
-            !gameUtils.isGameWaitingOnUser(game, message) -> errorHandler.notWaitingForUserError(message)
-            gameUtils.isWaitingOnDefensiveNumber(game, message) -> handleDefensiveNumberSubmission(client, game, message)
-            gameUtils.isWaitingOnOffensiveNumber(game, message) -> handleOffensiveNumberSubmission(client, game, message)
+                when {
+                    gameUtils.isPreGameBeforeCoinToss(game) -> handleCoinToss(client, game, message)
+                    gameUtils.isPreGameAfterCoinToss(game) -> handleCoinTossChoice(client, game, message)
+                    gameUtils.isOvertimeBeforeCoinToss(game) -> handleCoinToss(client, game, message)
+                    gameUtils.isOvertimeAfterCoinToss(game) -> handleOvertimeCoinTossChoice(client, game, message)
+                    !gameUtils.isGameWaitingOnUser(game, message) -> errorHandler.notWaitingForUserError(message)
+                    gameUtils.isWaitingOnDefensiveNumber(game, message) -> handleDefensiveNumberSubmission(client, game, message)
+                    gameUtils.isWaitingOnOffensiveNumber(game, message) -> handleOffensiveNumberSubmission(client, game, message)
+                }
+            }
+        } finally {
+            MDC.remove("game_id")
         }
     }
 
@@ -327,7 +337,7 @@ class GameHandler(
             return errorHandler.invalidCoinTossWinner(message)
         }
         val coinTossChoice = message.content
-        if (message.author !in coinTossWinningCoachList && !gameUtils.isValidOvertimeCoinTossChoice(coinTossChoice)) {
+        if (message.author !in coinTossWinningCoachList || !gameUtils.isValidOvertimeCoinTossChoice(coinTossChoice)) {
             return errorHandler.waitingOnCoinTossChoiceError(message)
         }
 

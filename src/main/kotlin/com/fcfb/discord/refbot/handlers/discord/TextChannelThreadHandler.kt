@@ -74,7 +74,6 @@ class TextChannelThreadHandler(
         val threadName = getThreadName(game)
         val gameChannel = getGameForumChannel(client)
 
-        // Get the thread content
         val threadContent = getGameThreadMessageContent(game)
         val tags = getTagsForThread(game, gameChannel)
 
@@ -101,7 +100,6 @@ class TextChannelThreadHandler(
         val threadName = getPostgameThreadName(game)
         val gameChannel = getPostgameForumChannel(client)
 
-        // Get the thread content
         val threadContent = getPostgameInformation(game, lastMessage)
         val tags = getTagsForThread(game, gameChannel)
 

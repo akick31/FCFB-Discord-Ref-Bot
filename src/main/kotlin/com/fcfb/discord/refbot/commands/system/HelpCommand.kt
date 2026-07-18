@@ -29,18 +29,14 @@ class HelpCommand {
         var message =
             "Welcome to the FCFB Discord Ref Bot! Here are the available commands:\n" +
                 "`/help` - Display this help message\n" +
-                "`/register` - Register as a new user\n" +
                 "`/start_scrimmage` - Start a new game as a scrimmage\n" +
                 "`/generate_dog_report` - Show Delay of Game counts by team\n"
         if (userRole != UserRole.USER) {
             message += "\n" +
                 "`/start_game` - Start a new game\n" +
-                "`/role` - Assign a role to a user\n" +
                 "`/hire_coach` - Assign coach to a new team\n" +
                 "`/delete_game` - Delete the current game\n" +
-                "`/end_game` - End the current game\n" +
-                "`/delete_user` - Delete a user\n" +
-                "`/delete_team` - Delete a team\n"
+                "`/end_game` - End the current game\n"
         }
         response.respond { this.content = message }
     }

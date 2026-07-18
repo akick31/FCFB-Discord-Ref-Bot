@@ -108,6 +108,23 @@ class JacksonConfig {
         }
     }
 
+    private fun customPlayModule(): SimpleModule {
+        return SimpleModule().apply {
+            addDeserializer(ActualResult::class.java, ActualResultDeserializer())
+            addDeserializer(PlayCall::class.java, PlayCallDeserializer())
+            addDeserializer(Scenario::class.java, ScenarioDeserializer())
+            addDeserializer(TeamSide::class.java, TeamSideDeserializer())
+        }
+    }
+
+    fun configurePlayMapping(): ObjectMapper {
+        return ObjectMapper().apply {
+            registerModule(KotlinModule.Builder().build())
+            registerModule(customPlayModule())
+            propertyNamingStrategy = PropertyNamingStrategies.SNAKE_CASE
+        }
+    }
+
     fun configureRequestMessageLogMapping(): ObjectMapper {
         return ObjectMapper().apply {
             registerModule(KotlinModule.Builder().build())

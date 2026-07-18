@@ -60,7 +60,7 @@ class GameWriteupClient(
             mapOf(jsonResponse to null)
         } catch (e: Exception) {
             Logger.error(e.message ?: "Unknown error occurred while making a get request to the game writeup endpoint")
-            if (e.message!!.contains("Connection refused")) {
+            if (e.message?.contains("Connection refused") == true) {
                 Logger.error("Connection refused. Is the API running?")
                 mapOf(null to "Connection refused. Arceus API is likely not running.")
             } else {

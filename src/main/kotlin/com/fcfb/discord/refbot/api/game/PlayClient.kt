@@ -1,9 +1,9 @@
 package com.fcfb.discord.refbot.api.game
 
 import com.fasterxml.jackson.core.type.TypeReference
-import com.fasterxml.jackson.databind.ObjectMapper
 import com.fcfb.discord.refbot.api.utils.ApiUtils
 import com.fcfb.discord.refbot.api.utils.HttpClientConfig
+import com.fcfb.discord.refbot.config.jackson.JacksonConfig
 import com.fcfb.discord.refbot.model.domain.Play
 import com.fcfb.discord.refbot.model.enums.play.PlayCall
 import com.fcfb.discord.refbot.model.enums.play.RunoffType
@@ -148,10 +148,11 @@ class PlayClient(
                 val error = apiUtils.readError(jsonResponse)
                 return mapOf(null to error)
             }
-            mapOf(ObjectMapper().readValue(jsonResponse, Play::class.java) to null)
+            val objectMapper = JacksonConfig().configurePlayMapping()
+            mapOf(objectMapper.readValue(jsonResponse, Play::class.java) to null)
         } catch (e: Exception) {
             Logger.error(e.message ?: "Unknown error occurred while making a post request to the play endpoint")
-            if (e.message!!.contains("Connection refused")) {
+            if (e.message?.contains("Connection refused") == true) {
                 Logger.error("Connection refused. Is the API running?")
                 mapOf(null to "Connection refused. Arceus API is likely not running.")
             } else {
@@ -173,10 +174,11 @@ class PlayClient(
                 val error = apiUtils.readError(jsonResponse)
                 return mapOf(null to error)
             }
-            mapOf(ObjectMapper().readValue(jsonResponse, Play::class.java) to null)
+            val objectMapper = JacksonConfig().configurePlayMapping()
+            mapOf(objectMapper.readValue(jsonResponse, Play::class.java) to null)
         } catch (e: Exception) {
             Logger.error(e.message ?: "Unknown error occurred while making a put request to the play endpoint")
-            if (e.message!!.contains("Connection refused")) {
+            if (e.message?.contains("Connection refused") == true) {
                 Logger.error("Connection refused. Is the API running?")
                 mapOf(null to "Connection refused. Arceus API is likely not running.")
             } else {
@@ -201,10 +203,11 @@ class PlayClient(
                 val error = apiUtils.readError(jsonResponse)
                 return mapOf(null to error)
             }
-            mapOf(ObjectMapper().readValue(jsonResponse, typeRef) to null)
+            val objectMapper = JacksonConfig().configurePlayMapping()
+            mapOf(objectMapper.readValue(jsonResponse, typeRef) to null)
         } catch (e: Exception) {
             Logger.error(e.message ?: "Unknown error occurred while making a get request to the play endpoint")
-            if (e.message!!.contains("Connection refused")) {
+            if (e.message?.contains("Connection refused") == true) {
                 Logger.error("Connection refused. Is the API running?")
                 mapOf(null to "Connection refused. Arceus API is likely not running.")
             } else {

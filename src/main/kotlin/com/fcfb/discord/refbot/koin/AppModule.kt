@@ -40,12 +40,18 @@ import com.fcfb.discord.refbot.handlers.api.DelayOfGameRequest
 import com.fcfb.discord.refbot.handlers.api.StartGameRequest
 import com.fcfb.discord.refbot.handlers.discord.CloseGameAlertHandler
 import com.fcfb.discord.refbot.handlers.discord.DiscordMessageHandler
+import com.fcfb.discord.refbot.handlers.discord.DiscordMessageSender
+import com.fcfb.discord.refbot.handlers.discord.GameMessageContentBuilder
+import com.fcfb.discord.refbot.handlers.discord.GameScorePoster
 import com.fcfb.discord.refbot.handlers.discord.RedZoneChannelHandler
 import com.fcfb.discord.refbot.handlers.discord.TextChannelThreadHandler
 import com.fcfb.discord.refbot.handlers.discord.UpsetAlertHandler
 import com.fcfb.discord.refbot.handlers.game.GameHandler
 import com.fcfb.discord.refbot.handlers.system.ErrorHandler
 import com.fcfb.discord.refbot.handlers.system.FileHandler
+import com.fcfb.discord.refbot.utils.game.GameDescriptionUtils
+import com.fcfb.discord.refbot.utils.game.GameParsingUtils
+import com.fcfb.discord.refbot.utils.game.GameStateUtils
 import com.fcfb.discord.refbot.utils.game.GameUtils
 import com.fcfb.discord.refbot.utils.health.HealthChecks
 import com.fcfb.discord.refbot.utils.system.Properties
@@ -77,7 +83,10 @@ val appModule =
         single { FCFBUserClient(get()) }
         single { ErrorHandler(get()) }
         single { TextChannelThreadHandler(get(), get(), get(), get(), get()) }
-        single { GameUtils(get()) }
+        single { GameParsingUtils() }
+        single { GameStateUtils() }
+        single { GameDescriptionUtils(get()) }
+        single { GameUtils(get(), get(), get()) }
         single { StartGameRequest(get(), get()) }
         single { KtorServerConfig(get(), get(), get(), get()) }
         single { GameHandler(get(), get(), get(), get(), get(), get(), get(), get(), get()) }
@@ -116,5 +125,8 @@ val appModule =
             )
         }
         single { FCFBDiscordRefBot(get(), get(), get(), get()) }
-        single { DiscordMessageHandler(get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get()) }
+        single { DiscordMessageSender(get(), get()) }
+        single { GameMessageContentBuilder(get(), get(), get(), get(), get()) }
+        single { GameScorePoster(get(), get(), get(), get(), get()) }
+        single { DiscordMessageHandler(get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get()) }
     }

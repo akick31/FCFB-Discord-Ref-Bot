@@ -3,7 +3,6 @@ package com.fcfb.discord.refbot.api.game
 import com.fcfb.discord.refbot.api.utils.HttpClientConfig
 import com.fcfb.discord.refbot.utils.system.Logger
 import io.ktor.client.request.get
-import io.ktor.client.request.post
 import io.ktor.client.statement.bodyAsChannel
 import io.ktor.http.isSuccess
 import io.ktor.utils.io.core.readBytes
@@ -30,25 +29,6 @@ class ScorebugClient {
     internal suspend fun getScorebugByGameId(gameId: Int): ByteArray? {
         val endpointUrl = "$baseUrl/scorebug?gameId=$gameId"
         return getRequest(endpointUrl)
-    }
-
-    /**
-     * Call a post request to the scorebug endpoint
-     * @param endpointUrl
-     * @return Boolean
-     */
-    private suspend fun postRequest(endpointUrl: String): Boolean {
-        return try {
-            val response = httpClient.post(endpointUrl)
-            if (!response.status.isSuccess()) {
-                Logger.error("Failed to make a post request to the scorebug endpoint")
-                return false
-            }
-            return true
-        } catch (e: Exception) {
-            Logger.error(e.message ?: "Unknown error occurred while making a post request to the scorebug endpoint")
-            false
-        }
     }
 
     /**

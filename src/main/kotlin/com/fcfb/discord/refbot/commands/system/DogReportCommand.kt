@@ -54,9 +54,9 @@ class DogReportCommand(
         val response = interaction.deferPublicResponse()
 
         try {
-            val result = playClient.getDelayOfGameCountsByWeek(season, week)
-            val dogByTeam = result.keys.firstOrNull()
-            val error = result.values.firstOrNull()
+            val dogCountsApiResponse = playClient.getDelayOfGameCountsByWeek(season, week)
+            val dogByTeam = dogCountsApiResponse.keys.firstOrNull()
+            val error = dogCountsApiResponse.values.firstOrNull()
 
             if (dogByTeam == null) {
                 response.respond {

@@ -61,10 +61,8 @@ class PreviousPlayCommand(
 
         // Post the play outcome message as if it was just processed
         try {
-            // First respond to acknowledge the command
             val responseMessage = response.respond { this.content = "Previous play result:" }
 
-            // Then post the actual play outcome using the response message for linking
             discordMessageHandler.sendPlayOutcomeMessage(
                 interaction.kord,
                 game,

@@ -30,6 +30,9 @@ import com.fcfb.discord.refbot.utils.system.Logger
 import dev.kord.core.Kord
 import dev.kord.core.behavior.interaction.response.respond
 import dev.kord.core.entity.interaction.ChatInputCommandInteraction
+import kotlinx.coroutines.slf4j.MDCContext
+import kotlinx.coroutines.withContext
+import org.slf4j.MDC
 
 class CommandRegistry(
     private val fcfbUserClient: FCFBUserClient,
@@ -90,52 +93,61 @@ class CommandRegistry(
     }
 
     suspend fun executeCommand(interaction: ChatInputCommandInteraction) {
-        val userRole =
-            try {
-                val response = fcfbUserClient.getUserByDiscordId(interaction.user.id.toString())
-                if (response.keys.firstOrNull() == null) {
-                    UserRole.USER
-                } else {
-                    response.keys.firstOrNull()?.role ?: UserRole.USER
-                }
-            } catch (e: Exception) {
-                UserRole.USER
-            }
         val commandName = interaction.command.data.name.value
+        MDC.put("interaction_id", interaction.id.toString())
+        MDC.put("command", commandName ?: "unknown")
+        try {
+            withContext(MDCContext()) {
+                val userRole =
+                    try {
+                        val response = fcfbUserClient.getUserByDiscordId(interaction.user.id.toString())
+                        if (response.keys.firstOrNull() == null) {
+                            UserRole.USER
+                        } else {
+                            response.keys.firstOrNull()?.role ?: UserRole.USER
+                        }
+                    } catch (e: Exception) {
+                        UserRole.USER
+                    }
 
-        if (!hasPermission(userRole, commandName ?: "")) {
-            interaction.deferPublicResponse().respond {
-                content = "You do not have permission to execute the command `$commandName`."
+                if (!hasPermission(userRole, commandName ?: "")) {
+                    interaction.deferPublicResponse().respond {
+                        content = "You do not have permission to execute the command `$commandName`."
+                    }
+                    Logger.error("${interaction.user.username} tried to execute `$commandName` without permission")
+                    return@withContext
+                }
+
+                when (commandName) {
+                    "chew_game" -> chewGameCommand.execute(interaction)
+                    "delete_game" -> deleteGameCommand.execute(interaction)
+                    "restart_game" -> restartGameCommand.execute(interaction)
+                    "end_game" -> endGameCommand.execute(interaction)
+                    "end_all" -> endAllGamesCommand.execute(interaction)
+                    "fire_coach" -> fireCoachCommand.execute(interaction)
+                    "game_info" -> gameInfoCommand.execute(interaction)
+                    "get_team_coaches" -> getTeamCoachesCommand.execute(interaction)
+                    "help" -> helpCommand.execute(userRole, interaction)
+                    "hire_coach" -> hireCoachCommand.execute(interaction)
+                    "hire_interim_coach" -> hireInterimCoachCommand.execute(interaction)
+                    "message_all_games" -> messageAllGamesCommand.execute(interaction)
+                    "ping" -> pingCommand.execute(interaction)
+                    "previous_play" -> previousPlayCommand.execute(interaction)
+                    "start_game" -> startGameCommand.execute(interaction)
+                    "start_scrimmage" -> startScrimmageCommand.execute(interaction)
+                    "start_week" -> startWeekCommand.execute(interaction)
+                    "retry_week" -> retryWeekCommand.execute(interaction)
+                    "sub_coach" -> subCoachCommand.execute(interaction)
+                    "get_role" -> getRoleCommand.execute(interaction)
+                    "rollback" -> rollbackCommand.execute(interaction)
+                    "score_chart" -> scoreChartCommand.handle(interaction)
+                    "win_probability" -> winProbabilityCommand.handle(interaction)
+                    "generate_dog_report" -> dogReportCommand.execute(interaction)
+                }
             }
-            Logger.error("${interaction.user.username} tried to execute `$commandName` without permission")
-            return
-        }
-
-        when (commandName) {
-            "chew_game" -> chewGameCommand.execute(interaction)
-            "delete_game" -> deleteGameCommand.execute(interaction)
-            "restart_game" -> restartGameCommand.execute(interaction)
-            "end_game" -> endGameCommand.execute(interaction)
-            "end_all" -> endAllGamesCommand.execute(interaction)
-            "fire_coach" -> fireCoachCommand.execute(interaction)
-            "game_info" -> gameInfoCommand.execute(interaction)
-            "get_team_coaches" -> getTeamCoachesCommand.execute(interaction)
-            "help" -> helpCommand.execute(userRole, interaction)
-            "hire_coach" -> hireCoachCommand.execute(interaction)
-            "hire_interim_coach" -> hireInterimCoachCommand.execute(interaction)
-            "message_all_games" -> messageAllGamesCommand.execute(interaction)
-            "ping" -> pingCommand.execute(interaction)
-            "previous_play" -> previousPlayCommand.execute(interaction)
-            "start_game" -> startGameCommand.execute(interaction)
-            "start_scrimmage" -> startScrimmageCommand.execute(interaction)
-            "start_week" -> startWeekCommand.execute(interaction)
-            "retry_week" -> retryWeekCommand.execute(interaction)
-            "sub_coach" -> subCoachCommand.execute(interaction)
-            "get_role" -> getRoleCommand.execute(interaction)
-            "rollback" -> rollbackCommand.execute(interaction)
-            "score_chart" -> scoreChartCommand.handle(interaction)
-            "win_probability" -> winProbabilityCommand.handle(interaction)
-            "generate_dog_report" -> dogReportCommand.execute(interaction)
+        } finally {
+            MDC.remove("interaction_id")
+            MDC.remove("command")
         }
     }
 }

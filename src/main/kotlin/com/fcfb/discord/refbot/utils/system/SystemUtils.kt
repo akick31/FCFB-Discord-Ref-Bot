@@ -15,7 +15,7 @@ class SystemUtils {
             try {
                 return block()
             } catch (e: Exception) {
-                println("Attempt ${attempt + 1} failed: ${e.message}. Retrying in ${currentDelay}ms...")
+                Logger.warn("Attempt ${attempt + 1} failed: ${e.message}. Retrying in ${currentDelay}ms...")
             }
             delay(currentDelay)
             currentDelay = (currentDelay * factor).toLong().coerceAtMost(maxDelay)
