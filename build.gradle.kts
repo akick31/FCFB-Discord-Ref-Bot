@@ -35,13 +35,14 @@ repositories {
 configurations.all {
     resolutionStrategy {
         force("org.slf4j:slf4j-api:2.0.14")
-        force("org.slf4j:slf4j-log4j12:2.0.14")
     }
 }
 
 dependencies {
     testImplementation(kotlin("test"))
-    implementation("org.slf4j:slf4j-log4j12:2.0.14")
+    implementation("ch.qos.logback:logback-classic:1.4.14")
+    implementation("net.logstash.logback:logstash-logback-encoder:7.4")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-slf4j:1.8.1")
     implementation("io.ktor:ktor-server-core:2.3.12")
     implementation("io.ktor:ktor-server-netty:2.3.12")
     implementation("io.ktor:ktor-server-content-negotiation:2.3.12")
