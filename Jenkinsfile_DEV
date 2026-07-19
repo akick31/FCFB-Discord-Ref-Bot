@@ -104,6 +104,7 @@ pipeline {
                     sh "docker rm -f ${CONTAINER_NAME_BLUE} || true"
                     sh """
                         docker run -d --name ${CONTAINER_NAME_BLUE} \\
+                            --memory=1024m \\
                             -p 11312:1312 \\
                             -v ${env.APP_PROPERTIES}:/app/application.properties \\
                             ${IMAGE_NAME}:${DOCKERFILE}
@@ -156,6 +157,7 @@ pipeline {
                         docker stop ${CONTAINER_NAME_BLUE} || true
                         docker rm ${CONTAINER_NAME_BLUE} || true
                         docker run --network="host" -d --restart=always --name ${CONTAINER_NAME} \\
+                            --memory=1024m \\
                             -v ${env.APP_PROPERTIES}:/app/application.properties \\
                             ${IMAGE_NAME}:${DOCKERFILE}
                     """
