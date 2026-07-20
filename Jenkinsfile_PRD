@@ -14,6 +14,7 @@ pipeline {
         DISCORD_TOKEN = credentials('REFBOT_DISCORD_TOKEN')
         DISCORD_GUILD_ID = credentials('DISCORD_GUILD_ID')
         DISCORD_FORUM_CHANNEL_ID = credentials('DISCORD_FORUM_CHANNEL_ID')
+        BOT_SERVICE_KEY = credentials('BOT_SERVICE_KEY')
     }
 
     stages {
@@ -66,6 +67,9 @@ pipeline {
 
                         # Domain configuration
                         api.url=https://api.fakecollegefootball.com/api/v1/arceus
+
+                        # Backend service authentication (must match bot.service.key / BOT_SERVICE_KEY on FCFB-Backend PRD)
+                        bot.service.key=${env.BOT_SERVICE_KEY}
 
                         # Server configuration
                         server.port=1211
