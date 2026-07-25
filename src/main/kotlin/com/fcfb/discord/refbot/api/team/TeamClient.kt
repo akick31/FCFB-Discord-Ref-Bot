@@ -133,10 +133,7 @@ class TeamClient(
         return try {
             val response = httpClient.get(endpointUrl)
             val jsonResponse = response.bodyAsText()
-            if (jsonResponse.contains("error")) {
-                val error = apiUtils.readError(jsonResponse)
-                return mapOf(null to error)
-            }
+            apiUtils.errorFrom(response, jsonResponse)?.let { return mapOf(null to it) }
             val objectMapper = JacksonConfig().configureTeamMapping()
             val teams: List<Team> = objectMapper.readValue(jsonResponse, object : TypeReference<List<Team>>() {})
             mapOf(teams to null)
@@ -160,10 +157,7 @@ class TeamClient(
         return try {
             val response = httpClient.get(endpointUrl)
             val jsonResponse = response.bodyAsText()
-            if (jsonResponse.contains("error")) {
-                val error = apiUtils.readError(jsonResponse)
-                return mapOf(null to error)
-            }
+            apiUtils.errorFrom(response, jsonResponse)?.let { return mapOf(null to it) }
             val objectMapper = JacksonConfig().configureTeamMapping()
             mapOf(objectMapper.readValue(jsonResponse, Team::class.java) to null)
         } catch (e: Exception) {
@@ -186,10 +180,7 @@ class TeamClient(
         return try {
             val response = httpClient.post(endpointUrl)
             val jsonResponse = response.bodyAsText()
-            if (jsonResponse.contains("error")) {
-                val error = apiUtils.readError(jsonResponse)
-                return mapOf(null to error)
-            }
+            apiUtils.errorFrom(response, jsonResponse)?.let { return mapOf(null to it) }
             val objectMapper = JacksonConfig().configureTeamMapping()
             mapOf(objectMapper.readValue(jsonResponse, Team::class.java) to null)
         } catch (e: Exception) {

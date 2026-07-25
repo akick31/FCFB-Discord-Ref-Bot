@@ -63,10 +63,7 @@ class LogClient(
                     setBody(body)
                 }
             val jsonResponse = response.bodyAsText()
-            if (jsonResponse.contains("error")) {
-                val error = apiUtils.readError(jsonResponse)
-                return mapOf(null to error)
-            }
+            apiUtils.errorFrom(response, jsonResponse)?.let { return mapOf(null to it) }
             val objectMapper = JacksonConfig().configureRequestMessageLogMapping()
             mapOf(objectMapper.readValue(jsonResponse, RequestMessageLog::class.java) to null)
         } catch (e: Exception) {

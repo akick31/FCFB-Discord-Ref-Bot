@@ -53,10 +53,7 @@ class GameWriteupClient(
         return try {
             val response = httpClient.get(endpointUrl)
             val jsonResponse = response.bodyAsText()
-            if (jsonResponse.contains("error")) {
-                val error = apiUtils.readError(jsonResponse)
-                return mapOf(null to error)
-            }
+            apiUtils.errorFrom(response, jsonResponse)?.let { return mapOf(null to it) }
             mapOf(jsonResponse to null)
         } catch (e: Exception) {
             Logger.error(e.message ?: "Unknown error occurred while making a get request to the game writeup endpoint")

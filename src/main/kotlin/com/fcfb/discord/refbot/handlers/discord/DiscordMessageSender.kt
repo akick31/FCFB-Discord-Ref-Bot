@@ -82,9 +82,7 @@ class DiscordMessageSender(
             submittedMessages.add(submittedMessage)
         }
 
-        if (embedData != null) {
-            fileHandler.deleteFile(embedData.image.value?.url?.value.toString())
-        }
+        fileHandler.deleteFile(embedData?.image?.value?.url?.value)
         return submittedMessages
     }
 
@@ -136,9 +134,7 @@ class DiscordMessageSender(
                     throw GameMessageFailedException()
                 }
 
-            if (embedData != null) {
-                fileHandler.deleteFile(embedData.image.value?.url?.value.toString())
-            }
+            fileHandler.deleteFile(embedData?.image?.value?.url?.value)
 
             return submittedMessage
         } catch (e: Exception) {
@@ -198,9 +194,7 @@ class DiscordMessageSender(
                     content = messageContent
                 }
 
-            if (embedData != null) {
-                fileHandler.deleteFile(embedData.image.value?.url?.value.toString())
-            }
+            fileHandler.deleteFile(embedData?.image?.value?.url?.value)
 
             return submittedMessage
         } catch (e: Exception) {
@@ -264,9 +258,7 @@ class DiscordMessageSender(
                     throw GameMessageFailedException()
                 }
 
-            if (embedData != null) {
-                fileHandler.deleteFile(embedData.image.value?.url?.value.toString())
-            }
+            fileHandler.deleteFile(embedData?.image?.value?.url?.value)
 
             return submittedMessage
         } catch (e: Exception) {
