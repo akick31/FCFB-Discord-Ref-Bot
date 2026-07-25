@@ -44,7 +44,7 @@ class GetTeamCoachesCommand(
             val coachList = team.coachDiscordIds?.map { interaction.kord.getUser(Snowflake(it)) }
             if (coachList.isNullOrEmpty()) {
                 response.respond { this.content = "Team is empty!" }
-                Logger.error("${interaction.user.username} failed to get the team coaches in channel ${interaction.channelId.value}")
+                Logger.info("${interaction.user.username} asked for the coaches of an empty team in channel ${interaction.channelId.value}")
                 return
             }
             response.respond { this.content = "${team.name} Coaches: " + coachList.filterNotNull().joinToString(" ") { it.mention } }
@@ -53,7 +53,7 @@ class GetTeamCoachesCommand(
             )
         } else {
             response.respond { this.content = "Team is empty!" }
-            Logger.error("${interaction.user.username} failed to get the team coaches in channel ${interaction.channelId.value}")
+            Logger.info("${interaction.user.username} asked for the coaches of an empty team in channel ${interaction.channelId.value}")
         }
     }
 }

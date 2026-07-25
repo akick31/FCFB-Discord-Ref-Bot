@@ -5,12 +5,14 @@ import java.io.File
 import java.nio.file.Files
 
 class FileHandler {
-    fun deleteFile(url: String) {
-        // Delete scorebug when done, no need to clutter the container
+    fun deleteFile(url: String?) {
+        if (url.isNullOrBlank()) {
+            return
+        }
         try {
-            Files.delete(File(url).toPath())
+            Files.deleteIfExists(File(url).toPath())
         } catch (e: Exception) {
-            Logger.error("Failed to delete scorebug image: ${e.message}")
+            Logger.warn("Failed to delete scorebug image at $url: ${e.message}")
         }
     }
 }

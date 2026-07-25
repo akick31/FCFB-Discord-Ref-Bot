@@ -264,10 +264,7 @@ class GameClient(
         return try {
             val response: HttpResponse = httpClient.post(endpointUrl)
             val jsonResponse = response.bodyAsText()
-            if (jsonResponse.contains("error")) {
-                val error = apiUtils.readError(jsonResponse)
-                return mapOf(null to error)
-            }
+            apiUtils.errorFrom(response, jsonResponse)?.let { return mapOf(null to it) }
             val objectMapper = JacksonConfig().configureGameMapping()
             val node = objectMapper.readTree(jsonResponse)
             // Use snake_case key to match API response (readTree doesn't apply naming strategy)
@@ -312,10 +309,7 @@ class GameClient(
         return try {
             val response: HttpResponse = httpClient.post(endpointUrl)
             val jsonResponse = response.bodyAsText()
-            if (jsonResponse.contains("error")) {
-                val error = apiUtils.readError(jsonResponse)
-                return mapOf(null to error)
-            }
+            apiUtils.errorFrom(response, jsonResponse)?.let { return mapOf(null to it) }
             val objectMapper = JacksonConfig().configureGameMapping()
             val node = objectMapper.readTree(jsonResponse)
             // Use snake_case key to match API response (readTree doesn't apply naming strategy)
@@ -340,10 +334,7 @@ class GameClient(
         return try {
             val response: HttpResponse = httpClient.put(endpointUrl)
             val jsonResponse = response.bodyAsText()
-            if (jsonResponse.contains("error")) {
-                val error = apiUtils.readError(jsonResponse)
-                return mapOf(null to error)
-            }
+            apiUtils.errorFrom(response, jsonResponse)?.let { return mapOf(null to it) }
             val objectMapper = JacksonConfig().configureGameMapping()
             mapOf(objectMapper.readValue(jsonResponse, Game::class.java) to null)
         } catch (e: Exception) {
@@ -376,10 +367,7 @@ class GameClient(
         return try {
             val response: HttpResponse = httpClient.post(endpointUrl)
             val jsonResponse = response.bodyAsText()
-            if (jsonResponse.contains("error")) {
-                val error = apiUtils.readError(jsonResponse)
-                return mapOf(null to error)
-            }
+            apiUtils.errorFrom(response, jsonResponse)?.let { return mapOf(null to it) }
             val objectMapper = JacksonConfig().configureGameMapping()
             mapOf(objectMapper.readValue(jsonResponse, Game::class.java) to null)
         } catch (e: Exception) {
@@ -402,10 +390,7 @@ class GameClient(
         return try {
             val response: HttpResponse = httpClient.post(endpointUrl)
             val jsonResponse = response.bodyAsText()
-            if (jsonResponse.contains("error")) {
-                val error = apiUtils.readError(jsonResponse)
-                return mapOf(null to error)
-            }
+            apiUtils.errorFrom(response, jsonResponse)?.let { return mapOf(null to it) }
             val objectMapper = JacksonConfig().configureGameMapping()
             val gameListType = objectMapper.typeFactory.constructCollectionType(List::class.java, Game::class.java)
             val game: List<Game> = objectMapper.readValue(jsonResponse, gameListType)
@@ -432,10 +417,7 @@ class GameClient(
                     setBody(body)
                 }
             val jsonResponse = response.bodyAsText()
-            if (jsonResponse.contains("error")) {
-                val error = apiUtils.readError(jsonResponse)
-                return mapOf(null to error)
-            }
+            apiUtils.errorFrom(response, jsonResponse)?.let { return mapOf(null to it) }
             val objectMapper = JacksonConfig().configureGameMapping()
             mapOf(objectMapper.readValue(jsonResponse, Game::class.java) to null)
         } catch (e: Exception) {
@@ -461,10 +443,7 @@ class GameClient(
                     contentType(ContentType.Application.Json)
                 }
             val jsonResponse = response.bodyAsText()
-            if (jsonResponse.contains("error")) {
-                val error = apiUtils.readError(jsonResponse)
-                return mapOf(null to error)
-            }
+            apiUtils.errorFrom(response, jsonResponse)?.let { return mapOf(null to it) }
             val objectMapper = JacksonConfig().configureGameMapping()
             mapOf(objectMapper.readValue(jsonResponse, Game::class.java) to null)
         } catch (e: Exception) {
@@ -490,10 +469,7 @@ class GameClient(
                     contentType(ContentType.Application.Json)
                 }
             val jsonResponse = response.bodyAsText()
-            if (jsonResponse.contains("error")) {
-                val error = apiUtils.readError(jsonResponse)
-                return mapOf(null to error)
-            }
+            apiUtils.errorFrom(response, jsonResponse)?.let { return mapOf(null to it) }
             val objectMapper = JacksonConfig().configureGameMapping()
             val pagedResponse: PagedResponse<Game> = objectMapper.readValue(jsonResponse, object : TypeReference<PagedResponse<Game>>() {})
             val game: List<Game> = pagedResponse.content
