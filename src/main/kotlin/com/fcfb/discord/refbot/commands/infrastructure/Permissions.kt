@@ -15,6 +15,7 @@ object Permissions {
             "win_probability",
             "previous_play",
             "generate_dog_report",
+            "api_key",
         )
     private val adminCommands =
         setOf(

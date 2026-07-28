@@ -33,6 +33,7 @@ import com.fcfb.discord.refbot.commands.game.WinProbabilityCommand
 import com.fcfb.discord.refbot.commands.infrastructure.CommandRegistry
 import com.fcfb.discord.refbot.commands.system.DogReportCommand
 import com.fcfb.discord.refbot.commands.system.HelpCommand
+import com.fcfb.discord.refbot.commands.user.ApiKeyCommand
 import com.fcfb.discord.refbot.commands.user.GetRoleCommand
 import com.fcfb.discord.refbot.commands.user.PingCommand
 import com.fcfb.discord.refbot.config.server.KtorServerConfig
@@ -117,11 +118,12 @@ val appModule =
         single { ScoreChartCommand(get(), get(), get(), get()) }
         single { WinProbabilityCommand(get(), get(), get(), get()) }
         single { PreviousPlayCommand(get(), get(), get()) }
+        single { ApiKeyCommand(get()) }
         single {
             CommandRegistry(
                 get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(),
                 get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(),
-                get(),
+                get(), get(),
             )
         }
         single { FCFBDiscordRefBot(get(), get(), get(), get()) }

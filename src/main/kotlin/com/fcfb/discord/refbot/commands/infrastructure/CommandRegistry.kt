@@ -23,6 +23,7 @@ import com.fcfb.discord.refbot.commands.game.StartWeekCommand
 import com.fcfb.discord.refbot.commands.game.WinProbabilityCommand
 import com.fcfb.discord.refbot.commands.system.DogReportCommand
 import com.fcfb.discord.refbot.commands.system.HelpCommand
+import com.fcfb.discord.refbot.commands.user.ApiKeyCommand
 import com.fcfb.discord.refbot.commands.user.GetRoleCommand
 import com.fcfb.discord.refbot.commands.user.PingCommand
 import com.fcfb.discord.refbot.model.enums.user.UserRole
@@ -60,6 +61,7 @@ class CommandRegistry(
     private val winProbabilityCommand: WinProbabilityCommand,
     private val previousPlayCommand: PreviousPlayCommand,
     private val dogReportCommand: DogReportCommand,
+    private val apiKeyCommand: ApiKeyCommand,
 ) {
     suspend fun registerCommands(client: Kord) {
         // Delete old commands just in case of changes
@@ -90,6 +92,7 @@ class CommandRegistry(
         subCoachCommand.register(client)
         winProbabilityCommand.register(client)
         dogReportCommand.register(client)
+        apiKeyCommand.register(client)
     }
 
     suspend fun executeCommand(interaction: ChatInputCommandInteraction) {
@@ -139,6 +142,7 @@ class CommandRegistry(
                     "retry_week" -> retryWeekCommand.execute(interaction)
                     "sub_coach" -> subCoachCommand.execute(interaction)
                     "get_role" -> getRoleCommand.execute(interaction)
+                    "api_key" -> apiKeyCommand.execute(interaction)
                     "rollback" -> rollbackCommand.execute(interaction)
                     "score_chart" -> scoreChartCommand.handle(interaction)
                     "win_probability" -> winProbabilityCommand.handle(interaction)
