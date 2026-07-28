@@ -7,6 +7,7 @@ import com.fcfb.discord.refbot.config.jackson.JacksonConfig
 import com.fcfb.discord.refbot.model.domain.FCFBUser
 import com.fcfb.discord.refbot.utils.system.Logger
 import io.ktor.client.request.get
+import io.ktor.client.request.post
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.ContentType
 import io.ktor.http.contentType
@@ -44,6 +45,27 @@ class FCFBUserClient(
     internal suspend fun getAllUsers(): Map<List<FCFBUser>?, String?> {
         val endpointUrl = "$baseUrl/user"
         return getRequestList(endpointUrl)
+    }
+
+    /**
+     * Generate a fresh personal API key for a user, returning the plaintext key mapped to an optional error message.
+     * @param userId
+     */
+    internal suspend fun generateApiKey(userId: Long): Map<String?, String?> {
+        val endpointUrl = "$baseUrl/user/$userId/api-key"
+        return try {
+            val response =
+                httpClient.post(endpointUrl) {
+                    contentType(ContentType.Application.Json)
+                }
+            val jsonResponse = response.bodyAsText()
+            apiUtils.errorFrom(response, jsonResponse)?.let { return mapOf(null to it) }
+            val node = JacksonConfig().configureFCFBUserMapping().readTree(jsonResponse)
+            mapOf(node.get("apiKey")?.asText() to null)
+        } catch (e: Exception) {
+            Logger.error(e.message ?: "Unknown error occurred while generating an API key")
+            mapOf(null to (e.message ?: "Unknown error"))
+        }
     }
 
     /**
