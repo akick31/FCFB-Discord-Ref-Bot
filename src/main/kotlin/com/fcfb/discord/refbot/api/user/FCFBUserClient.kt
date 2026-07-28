@@ -79,10 +79,7 @@ class FCFBUserClient(
                     contentType(ContentType.Application.Json)
                 }
             val jsonResponse = response.bodyAsText()
-            if (jsonResponse.contains("error")) {
-                val error = apiUtils.readError(jsonResponse)
-                return mapOf(null to error)
-            }
+            apiUtils.errorFrom(response, jsonResponse)?.let { return mapOf(null to it) }
             val objectMapper = JacksonConfig().configureFCFBUserMapping()
             mapOf(objectMapper.readValue(jsonResponse, FCFBUser::class.java) to null)
         } catch (e: Exception) {
@@ -107,10 +104,7 @@ class FCFBUserClient(
                     contentType(ContentType.Application.Json)
                 }
             val jsonResponse = response.bodyAsText()
-            if (jsonResponse.contains("error")) {
-                val error = apiUtils.readError(jsonResponse)
-                return mapOf(null to error)
-            }
+            apiUtils.errorFrom(response, jsonResponse)?.let { return mapOf(null to it) }
             val objectMapper = JacksonConfig().configureFCFBUserMapping()
             val users: List<FCFBUser> =
                 objectMapper.readValue(jsonResponse, object : TypeReference<List<FCFBUser>>() {})

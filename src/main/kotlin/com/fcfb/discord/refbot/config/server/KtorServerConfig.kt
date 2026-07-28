@@ -85,7 +85,12 @@ class KtorServerConfig(
                 try {
                     val game = call.receive<Game>()
                     val gameThread = startGameRequest.startGameThread(client, game)
-                    call.respondText(gameThread.toString())
+                    if (gameThread == null) {
+                        Logger.error("Could not create a game thread for ${game.homeTeam} vs ${game.awayTeam}")
+                        call.respond(HttpStatusCode.InternalServerError, "Error processing request: could not create the game thread")
+                    } else {
+                        call.respondText(gameThread)
+                    }
                 } catch (e: Exception) {
                     call.respond(HttpStatusCode.BadRequest, "Error processing request: ${e.message}")
                 }

@@ -1,5 +1,6 @@
 package com.fcfb.discord.refbot.config.jackson
 
+import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.PropertyNamingStrategies
 import com.fasterxml.jackson.databind.module.SimpleModule
@@ -76,6 +77,7 @@ class JacksonConfig {
         return ObjectMapper().apply {
             registerModule(KotlinModule.Builder().build())
             propertyNamingStrategy = PropertyNamingStrategies.SNAKE_CASE
+            configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
         }
     }
 

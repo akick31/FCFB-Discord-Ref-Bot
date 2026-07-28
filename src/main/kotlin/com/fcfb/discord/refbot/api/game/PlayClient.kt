@@ -144,10 +144,7 @@ class PlayClient(
         return try {
             val response = httpClient.post(endpointUrl)
             val jsonResponse = response.bodyAsText()
-            if (jsonResponse.contains("error")) {
-                val error = apiUtils.readError(jsonResponse)
-                return mapOf(null to error)
-            }
+            apiUtils.errorFrom(response, jsonResponse)?.let { return mapOf(null to it) }
             val objectMapper = JacksonConfig().configurePlayMapping()
             mapOf(objectMapper.readValue(jsonResponse, Play::class.java) to null)
         } catch (e: Exception) {
@@ -170,10 +167,7 @@ class PlayClient(
         return try {
             val response = httpClient.put(endpointUrl)
             val jsonResponse = response.bodyAsText()
-            if (jsonResponse.contains("error")) {
-                val error = apiUtils.readError(jsonResponse)
-                return mapOf(null to error)
-            }
+            apiUtils.errorFrom(response, jsonResponse)?.let { return mapOf(null to it) }
             val objectMapper = JacksonConfig().configurePlayMapping()
             mapOf(objectMapper.readValue(jsonResponse, Play::class.java) to null)
         } catch (e: Exception) {
@@ -199,10 +193,7 @@ class PlayClient(
         return try {
             val response = httpClient.get(endpointUrl)
             val jsonResponse = response.bodyAsText()
-            if (jsonResponse.contains("error")) {
-                val error = apiUtils.readError(jsonResponse)
-                return mapOf(null to error)
-            }
+            apiUtils.errorFrom(response, jsonResponse)?.let { return mapOf(null to it) }
             val objectMapper = JacksonConfig().configurePlayMapping()
             mapOf(objectMapper.readValue(jsonResponse, typeRef) to null)
         } catch (e: Exception) {
