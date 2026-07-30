@@ -40,40 +40,45 @@ class DiscordMessageSender(
         for (user in userList) {
             val submittedMessage =
                 user?.let {
-                    it.getDmChannel().createMessage {
-                        embedData?.let { embed ->
-                            if (embed.image.value?.url?.value == null) {
-                                embeds =
-                                    mutableListOf(
-                                        embedBuilder.apply {
-                                            title = embed.title.value
-                                            description = embed.description.value
-                                            footer {
-                                                text = embed.footer.value?.text ?: ""
-                                            }
-                                        },
-                                    )
-                            } else {
-                                val file = addFile(Path(embed.image.value?.url?.value.toString()))
-                                embeds =
-                                    mutableListOf(
-                                        embedBuilder.apply {
-                                            title = embed.title.value
-                                            description = embed.description.value
-                                            image = file.url
-                                            footer {
-                                                text = embed.footer.value?.text ?: ""
-                                            }
-                                        },
-                                    )
+                    try {
+                        it.getDmChannel().createMessage {
+                            embedData?.let { embed ->
+                                if (embed.image.value?.url?.value == null) {
+                                    embeds =
+                                        mutableListOf(
+                                            embedBuilder.apply {
+                                                title = embed.title.value
+                                                description = embed.description.value
+                                                footer {
+                                                    text = embed.footer.value?.text ?: ""
+                                                }
+                                            },
+                                        )
+                                } else {
+                                    val file = addFile(Path(embed.image.value?.url?.value.toString()))
+                                    embeds =
+                                        mutableListOf(
+                                            embedBuilder.apply {
+                                                title = embed.title.value
+                                                description = embed.description.value
+                                                image = file.url
+                                                footer {
+                                                    text = embed.footer.value?.text ?: ""
+                                                }
+                                            },
+                                        )
+                                }
                             }
+                            content =
+                                if (previousMessage == null) {
+                                    messageContent
+                                } else {
+                                    (previousMessage.getJumpUrl()) + "\n" + messageContent
+                                }
                         }
-                        content =
-                            if (previousMessage == null) {
-                                messageContent
-                            } else {
-                                (previousMessage.getJumpUrl()) + "\n" + messageContent
-                            }
+                    } catch (e: Exception) {
+                        Logger.error("Failed to DM ${it.username}: ${e.message}")
+                        null
                     }
                 }
             if (submittedMessage == null) {

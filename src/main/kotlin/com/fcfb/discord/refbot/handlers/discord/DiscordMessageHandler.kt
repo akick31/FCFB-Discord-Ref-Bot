@@ -140,14 +140,14 @@ class DiscordMessageHandler(
         play: Play?,
         previousMessage: Message? = null,
     ): List<Message?> {
-        val gameMessage = contentBuilder.createGameMessage(client, game, scenario, play, false)
-
-        val (messageContent, embedData) = gameMessage.first
-        val defensiveCoaches = gameMessage.second
-
+        var defensiveCoaches: List<User?> = emptyList()
         return try {
             val numberRequestMessage =
                 systemUtils.retry {
+                    val gameMessage = contentBuilder.createGameMessage(client, game, scenario, play, false)
+                    val (messageContent, embedData) = gameMessage.first
+                    defensiveCoaches = gameMessage.second
+
                     val result = messageSender.sendPrivateMessage(defensiveCoaches, embedData, messageContent, previousMessage)
                     if (result.none { it != null }) {
                         throw DefensiveNumberRequestFailedException(game.gameId)
