@@ -7,7 +7,6 @@ import com.fasterxml.jackson.databind.module.SimpleModule
 import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.fcfb.discord.refbot.config.jackson.deserializers.ActualResultDeserializer
 import com.fcfb.discord.refbot.config.jackson.deserializers.CoachPositionDeserializer
-import com.fcfb.discord.refbot.config.jackson.deserializers.ConferenceDeserializer
 import com.fcfb.discord.refbot.config.jackson.deserializers.DefensivePlaybookDeserializer
 import com.fcfb.discord.refbot.config.jackson.deserializers.GameModeDeserializer
 import com.fcfb.discord.refbot.config.jackson.deserializers.GameStatusDeserializer
@@ -34,7 +33,6 @@ import com.fcfb.discord.refbot.model.enums.play.PlayType
 import com.fcfb.discord.refbot.model.enums.play.RunoffType
 import com.fcfb.discord.refbot.model.enums.play.Scenario
 import com.fcfb.discord.refbot.model.enums.system.Platform
-import com.fcfb.discord.refbot.model.enums.team.Conference
 import com.fcfb.discord.refbot.model.enums.team.DefensivePlaybook
 import com.fcfb.discord.refbot.model.enums.team.OffensivePlaybook
 import com.fcfb.discord.refbot.model.enums.team.Subdivision
@@ -47,7 +45,6 @@ class JacksonConfig {
         return SimpleModule().apply {
             addDeserializer(ActualResult::class.java, ActualResultDeserializer())
             addDeserializer(CoachPosition::class.java, CoachPositionDeserializer())
-            addDeserializer(Conference::class.java, ConferenceDeserializer())
             addDeserializer(DefensivePlaybook::class.java, DefensivePlaybookDeserializer())
             addDeserializer(GameMode::class.java, GameModeDeserializer())
             addDeserializer(GameStatus::class.java, GameStatusDeserializer())
@@ -96,16 +93,16 @@ class JacksonConfig {
         }
     }
 
-    private fun customTeamModule(): SimpleModule {
-        return SimpleModule().apply {
-            addDeserializer(Conference::class.java, ConferenceDeserializer())
-        }
-    }
-
     fun configureTeamMapping(): ObjectMapper {
         return ObjectMapper().apply {
             registerModule(KotlinModule.Builder().build())
-            registerModule(customTeamModule())
+            propertyNamingStrategy = PropertyNamingStrategies.SNAKE_CASE
+        }
+    }
+
+    fun configureConferenceMapping(): ObjectMapper {
+        return ObjectMapper().apply {
+            registerModule(KotlinModule.Builder().build())
             propertyNamingStrategy = PropertyNamingStrategies.SNAKE_CASE
         }
     }

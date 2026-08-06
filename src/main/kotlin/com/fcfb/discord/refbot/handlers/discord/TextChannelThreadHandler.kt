@@ -2,7 +2,6 @@ package com.fcfb.discord.refbot.handlers.discord
 
 import com.fcfb.discord.refbot.api.game.ChartClient
 import com.fcfb.discord.refbot.api.game.ScorebugClient
-import com.fcfb.discord.refbot.api.team.TeamClient
 import com.fcfb.discord.refbot.model.domain.Game
 import com.fcfb.discord.refbot.model.enums.game.GameMode
 import com.fcfb.discord.refbot.model.enums.game.GameStatus
@@ -26,7 +25,6 @@ import kotlin.io.path.Path
 class TextChannelThreadHandler(
     private val gameUtils: GameUtils,
     private val properties: Properties,
-    private val teamClient: TeamClient,
     private val scorebugClient: ScorebugClient,
     private val chartClient: ChartClient,
 ) {
@@ -269,13 +267,8 @@ class TextChannelThreadHandler(
                 }
             }
             GameType.CONFERENCE_CHAMPIONSHIP -> {
-                val apiResponse = teamClient.getTeamByName(game.homeTeam)
-                if (apiResponse.keys.firstOrNull() == null) {
-                    throw Exception(apiResponse.values.firstOrNull())
-                }
-                val team = apiResponse.keys.firstOrNull()
                 val conference =
-                    team?.conference?.description?.uppercase()
+                    gameUtils.getConferenceName(game.homeTeam)?.uppercase()
                         ?: return "CONFERENCE CHAMPIONSHIP || $teamMatchup"
                 return "$conference CHAMPIONSHIP || $teamMatchup"
             }
@@ -322,13 +315,8 @@ class TextChannelThreadHandler(
                 }
             }
             GameType.CONFERENCE_CHAMPIONSHIP -> {
-                val apiResponse = teamClient.getTeamByName(game.homeTeam)
-                if (apiResponse.keys.firstOrNull() == null) {
-                    throw Exception(apiResponse.values.firstOrNull())
-                }
-                val team = apiResponse.keys.firstOrNull()
                 val conference =
-                    team?.conference?.description?.uppercase()
+                    gameUtils.getConferenceName(game.homeTeam)?.uppercase()
                         ?: return "CONFERENCE CHAMPIONSHIP || $teamMatchup"
                 return "$conference CHAMPIONSHIP || $teamMatchup"
             }

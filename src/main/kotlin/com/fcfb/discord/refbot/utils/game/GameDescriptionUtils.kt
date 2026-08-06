@@ -1,5 +1,6 @@
 package com.fcfb.discord.refbot.utils.game
 
+import com.fcfb.discord.refbot.api.team.ConferenceClient
 import com.fcfb.discord.refbot.api.team.TeamClient
 import com.fcfb.discord.refbot.model.domain.Game
 import com.fcfb.discord.refbot.model.domain.Play
@@ -22,6 +23,7 @@ import java.nio.file.StandardOpenOption
 
 class GameDescriptionUtils(
     private val teamClient: TeamClient,
+    private val conferenceClient: ConferenceClient,
 ) {
     /**
      * Convert a number to an ordinal string
@@ -468,8 +470,9 @@ class GameDescriptionUtils(
     suspend fun getConferenceName(teamName: String): String? {
         return try {
             val apiResponse = teamClient.getTeamByName(teamName)
-            val team = apiResponse.keys.firstOrNull()
-            team?.conference?.description
+            val conferenceCode = apiResponse.keys.firstOrNull()?.conference ?: return null
+            val conferences = conferenceClient.getAllConferences().keys.firstOrNull()
+            conferences?.find { it.code == conferenceCode }?.label ?: conferenceCode
         } catch (e: Exception) {
             Logger.error("Failed to get conference name for $teamName: ${e.message}", e)
             null
