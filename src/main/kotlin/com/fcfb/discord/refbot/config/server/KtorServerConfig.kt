@@ -36,9 +36,6 @@ class KtorServerConfig(
 ) {
     private var server: NettyApplicationEngine? = null
 
-    /**
-     * Start the Ktor server
-     */
     fun startKtorServer(
         client: Kord,
         heartbeatJob: Job?,
@@ -52,18 +49,12 @@ class KtorServerConfig(
         Logger.info("Ktor server started!")
     }
 
-    /**
-     * Stop the Ktor server
-     */
     fun stopKtorServer() {
         Logger.info("Stopping Ktor server...")
         server?.stop(gracePeriodMillis = 1000, timeoutMillis = 5000)
         Logger.info("Ktor server stopped!")
     }
 
-    /**
-     * Configure the Ktor server
-     */
     private fun Application.configureServer(
         client: Kord,
         heartbeatJob: Job?,

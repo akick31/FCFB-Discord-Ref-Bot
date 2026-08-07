@@ -28,27 +28,13 @@ class TextChannelThreadHandler(
     private val scorebugClient: ScorebugClient,
     private val chartClient: ChartClient,
 ) {
-    /**
-     * Get the text channel thread by ID
-     * @param client The Discord client
-     * @param threadId The thread ID
-     */
     suspend fun getTextChannelThreadById(
         client: Kord,
         threadId: Snowflake,
     ) = client.getChannel(threadId)?.asChannelOf<TextChannelThread>()
 
-    /**
-     * Get the text channel thread from a message
-     * @param message The message object
-     */
     suspend fun getTextChannelThread(message: Message) = message.getChannel().asChannelOf<TextChannelThread>()
 
-    /**
-     * Update a game thread
-     * @param thread The thread object
-     * @param game The game object
-     */
     suspend fun updateThread(
         thread: TextChannelThread,
         game: Game,
@@ -59,12 +45,6 @@ class TextChannelThreadHandler(
         }
     }
 
-    /**
-     * Create a game thread
-     * @param client The Discord client
-     * @param game The game object
-     * @return The game thread
-     */
     suspend fun createGameThread(
         client: Kord,
         game: Game,
@@ -84,12 +64,6 @@ class TextChannelThreadHandler(
         }
     }
 
-    /**
-     * Create a postgame thread
-     * @param client The Discord client
-     * @param game The game object
-     * @return The postgame thread
-     */
     suspend fun createPostgameThread(
         client: Kord,
         game: Game,
@@ -104,7 +78,6 @@ class TextChannelThreadHandler(
         val scorebug = scorebugClient.getScorebugByGameId(game.gameId)
         val embedData = gameUtils.getScorebugEmbed(scorebug, game, threadContent)
 
-        // Get charts
         val winProbabilityChart = chartClient.getWinProbabilityChartByGameId(game.gameId)
         val scoreChart = chartClient.getScoreChartByGameId(game.gameId)
 
@@ -128,13 +101,11 @@ class TextChannelThreadHandler(
                         )
                 }
 
-                // Add win probability chart if available
                 winProbabilityChart?.let { chartData ->
                     val chartUrl = gameUtils.saveChartToFile(chartData, "win_probability", game.gameId)
                     chartUrl?.let { addFile(Paths.get(it)) }
                 }
 
-                // Add score chart if available
                 scoreChart?.let { chartData ->
                     val chartUrl = gameUtils.saveChartToFile(chartData, "score_chart", game.gameId)
                     chartUrl?.let { addFile(Paths.get(it)) }
@@ -143,9 +114,6 @@ class TextChannelThreadHandler(
         }
     }
 
-    /**
-     * Get the game thread message content for the top
-     */
     private fun getGameThreadMessageContent(game: Game): String {
         return "**Welcome to Season XI!**\n" +
             "This is the game thread for ${game.homeTeam} vs ${game.awayTeam}\n\n-" +
@@ -170,38 +138,22 @@ class TextChannelThreadHandler(
         return messageContent
     }
 
-    /**
-     * Get the game forum channel
-     * @param client The Discord client
-     * @return The game forum channel
-     */
     private suspend fun getGameForumChannel(client: Kord): ForumChannel {
         val discordProperties = properties.getDiscordProperties()
         val guild = client.getGuild(Snowflake(discordProperties.guildId))
         return guild.getChannel(Snowflake(discordProperties.gameChannelId)) as ForumChannel
     }
 
-    /**
-     * Get the postgame game forum channel
-     * @param client The Discord client
-     * @return The game forum channel
-     */
     private suspend fun getPostgameForumChannel(client: Kord): ForumChannel {
         val discordProperties = properties.getDiscordProperties()
         val guild = client.getGuild(Snowflake(discordProperties.guildId))
         return guild.getChannel(Snowflake(discordProperties.postgameChannelId)) as ForumChannel
     }
 
-    /**
-     * Get the tags to apply to the thread
-     * @param game The game object
-     * @param channel The forum channel
-     */
     private fun getTagsForThread(
         game: Game,
         channel: ForumChannel,
     ): MutableList<Snowflake> {
-        // Get the available tags in the game channel
         val availableTags = channel.availableTags
         val tagsToApply = mutableListOf<Snowflake>()
         for (tag in availableTags) {
@@ -245,10 +197,6 @@ class TextChannelThreadHandler(
         return tagsToApply
     }
 
-    /**
-     * Get the thread name based on the game type
-     * @param game The game object
-     */
     private suspend fun getThreadName(game: Game): String {
         val (formattedHomeTeam, formattedAwayTeam) = gameUtils.getFormattedTeamNames(game)
 
@@ -281,10 +229,6 @@ class TextChannelThreadHandler(
         }
     }
 
-    /**
-     * Get the postgame thread name based on the game type
-     * @param game The game object
-     */
     private suspend fun getPostgameThreadName(game: Game): String {
         val (formattedHomeTeam, formattedAwayTeam) = gameUtils.getFormattedTeamNames(game)
 

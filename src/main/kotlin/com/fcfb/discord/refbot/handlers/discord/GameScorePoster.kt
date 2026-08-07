@@ -17,9 +17,6 @@ import dev.kord.core.entity.channel.thread.TextChannelThread
 import dev.kord.rest.builder.message.addFile
 import java.nio.file.Paths
 
-/**
- * Posts the final game score (with scorebug/charts) to the scores channel.
- */
 class GameScorePoster(
     private val gameDescriptionUtils: GameDescriptionUtils,
     private val scorebugClient: ScorebugClient,
@@ -27,12 +24,6 @@ class GameScorePoster(
     private val properties: Properties,
     private val messageSender: DiscordMessageSender,
 ) {
-    /**
-     * Post the game score to the message channel
-     * @param client The Discord client
-     * @param game The game object
-     * @param message The message object
-     */
     suspend fun postGameScore(
         client: Kord,
         game: Game,
@@ -58,15 +49,9 @@ class GameScorePoster(
 
         messageSender.sendMessageFromChannelObject(scoreChannel, messageContent, embedData)
 
-        // Post charts after the score
         postGameCharts(client, game)
     }
 
-    /**
-     * Post game charts (win probability and score chart) to the game thread
-     * @param client The Discord client
-     * @param game The game object
-     */
     private suspend fun postGameCharts(
         client: Kord,
         game: Game,
@@ -74,7 +59,6 @@ class GameScorePoster(
         try {
             Logger.info("Posting game charts for game ID: ${game.gameId}")
 
-            // Get the game thread
             val gameThread =
                 when {
                     game.homePlatform == Platform.DISCORD ->
@@ -93,7 +77,6 @@ class GameScorePoster(
                 return
             }
 
-            // Get win probability chart
             val winProbabilityChart = chartClient.getWinProbabilityChartByGameId(game.gameId)
             Logger.info("Win probability chart result: ${if (winProbabilityChart != null) "Success" else "Failed"}")
             if (winProbabilityChart != null) {
@@ -107,7 +90,6 @@ class GameScorePoster(
                 }
             }
 
-            // Get score chart
             val scoreChart = chartClient.getScoreChartByGameId(game.gameId)
             Logger.info("Score chart result: ${if (scoreChart != null) "Success" else "Failed"}")
             if (scoreChart != null) {
@@ -125,11 +107,6 @@ class GameScorePoster(
         }
     }
 
-    /**
-     * Post the game score to the message channel without the scorebug
-     * @param scoreChannel The message channel object
-     * @param messageContent The message content
-     */
     private suspend fun postGameScoreWithoutScorebug(
         scoreChannel: MessageChannel,
         messageContent: String,

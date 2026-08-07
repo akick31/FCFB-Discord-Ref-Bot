@@ -20,16 +20,12 @@ class PreviousPlayCommand(
         )
     }
 
-    /**
-     * Post the previous play result
-     */
     suspend fun execute(interaction: ChatInputCommandInteraction) {
         Logger.info(
             "${interaction.user.username} is calling previous_play in channel ${interaction.channelId.value}",
         )
         val response = interaction.deferPublicResponse()
 
-        // Get game by platform ID (thread ID)
         val gameApiResponse = gameClient.getGameByPlatformId(interaction.channelId.value.toString())
         if (gameApiResponse.keys.firstOrNull() == null) {
             response.respond {
@@ -44,7 +40,6 @@ class PreviousPlayCommand(
                     return
                 }
 
-        // Get previous play
         val playApiResponse = playClient.getPreviousPlay(game.gameId)
         if (playApiResponse.keys.firstOrNull() == null) {
             response.respond {
@@ -59,7 +54,6 @@ class PreviousPlayCommand(
                     return
                 }
 
-        // Post the play outcome message as if it was just processed
         try {
             val responseMessage = response.respond { this.content = "Previous play result:" }
 

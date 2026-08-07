@@ -26,11 +26,6 @@ class ChartClient {
         baseUrl = properties.getProperty("api.url")
     }
 
-    /**
-     * Get win probability chart by game ID
-     * @param gameId The game ID
-     * @return ByteArray of the PNG image
-     */
     suspend fun getWinProbabilityChartByGameId(gameId: Int): ByteArray? {
         return withContext(Dispatchers.IO) {
             try {
@@ -55,11 +50,6 @@ class ChartClient {
         }
     }
 
-    /**
-     * Get score chart by game ID
-     * @param gameId The game ID
-     * @return ByteArray of the PNG image
-     */
     suspend fun getScoreChartByGameId(gameId: Int): ByteArray? {
         return withContext(Dispatchers.IO) {
             try {
@@ -84,13 +74,6 @@ class ChartClient {
         }
     }
 
-    /**
-     * Get win probability chart by team names and season
-     * @param firstTeam
-     * @param secondTeam
-     * @param season The season number
-     * @return List of ByteArray of the PNG images
-     */
     suspend fun getWinProbabilityChartByTeams(
         firstTeam: String,
         secondTeam: String,
@@ -126,13 +109,6 @@ class ChartClient {
         }
     }
 
-    /**
-     * Get score chart by team names and season
-     * @param firstTeam
-     * @param secondTeam
-     * @param season The season number
-     * @return List of ByteArray of the PNG images
-     */
     suspend fun getScoreChartByTeams(
         firstTeam: String,
         secondTeam: String,

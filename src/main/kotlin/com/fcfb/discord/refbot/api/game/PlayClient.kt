@@ -29,23 +29,11 @@ class PlayClient(
         baseUrl = properties.getProperty("api.url")
     }
 
-    /**
-     * Rollback the last play in Arceus
-     * @param gameId
-     * @return Play
-     */
     internal suspend fun rollbackPlay(gameId: Int): Map<Play?, String?> {
         val endpointUrl = "$baseUrl/play/rollback?gameId=$gameId"
         return putRequest(endpointUrl)
     }
 
-    /**
-     * Submit a defensive number in Arceus
-     * @param gameId
-     * @param defensiveSubmitter
-     * @param defensiveNumber
-     * @param timeoutCalled
-     */
     internal suspend fun submitDefensiveNumber(
         gameId: Int,
         defensiveSubmitter: String,
@@ -63,15 +51,6 @@ class PlayClient(
         return postRequest(endpointUrl)
     }
 
-    /**
-     * Submit an offensive number in Arceus
-     * @param gameId
-     * @param offensiveSubmitter
-     * @param offensiveNumber
-     * @param playCall
-     * @param runoffType
-     * @param offensiveTimeoutCalled
-     */
     internal suspend fun submitOffensiveNumber(
         gameId: Int,
         offensiveSubmitter: String,
@@ -104,29 +83,16 @@ class PlayClient(
         return putRequest(endpointUrl)
     }
 
-    /**
-     * Get the previous play in Arceus
-     * @param gameId
-     */
     internal suspend fun getPreviousPlay(gameId: Int): Map<Play?, String?> {
         val endpointUrl = "$baseUrl/play/previous?gameId=$gameId"
         return getRequest(endpointUrl, object : TypeReference<Play>() {})
     }
 
-    /**
-     * Get the current play in Arceus
-     * @param gameId
-     */
     internal suspend fun getCurrentPlay(gameId: Int): Map<Play?, String?> {
         val endpointUrl = "$baseUrl/play/current?gameId=$gameId"
         return getRequest(endpointUrl, object : TypeReference<Play>() {})
     }
 
-    /**
-     * Get delay of game counts grouped by team for a given season and week
-     * @param season
-     * @param week
-     */
     internal suspend fun getDelayOfGameCountsByWeek(
         season: Int,
         week: Int,
@@ -135,11 +101,6 @@ class PlayClient(
         return getRequest(endpointUrl, object : TypeReference<Map<String, Int>>() {})
     }
 
-    /**
-     * Make a post request to the play endpoint and return a play
-     * @param endpointUrl
-     * @return Play
-     */
     private suspend fun postRequest(endpointUrl: String): Map<Play?, String?> {
         return try {
             val response = httpClient.post(endpointUrl)
@@ -158,11 +119,6 @@ class PlayClient(
         }
     }
 
-    /**
-     * Make a put request to the play endpoint and return a play
-     * @param endpointUrl
-     * @return Play
-     */
     private suspend fun putRequest(endpointUrl: String): Map<Play?, String?> {
         return try {
             val response = httpClient.put(endpointUrl)
@@ -181,11 +137,6 @@ class PlayClient(
         }
     }
 
-    /**
-     * Make a get request to the play endpoint and return the deserialized response
-     * @param endpointUrl
-     * @param typeRef TypeReference for deserialization
-     */
     private suspend fun <T : Any> getRequest(
         endpointUrl: String,
         typeRef: TypeReference<T>,

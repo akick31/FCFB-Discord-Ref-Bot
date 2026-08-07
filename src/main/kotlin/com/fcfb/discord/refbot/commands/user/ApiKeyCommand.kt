@@ -16,9 +16,6 @@ class ApiKeyCommand(
         )
     }
 
-    /**
-     * Generate a personal API key and return it to the invoking user in an ephemeral (private) response.
-     */
     suspend fun execute(interaction: ChatInputCommandInteraction) {
         val response = interaction.deferEphemeralResponse()
         val discordId = interaction.user.id.value.toString()

@@ -11,11 +11,6 @@ import dev.kord.core.entity.Message
 import dev.kord.core.entity.User
 
 class GameStateUtils {
-    /**
-     * Get the Discord users for the coaches on the coin toss winning team
-     * @param game The game object
-     * @return The winning team's coach Discord users
-     */
     internal suspend fun getCoinTossWinners(
         client: Kord,
         game: Game,
@@ -63,12 +58,6 @@ class GameStateUtils {
         }
     }
 
-    /**
-     * Check if the game is waiting on the user
-     * @param game The game object
-     * @param message The message object
-     * @return True if the game is waiting on the user, false otherwise
-     */
     fun isGameWaitingOnUser(
         game: Game,
         message: Message,
@@ -81,46 +70,22 @@ class GameStateUtils {
         }
     }
 
-    /**
-     * Check if the game is in the pregame state before the coin toss
-     * @param game The game object
-     * @return True if the game is in the pregame state without a coin toss, false otherwise
-     */
     internal fun isPreGameBeforeCoinToss(game: Game): Boolean {
         return game.gameStatus == GameStatus.PREGAME && game.coinTossWinner == null
     }
 
-    /**
-     * Check if the game is in the pregame state after the coin toss
-     * @param game The game object
-     * @return True if the game is in the pregame state after the coin toss, false otherwise
-     */
     internal fun isPreGameAfterCoinToss(game: Game): Boolean {
         return game.gameStatus == GameStatus.PREGAME && game.coinTossWinner != null
     }
 
-    /**
-     * Check if the game is in the overtime state before the coin toss
-     * @param game The game object
-     * @return True if the game is in the pregame state without a coin toss, false otherwise
-     */
     internal fun isOvertimeBeforeCoinToss(game: Game): Boolean {
         return game.gameStatus == END_OF_REGULATION && game.overtimeCoinTossWinner == null
     }
 
-    /**
-     * Check if the game is in the overtime state after the coin toss
-     * @param game The game object
-     * @return True if the game is in the pregame state after the coin toss, false otherwise
-     */
     internal fun isOvertimeAfterCoinToss(game: Game): Boolean {
         return game.gameStatus == END_OF_REGULATION && game.overtimeCoinTossWinner != null
     }
 
-    /**
-     * Check if the game is waiting for an offensive number
-     * @param game The game object
-     */
     internal fun isWaitingOnOffensiveNumber(
         game: Game,
         message: Message,
@@ -131,12 +96,6 @@ class GameStateUtils {
             game.waitingOn == game.possession
     }
 
-    /**
-     * Check if the game is waiting for a defensive number
-     * @param game The game object
-     * @param message The message object
-     * @return True if the game is waiting for a defensive number, false otherwise
-     */
     internal fun isWaitingOnDefensiveNumber(
         game: Game,
         message: Message,

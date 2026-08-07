@@ -71,9 +71,6 @@ class StartGameCommand(
         }
     }
 
-    /**
-     * Start a new game
-     */
     suspend fun execute(interaction: ChatInputCommandInteraction) {
         val command = interaction.command
         Logger.info(

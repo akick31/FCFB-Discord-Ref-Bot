@@ -7,10 +7,6 @@ import kotlinx.coroutines.isActive
 import java.io.File
 
 class HealthChecks {
-    /**
-     * Check the bot health and return true if healthy
-     * @return true if healthy
-     */
     fun checkJobHealth(
         heartbeatJob: Job?,
         restartJob: Job?,
@@ -24,32 +20,21 @@ class HealthChecks {
         )
     }
 
-    /**
-     * Get the memory status of the bot
-     * @return memory status
-     */
     fun getMemoryStatus(): Pair<Long, Long> {
         val runtime = Runtime.getRuntime()
-        val maxMemory = runtime.maxMemory() / 1024 / 1024 // Convert to MB
-        val usedMemory = (runtime.totalMemory() - runtime.freeMemory()) / 1024 / 1024 // Convert to MB
+        val maxMemory = runtime.maxMemory() / 1024 / 1024
+        val usedMemory = (runtime.totalMemory() - runtime.freeMemory()) / 1024 / 1024
         val freeMemory = maxMemory - usedMemory
         return Pair(usedMemory, freeMemory)
     }
 
-    /**
-     * Get the disk space status of the bot
-     * @return disk space status
-     */
     fun getDiskSpaceStatus(): Pair<Long, Long> {
         val file = File("/")
-        val usableSpace = file.usableSpace / 1024 / 1024 // Convert to MB
-        val totalSpace = file.totalSpace / 1024 / 1024 // Convert to MB
+        val usableSpace = file.usableSpace / 1024 / 1024
+        val totalSpace = file.totalSpace / 1024 / 1024
         return Pair(usableSpace, totalSpace)
     }
 
-    /**
-     * Check the health of the bot
-     */
     fun healthChecks(
         client: Kord,
         heartbeatJob: Job?,

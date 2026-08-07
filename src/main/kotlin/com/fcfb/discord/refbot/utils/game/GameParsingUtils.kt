@@ -9,11 +9,6 @@ import com.fcfb.discord.refbot.utils.system.InvalidPlayCallException
 import dev.kord.core.entity.Message
 
 class GameParsingUtils {
-    /**
-     * Parse a valid number from a message
-     * @param message The message object
-     * @return The valid number
-     */
     fun parseValidNumberFromMessage(message: Message): Int {
         val regex = Regex("\\d+")
 
@@ -37,11 +32,6 @@ class GameParsingUtils {
         return validNumbers.first()
     }
 
-    /**
-     * Parse the timeout call from a message
-     * @param message The message object
-     * @return True if a timeout was called
-     */
     fun parseTimeoutFromMessage(message: Message): Boolean {
         val containsTimeout = message.content.contains("timeout", ignoreCase = true)
 
@@ -52,11 +42,6 @@ class GameParsingUtils {
         }
     }
 
-    /**
-     * Parse the play call from a message
-     * @param message The message object
-     * @return The play call
-     */
     fun parsePlayCallFromMessage(
         game: Game,
         message: Message,
@@ -88,10 +73,6 @@ class GameParsingUtils {
         return matchedCalls.singleOrNull() ?: throw InvalidPlayCallException(message.content)
     }
 
-    /**
-     * Parse the runoff type from a message
-     * @param message The message object
-     */
     fun parseRunoffTypeFromMessage(
         game: Game,
         message: Message,
@@ -111,36 +92,18 @@ class GameParsingUtils {
         return matchedTypes.singleOrNull() ?: if (game.gameMode == GameMode.CHEW) RunoffType.CHEW else RunoffType.NONE
     }
 
-    /**
-     * Check if the message content is a valid coin toss response
-     * @param content The message content
-     */
     fun isValidCoinTossResponse(content: String): Boolean {
         return content.lowercase() == "heads" || content.lowercase() == "tails"
     }
 
-    /**
-     * Check if the message content is a valid coin toss choice
-     * @param content The message content
-     */
     fun isValidCoinTossChoice(content: String): Boolean {
         return content.lowercase() == "receive" || content.lowercase() == "defer"
     }
 
-    /**
-     * Check if the message content is a valid overtime coin toss choice
-     * @param content The message content
-     */
     fun isValidOvertimeCoinTossChoice(content: String): Boolean {
         return content.lowercase() == "offense" || content.lowercase() == "defense"
     }
 
-    /**
-     * Check if the author of a message is a valid coin toss author
-     * @param authorId The author ID
-     * @param game The game object
-     * @return True if the author is a valid coin toss author
-     */
     fun isValidCoinTossAuthor(
         authorId: String,
         game: Game,
@@ -148,11 +111,6 @@ class GameParsingUtils {
         return authorId in game.awayCoachDiscordIds
     }
 
-    /**
-     * Check if the play call is a kickoff
-     * @param playCall The play call
-     * @return True if the play call is a kickoff
-     */
     fun isKickoff(playCall: PlayCall?) =
         playCall == PlayCall.KICKOFF_NORMAL || playCall == PlayCall.KICKOFF_SQUIB || playCall == PlayCall.KICKOFF_ONSIDE
 }

@@ -64,10 +64,6 @@ class CommandRegistry(
     private val apiKeyCommand: ApiKeyCommand,
 ) {
     suspend fun registerCommands(client: Kord) {
-        // Delete old commands just in case of changes
-        // client.getGlobalApplicationCommands().collect { it.delete() }
-
-        // Register all commands
         chewGameCommand.register(client)
         deleteGameCommand.register(client)
         endAllGamesCommand.register(client)

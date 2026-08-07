@@ -24,12 +24,6 @@ class GameWriteupClient(
         baseUrl = properties.getProperty("api.url")
     }
 
-    /**
-     * Fetch the game message by the scenario
-     * @param scenario the scenario enum
-     * @param playCall the play call enum (optional)
-     * @return Map<String?, String?> response from API
-     */
     internal suspend fun getGameMessageByScenario(
         scenario: Scenario,
         playCall: PlayCall?,
@@ -44,11 +38,6 @@ class GameWriteupClient(
         return getRequest(endpointUrl)
     }
 
-    /**
-     * Call a get request to the game endpoint and return a string
-     * @param endpointUrl
-     * @return String
-     */
     private suspend fun getRequest(endpointUrl: String): Map<String?, String?> {
         return try {
             val response = httpClient.get(endpointUrl)

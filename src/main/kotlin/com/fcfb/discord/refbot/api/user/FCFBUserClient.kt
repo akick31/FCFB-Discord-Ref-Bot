@@ -28,29 +28,16 @@ class FCFBUserClient(
         baseUrl = properties.getProperty("api.url")
     }
 
-    /**
-     * Get a user by Discord ID
-     * @param discordId
-     * @return User
-     */
     internal suspend fun getUserByDiscordId(discordId: String): Map<FCFBUser?, String?> {
         val endpointUrl = "$baseUrl/user/discord?discordId=$discordId"
         return getRequest(endpointUrl)
     }
 
-    /**
-     * Get all users
-     * @return List of users mapped to an optional error message
-     */
     internal suspend fun getAllUsers(): Map<List<FCFBUser>?, String?> {
         val endpointUrl = "$baseUrl/user"
         return getRequestList(endpointUrl)
     }
 
-    /**
-     * Generate a fresh personal API key for a user, returning the plaintext key mapped to an optional error message.
-     * @param userId
-     */
     internal suspend fun generateApiKey(userId: Long): Map<String?, String?> {
         val endpointUrl = "$baseUrl/user/$userId/api-key"
         return try {
@@ -68,10 +55,6 @@ class FCFBUserClient(
         }
     }
 
-    /**
-     * Call a get request to the user endpoint and return a single user
-     * @param endpointUrl
-     */
     private suspend fun getRequest(endpointUrl: String): Map<FCFBUser?, String?> {
         return try {
             val response =
@@ -93,10 +76,6 @@ class FCFBUserClient(
         }
     }
 
-    /**
-     * Call a get request to the user endpoint and return a list of users
-     * @param endpointUrl
-     */
     private suspend fun getRequestList(endpointUrl: String): Map<List<FCFBUser>?, String?> {
         return try {
             val response =

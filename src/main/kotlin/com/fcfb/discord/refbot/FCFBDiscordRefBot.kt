@@ -41,9 +41,6 @@ class FCFBDiscordRefBot(
     private var restartJob: Job? = null
     private val restartMutex = Mutex()
 
-    /**
-     * Start the Discord bot and it's services
-     */
     fun start() =
         runBlocking {
             try {
@@ -56,9 +53,6 @@ class FCFBDiscordRefBot(
             }
         }
 
-    /**
-     * Start a coroutine to send regular heartbeats to Discord
-     */
     private fun startHeartbeat() {
         heartbeatJob?.cancel()
         heartbeatJob =
@@ -82,9 +76,6 @@ class FCFBDiscordRefBot(
             }
     }
 
-    /**
-     * Schedule a restart for 4 AM EST every day
-     */
     private fun startRestartJob() {
         restartJob?.cancel()
         restartJob =
@@ -106,9 +97,6 @@ class FCFBDiscordRefBot(
             }
     }
 
-    /**
-     * Restart the Discord bot
-     */
     private suspend fun restartBot() {
         if (!restartMutex.tryLock()) {
             Logger.warn("Restart already in progress, skipping duplicate restart request.")
@@ -126,18 +114,12 @@ class FCFBDiscordRefBot(
         }
     }
 
-    /**
-     * Clean up any resources, including heartbeat job
-     */
     fun stopJobs() {
         heartbeatJob?.cancel()
         restartJob?.cancel()
         Logger.info("FCFB Discord Ref Bot stopped.")
     }
 
-    /**
-     * Initialize the Discord bot with Kord
-     */
     private suspend fun initializeBot() {
         client = Kord(properties.getDiscordProperties().token)
         try {
@@ -149,12 +131,6 @@ class FCFBDiscordRefBot(
         Logger.info("FCFB Discord Ref Bot initialized successfully!")
     }
 
-    /**
-     * Start the Ktor server and Discord bot
-     * @param client The Discord client
-     * @param heartbeatJob The heartbeat job
-     * @param restartJob The restart job
-     */
     private fun startServices(
         client: Kord,
         heartbeatJob: Job?,
@@ -169,9 +145,6 @@ class FCFBDiscordRefBot(
         }
     }
 
-    /**
-     * Start the Discord bot
-     */
     private suspend fun loginToDiscord() {
         Logger.info("Logging into the Discord Ref Bot...")
         client.login {
@@ -181,9 +154,6 @@ class FCFBDiscordRefBot(
         Logger.info("Discord Ref Bot logged in successfully!")
     }
 
-    /**
-     * Stop the Discord bot
-     */
     private suspend fun logoutOfDiscord() {
         Logger.info("Shutting down the Discord Ref Bot...")
         runBlocking {
@@ -198,27 +168,17 @@ class FCFBDiscordRefBot(
         Logger.info("Discord Ref Bot shut down successfully!")
     }
 
-    /**
-     * Setup the event handlers for the bot
-     */
     private fun setupEventHandlers() {
         setupCommandExecuter()
         setupMessageProcessor()
-        // setupDiscordReconnect()
     }
 
-    /**
-     * Setup the command executer to execute slash commands
-     */
     private fun setupCommandExecuter() {
         client.on<ChatInputCommandInteractionCreateEvent> {
             commandRegistry.executeCommand(interaction)
         }
     }
 
-    /**
-     * Setup the message processor to process game messages and DMs
-     */
     private fun setupMessageProcessor() {
         client.on<MessageCreateEvent> {
             MessageProcessor(client).processMessage(message)
@@ -230,7 +190,6 @@ class FCFBDiscordRefBot(
 fun main() {
     Logger.info("Starting Discord Ref Bot...")
 
-    // Dependency injection
     startKoin {
         modules(appModule)
     }

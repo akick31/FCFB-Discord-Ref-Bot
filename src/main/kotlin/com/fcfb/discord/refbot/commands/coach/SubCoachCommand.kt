@@ -29,10 +29,6 @@ class SubCoachCommand(
         }
     }
 
-    /**
-     * Hire a new coach for a team
-     * @param interaction The interaction object
-     */
     suspend fun execute(interaction: ChatInputCommandInteraction) {
         val command = interaction.command
         Logger.info("${interaction.user.username} is subbing a new coach for ${command.options["team"]!!.value}")

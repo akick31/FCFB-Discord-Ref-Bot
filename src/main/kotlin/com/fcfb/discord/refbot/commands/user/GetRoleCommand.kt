@@ -16,9 +16,6 @@ class GetRoleCommand(
         )
     }
 
-    /**
-     * Get general role information
-     */
     suspend fun execute(interaction: ChatInputCommandInteraction) {
         Logger.info(
             "${interaction.user.username} is getting user role in channel ${interaction.channelId.value}",

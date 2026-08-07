@@ -75,7 +75,6 @@ val appModule =
         single { SystemUtils() }
         single { get<Properties>().getDiscordProperties() }
 
-        // Classes with dependencies
         single { ChartClient() }
         single { GameClient(get()) }
         single { GameWriteupClient(get()) }

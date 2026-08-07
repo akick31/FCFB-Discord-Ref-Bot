@@ -20,9 +20,6 @@ class EndGameCommand(
         )
     }
 
-    /**
-     * Start a new game
-     */
     suspend fun execute(interaction: ChatInputCommandInteraction) {
         Logger.info(
             "${interaction.user.username} is ending a game at channel ${interaction.channelId.value}",

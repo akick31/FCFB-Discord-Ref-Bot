@@ -22,9 +22,6 @@ class GetTeamCoachesCommand(
         }
     }
 
-    /**
-     * Get general game information
-     */
     suspend fun execute(interaction: ChatInputCommandInteraction) {
         Logger.info(
             "${interaction.user.username} is getting the team coaches in channel ${interaction.channelId.value}",

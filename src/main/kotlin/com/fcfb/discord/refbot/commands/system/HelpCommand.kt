@@ -14,12 +14,6 @@ class HelpCommand {
         )
     }
 
-    /**
-     * Display the help message
-     * @param interaction The interaction object
-     * @param userRole The role of the user
-     * @return The help message
-     */
     suspend fun execute(
         userRole: UserRole,
         interaction: ChatInputCommandInteraction,

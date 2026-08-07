@@ -20,9 +20,6 @@ class PingCommand(
         )
     }
 
-    /**
-     * Ping a user
-     */
     suspend fun execute(interaction: ChatInputCommandInteraction) {
         Logger.info(
             "${interaction.user.username} is pinging a game in channel ${interaction.channelId.value}",

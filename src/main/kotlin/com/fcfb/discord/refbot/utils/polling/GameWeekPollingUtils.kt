@@ -10,11 +10,8 @@ import kotlinx.coroutines.delay
 object GameWeekPollingUtils {
     const val POLL_INTERVAL_MS = 5000L
     const val MAX_POLL_ATTEMPTS = 720
-    private const val DISCORD_TOKEN_LIFETIME_MS = 15 * 60 * 1000L // 15 minutes
+    private const val DISCORD_TOKEN_LIFETIME_MS = 15 * 60 * 1000L
 
-    /**
-     * Calculate the timeout duration in minutes for display purposes.
-     */
     fun getTimeoutMinutes(): Int = (MAX_POLL_ATTEMPTS * POLL_INTERVAL_MS / 1000 / 60).toInt()
 
     data class PollingResult(
@@ -33,11 +30,6 @@ object GameWeekPollingUtils {
         val onTimeout: (String) -> String,
     )
 
-    /**
-     * Poll for game week job status with automatic handling of Discord token expiration.
-     * After 15 minutes, Discord interaction tokens expire, so updates will stop being sent.
-     * Polling continues in the background and logs are still generated.
-     */
     suspend fun pollGameWeekJob(
         gameClient: GameClient,
         response: DeferredPublicMessageInteractionResponseBehavior,
@@ -58,7 +50,6 @@ object GameWeekPollingUtils {
 
             val status = gameClient.getGameWeekJobStatus(config.jobId) ?: continue
 
-            // Use snake_case keys to match API response (readTree/readValue don't apply naming strategy)
             val jobStatus = status["status"] as? String ?: "UNKNOWN"
             totalGames = (status["total_games"] as? Number)?.toInt() ?: (status["totalGames"] as? Number)?.toInt() ?: 0
             startedGames = (status["started_games"] as? Number)?.toInt() ?: (status["startedGames"] as? Number)?.toInt() ?: 0
@@ -82,7 +73,6 @@ object GameWeekPollingUtils {
                     }
                 }
 
-            // Check if token has expired (15 minutes)
             val elapsed = System.currentTimeMillis() - startTime
             if (!tokenExpired && elapsed >= DISCORD_TOKEN_LIFETIME_MS) {
                 Logger.warn(
@@ -91,14 +81,12 @@ object GameWeekPollingUtils {
                 tokenExpired = true
             }
 
-            // Only try to send updates if token hasn't expired
             if (!tokenExpired) {
                 try {
                     response.respond {
                         this.content = message
                     }
                 } catch (e: Exception) {
-                    // Check if this is a token expiration error
                     val isTokenError =
                         e.message?.contains("token", ignoreCase = true) == true ||
                             e.message?.contains("webhook", ignoreCase = true) == true ||
@@ -113,7 +101,6 @@ object GameWeekPollingUtils {
                         tokenExpired = true
                     } else {
                         Logger.error("Failed to send polling update: ${e.message}")
-                        // Continue polling but stop sending updates on non-token errors too
                         tokenExpired = true
                     }
                 }
@@ -126,7 +113,6 @@ object GameWeekPollingUtils {
             }
         }
 
-        // Send timeout message if job didn't complete (only if token hasn't expired)
         if (!jobCompleted && !tokenExpired) {
             val timeoutMinutes = getTimeoutMinutes()
             Logger.warn("Polling timeout: Job ${config.jobId} did not complete within $timeoutMinutes minutes")
@@ -140,7 +126,6 @@ object GameWeekPollingUtils {
                 Logger.error("Failed to send timeout message (token may have expired): ${e.message}")
             }
         } else if (!jobCompleted) {
-            // Log timeout even if we can't send a message
             val timeoutMinutes = getTimeoutMinutes()
             Logger.warn(
                 "Polling timeout: Job ${config.jobId} did not complete within $timeoutMinutes minutes (token expired, message not sent)",

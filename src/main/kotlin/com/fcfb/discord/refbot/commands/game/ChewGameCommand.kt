@@ -21,9 +21,6 @@ class ChewGameCommand(
         )
     }
 
-    /**
-     * Chew a game
-     */
     suspend fun execute(interaction: ChatInputCommandInteraction) {
         Logger.info(
             "${interaction.user.username} is putting a game at channel ${interaction.channelId.value} into chew mode",

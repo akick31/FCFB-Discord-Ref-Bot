@@ -28,10 +28,6 @@ class LogClient(
         baseUrl = properties.getProperty("api.url")
     }
 
-    /**
-     * Get the current play in Arceus
-     * @param gameId
-     */
     internal suspend fun logRequestMessage(
         messageType: MessageType,
         gameId: Int,

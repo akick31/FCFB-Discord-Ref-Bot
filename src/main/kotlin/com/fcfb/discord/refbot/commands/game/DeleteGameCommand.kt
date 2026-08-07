@@ -19,9 +19,6 @@ class DeleteGameCommand(
         )
     }
 
-    /**
-     * Start a new game
-     */
     suspend fun execute(interaction: ChatInputCommandInteraction) {
         Logger.info(
             "${interaction.user.username} is deleting a game at channel ${interaction.channelId.value}",

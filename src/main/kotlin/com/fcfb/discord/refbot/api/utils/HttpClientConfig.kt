@@ -20,10 +20,6 @@ object HttpClientConfig {
             ?: throw RuntimeException("bot.service.key not set in application.properties")
     }
 
-    /**
-     * Creates a configured HTTP client with extended timeouts
-     * for operations that may take longer (like play processing)
-     */
     fun createClient(): HttpClient {
         val serviceKey = loadServiceKey()
         return HttpClient(CIO) {
@@ -34,17 +30,16 @@ object HttpClientConfig {
                 maxConnectionsCount = 64
                 endpoint {
                     maxConnectionsPerRoute = 8
-                    connectTimeout = 30_000 // 30 seconds to connect
-                    requestTimeout = 300_000 // 5 minutes for request completion
-                    keepAliveTime = 60_000 // Keep connections alive for 1 minute
+                    connectTimeout = 30_000
+                    requestTimeout = 300_000
+                    keepAliveTime = 60_000
                 }
             }
 
-            // Install timeout plugin with explicit configuration
             install(HttpTimeout) {
-                requestTimeoutMillis = 300_000 // 5 minutes
-                connectTimeoutMillis = 30_000 // 30 seconds
-                socketTimeoutMillis = 300_000 // 5 minutes
+                requestTimeoutMillis = 300_000
+                connectTimeoutMillis = 30_000
+                socketTimeoutMillis = 300_000
             }
 
             install(ContentNegotiation) {

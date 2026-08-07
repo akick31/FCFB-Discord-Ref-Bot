@@ -110,37 +110,30 @@ class DogReportCommand(
         g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON)
         g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON)
 
-        // Background
         g.color = Color(30, 31, 34)
         g.fillRect(0, 0, width, height)
 
-        // Title
         g.color = Color(255, 255, 255)
         g.font = Font("SansSerif", Font.BOLD, 20)
         g.drawString("Delay of Game Report", paddingH, paddingV + 28)
 
-        // Subtitle
         g.color = Color(148, 155, 164)
         g.font = Font("SansSerif", Font.PLAIN, 13)
         g.drawString("Season $season — Week $week", paddingH, paddingV + 48)
 
-        // Header background
         val headerY = paddingV + titleHeight
         g.color = Color(47, 49, 54)
         g.fillRect(0, headerY, width, headerHeight)
 
-        // Header text
         g.color = Color(185, 187, 190)
         g.font = Font("SansSerif", Font.BOLD, 13)
         val dogsLabel = "DOGs"
         g.drawString("TEAM", paddingH, headerY + 24)
         g.drawString(dogsLabel, width - paddingH - g.fontMetrics.stringWidth(dogsLabel), headerY + 24)
 
-        // Header bottom divider
         g.color = Color(64, 68, 75)
         g.drawLine(0, headerY + headerHeight - 1, width, headerY + headerHeight - 1)
 
-        // Rows
         rows.forEachIndexed { i, (team, count) ->
             val rowY = headerY + headerHeight + i * rowHeight
 
@@ -151,14 +144,12 @@ class DogReportCommand(
             g.font = Font("SansSerif", Font.PLAIN, 13)
             g.drawString(team, paddingH, rowY + 21)
 
-            // DOG count — red if 3 (max per week), otherwise normal
             val countStr = count.toString()
             g.color = if (count >= 3) Color(240, 71, 71) else Color(220, 221, 222)
             g.font = Font("SansSerif", Font.BOLD, 13)
             g.drawString(countStr, width - paddingH - g.fontMetrics.stringWidth(countStr), rowY + 21)
         }
 
-        // Bottom border
         g.color = Color(64, 68, 75)
         g.drawLine(0, height - 1, width, height - 1)
 

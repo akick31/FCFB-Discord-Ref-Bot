@@ -19,9 +19,6 @@ class RestartGameCommand(
         )
     }
 
-    /**
-     * Start a new game
-     */
     suspend fun execute(interaction: ChatInputCommandInteraction) {
         Logger.info(
             "${interaction.user.username} is restarting a game at channel ${interaction.channelId.value}",

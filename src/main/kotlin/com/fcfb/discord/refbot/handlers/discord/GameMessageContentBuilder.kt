@@ -23,10 +23,6 @@ import dev.kord.core.cache.data.EmbedData
 import dev.kord.core.cache.data.EmbedFooterData
 import dev.kord.core.entity.User
 
-/**
- * Builds the message content, embed, and ping list for a game message,
- * including the scorebug/no-scorebug/fallback-scorebug variants.
- */
 class GameMessageContentBuilder(
     private val gameParsingUtils: GameParsingUtils,
     private val gameDescriptionUtils: GameDescriptionUtils,
@@ -34,15 +30,6 @@ class GameMessageContentBuilder(
     private val scorebugClient: ScorebugClient,
     private val fcfbUserClient: FCFBUserClient,
 ) {
-    /**
-     * Get the message to send to a game for a given scenario
-     * @param client The Discord client
-     * @param game The game object
-     * @param scenario The scenario
-     * @param play The play object
-     * @param timeoutCalled Whether a timeout was called
-     * @return The message content and embed data
-     */
     suspend fun createGameMessage(
         client: Kord,
         game: Game,
@@ -50,7 +37,6 @@ class GameMessageContentBuilder(
         play: Play?,
         timeoutCalled: Boolean = false,
     ): Pair<Pair<String, EmbedData?>, List<User?>> {
-        // Get message content but not play result for number requests, game start, and coin toss
         var (messageContent, playWriteup) =
             when {
                 scenario in
@@ -79,7 +65,6 @@ class GameMessageContentBuilder(
                         PlayCall.KICKOFF_NORMAL, PlayCall.KICKOFF_SQUIB, PlayCall.KICKOFF_ONSIDE,
                     )
                 -> {
-                    // Get play result writeup
                     val playCallWriteupApiResponse = gameWriteupClient.getGameMessageByScenario(scenario, play?.playCall)
                     if (playCallWriteupApiResponse.keys.firstOrNull() == null) {
                         throw NoMessageContentFoundException(scenario.description)
@@ -88,7 +73,6 @@ class GameMessageContentBuilder(
                         playCallWriteupApiResponse.keys.firstOrNull()
                             ?: throw NoMessageContentFoundException(scenario.description)
 
-                    // Get message content
                     val messageContentApiResponse = gameWriteupClient.getGameMessageByScenario(PLAY_RESULT, null)
                     if (messageContentApiResponse.keys.firstOrNull() == null) {
                         throw NoMessageContentFoundException(PLAY_RESULT.description)
@@ -99,7 +83,6 @@ class GameMessageContentBuilder(
                     messageContent to writeup
                 }
                 else -> {
-                    // Get play result writeup
                     val writeupApiResponse = gameWriteupClient.getGameMessageByScenario(scenario, null)
                     if (writeupApiResponse.keys.firstOrNull() == null) {
                         throw NoMessageContentFoundException(scenario.description)
@@ -108,7 +91,6 @@ class GameMessageContentBuilder(
                         writeupApiResponse.keys.firstOrNull()
                             ?: throw NoMessageContentFoundException(scenario.description)
 
-                    // Get message content
                     val messageContentApiResponse = gameWriteupClient.getGameMessageByScenario(Scenario.PLAY_RESULT, null)
                     if (messageContentApiResponse.keys.firstOrNull() == null) {
                         throw NoMessageContentFoundException(Scenario.PLAY_RESULT.description)
@@ -124,11 +106,9 @@ class GameMessageContentBuilder(
             throw NoMessageContentFoundException(scenario.description)
         }
 
-        // Fetch Discord users
         val homeCoaches = game.homeCoachDiscordIds.map { client.getUser(Snowflake(it)) }
         val awayCoaches = game.awayCoachDiscordIds.map { client.getUser(Snowflake(it)) }
 
-        // Determine which team has possession and their coaches
         val (writeupOffensiveCoaches, writeupDefensiveCoaches) =
             if (play != null) {
                 when {
@@ -192,7 +172,6 @@ class GameMessageContentBuilder(
                 "None"
             }
 
-        // Build placeholders for message replacement
         val replacements =
             mapOf(
                 "{kicking_team}" to offensiveTeam,
@@ -283,17 +262,6 @@ class GameMessageContentBuilder(
         }
     }
 
-    /**
-     * Get and return a game message without the scorebug as an embed
-     * @param game The game object
-     * @param scenario The scenario
-     * @param messageContent The message content
-     * @param homeCoaches The home team coaches
-     * @param awayCoaches The away team coaches
-     * @param offensiveCoaches The offensive team coaches
-     * @param defensiveCoaches The defensive team coaches
-     * @return The message content and embed data
-     */
     private suspend fun createGameMessageWithoutScorebug(
         game: Game,
         scenario: Scenario,
@@ -316,17 +284,6 @@ class GameMessageContentBuilder(
         return (messageToSend to embedData) to defensiveCoaches
     }
 
-    /**
-     * Get and return a game message with the fallback scorebug as an embed
-     * @param game The game object
-     * @param scenario The scenario
-     * @param messageContent The message content
-     * @param homeCoaches The home team coaches
-     * @param awayCoaches The away team coaches
-     * @param offensiveCoaches The offensive team coaches
-     * @param defensiveCoaches The defensive team coaches
-     * @return The message content and embed data
-     */
     private suspend fun createGameMessageWithFallbackScorebug(
         game: Game,
         scenario: Scenario,
@@ -356,18 +313,6 @@ class GameMessageContentBuilder(
         return (messageToSend to embedData) to defensiveCoaches
     }
 
-    /**
-     * Get and return a game message with the scorebug as an embed
-     * @param game The game object
-     * @param scenario The scenario
-     * @param scorebug The scorebug image
-     * @param messageContent The message content
-     * @param homeCoaches The home team coaches
-     * @param awayCoaches The away team coaches
-     * @param offensiveCoaches The offensive team coaches
-     * @param defensiveCoaches The defensive team coaches
-     * @return The message content and embed data
-     */
     private suspend fun createGameMessageWithScorebug(
         game: Game,
         scenario: Scenario,
@@ -395,12 +340,6 @@ class GameMessageContentBuilder(
         return (messageToSend to embedData) to defensiveCoaches
     }
 
-    /**
-     * Apply placeholder replacements to a text string
-     * @param text The text to process
-     * @param replacements Map of placeholder to replacement value
-     * @return Text with placeholders replaced
-     */
     private fun applyPlaceholderReplacements(
         text: String?,
         replacements: Map<String, String?>,
@@ -416,13 +355,6 @@ class GameMessageContentBuilder(
         return processedText
     }
 
-    /**
-     * Append user pings to a message based on the scenario
-     * @param scenario The scenario
-     * @param homeCoaches The home team coaches
-     * @param awayCoaches The away team coaches
-     * @param offensiveCoaches The offensive team coaches
-     */
     private suspend fun appendUserPings(
         game: Game,
         scenario: Scenario,
