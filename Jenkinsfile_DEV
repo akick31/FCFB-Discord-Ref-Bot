@@ -165,6 +165,39 @@ pipeline {
             }
         }
 
+        stage('Verify Swapped Container') {
+            steps {
+                script {
+                    def healthy = false
+                    def attempts = 0
+                    def maxAttempts = 60
+                    while (!healthy && attempts < maxAttempts) {
+                        attempts++
+                        try {
+                            def body = sh(
+                                script: "docker exec ${env.CONTAINER_NAME} curl -sf --max-time 15 http://127.0.0.1:1312/fcfb_discord/health 2>/dev/null || true",
+                                returnStdout: true
+                            ).trim().replaceAll("\\s", "")
+                            if (body.startsWith('{"status":"UP"')) {
+                                healthy = true
+                                echo "Live container is healthy (attempt ${attempts})"
+                            }
+                        } catch (e) {
+                            // not ready yet
+                        }
+                        if (!healthy) {
+                            echo "Waiting for live container health check... attempt ${attempts}/${maxAttempts}"
+                            sleep(time: 5, unit: 'SECONDS')
+                        }
+                    }
+                    if (!healthy) {
+                        sh "docker logs ${CONTAINER_NAME} --tail=100"
+                        error("Live container never became healthy after swap after ${maxAttempts * 5}s - the old container is already gone, this needs manual intervention")
+                    }
+                }
+            }
+        }
+
         stage('Cleanup Docker System') {
             steps {
                 script {
