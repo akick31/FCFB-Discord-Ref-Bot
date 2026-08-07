@@ -25,11 +25,6 @@ class StartWeekCommand(
         }
     }
 
-    /**
-     * Start all games for a given week.
-     * Sends the request to the backend, then polls for progress and
-     * edits the Discord message with updates until complete.
-     */
     suspend fun execute(interaction: ChatInputCommandInteraction) {
         val command = interaction.command
         val season = command.options["season"]!!.value.toString().toInt()

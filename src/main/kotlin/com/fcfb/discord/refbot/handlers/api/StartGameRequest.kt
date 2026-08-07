@@ -12,11 +12,6 @@ class StartGameRequest(
     private val textChannelThreadHandler: TextChannelThreadHandler,
     private val discordMessageHandler: DiscordMessageHandler,
 ) {
-    /**
-     * Start a new Discord game thread
-     * @param client The Discord client
-     * @param game The game object
-     */
     suspend fun startGameThread(
         client: Kord,
         game: Game,

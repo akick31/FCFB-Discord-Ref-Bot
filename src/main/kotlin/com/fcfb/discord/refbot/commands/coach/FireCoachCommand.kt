@@ -21,11 +21,6 @@ class FireCoachCommand(
         }
     }
 
-    /**
-     * Hire a new coach for a team
-     * @param interaction The interaction object
-     * @param command The command object
-     */
     suspend fun execute(interaction: ChatInputCommandInteraction) {
         val command = interaction.command
         Logger.info("${interaction.user.username} is fire the coach for ${command.options["team"]!!.value}")

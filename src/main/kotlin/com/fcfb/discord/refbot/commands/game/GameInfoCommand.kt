@@ -18,9 +18,6 @@ class GameInfoCommand(
         )
     }
 
-    /**
-     * Get general game information
-     */
     suspend fun execute(interaction: ChatInputCommandInteraction) {
         Logger.info(
             "${interaction.user.username} is getting game information in channel ${interaction.channelId.value}",

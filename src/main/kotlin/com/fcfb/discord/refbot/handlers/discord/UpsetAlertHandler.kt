@@ -18,11 +18,6 @@ class UpsetAlertHandler(
     private val discordMessageHandler: DiscordMessageHandler,
     private val properties: Properties,
 ) {
-    /**
-     * Handles pinging close game
-     * @param client the discord client
-     * @param game the game
-     */
     suspend fun handleUpsetAlert(
         client: Kord,
         game: Game,

@@ -14,9 +14,6 @@ class DelayOfGameRequest(
     private val discordMessageHandler: DiscordMessageHandler,
     private val gameHandler: GameHandler,
 ) {
-    /**
-     * Notify the game thread of a delay of game
-     */
     suspend fun notifyDelayOfGame(
         client: Kord,
         game: Game,
@@ -53,9 +50,6 @@ class DelayOfGameRequest(
         }
     }
 
-    /**
-     * Notify the game thread of a delay of game warning
-     */
     suspend fun notifyWarning(
         client: Kord,
         game: Game,

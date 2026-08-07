@@ -71,7 +71,6 @@ class WinProbabilityCommand(
             val secondTeam = interaction.command.strings[SECOND_TEAM_OPTION]
             val season = interaction.command.integers[SEASON_OPTION]?.toInt()
 
-            // Check if we're in a game thread and auto-detect game ID
             val channel = interaction.channel
             val gameResponse = gameClient.getGameByPlatformId(channel.id.value.toString())
             val game = gameResponse.keys.firstOrNull()
@@ -82,7 +81,6 @@ class WinProbabilityCommand(
                     null
                 }
 
-            // Use detected game ID if no parameters provided and we're in a game thread
             val finalGameId =
                 if (gameId == null && firstTeam == null && secondTeam == null && season == null) {
                     if (detectedGameId != null) {
@@ -98,7 +96,6 @@ class WinProbabilityCommand(
                     gameId
                 }
 
-            // Validate parameters
             if (finalGameId == null &&
                 (firstTeam == null || secondTeam == null || season == null)
             ) {
@@ -116,7 +113,6 @@ class WinProbabilityCommand(
                 return
             }
 
-            // Get the charts
             val chartDataList =
                 if (finalGameId != null) {
                     Logger.info("Getting win probability chart for game ID: $finalGameId")
@@ -134,7 +130,6 @@ class WinProbabilityCommand(
                 return
             }
 
-            // Send all charts as separate messages
             chartDataList.forEachIndexed { index, chartData ->
                 val chartUrl =
                     if (finalGameId != null) {
@@ -181,13 +176,6 @@ class WinProbabilityCommand(
         }
     }
 
-    /**
-     * Save chart data to a file
-     * @param chartData The chart byte array
-     * @param chartType The type of chart (win_probability or score_chart)
-     * @param gameId The game ID (or 0 if using team names)
-     * @return The file path
-     */
     private fun saveChartToFile(
         chartData: ByteArray,
         chartType: String,
@@ -202,7 +190,6 @@ class WinProbabilityCommand(
 
         val file = File(fileName)
         try {
-            // Ensure the images directory exists
             val imagesDir = File("images")
             if (!imagesDir.exists()) {
                 if (imagesDir.mkdirs()) {

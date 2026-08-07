@@ -22,9 +22,6 @@ class EndAllGamesCommand(
         )
     }
 
-    /**
-     * End all ongoing games
-     */
     suspend fun execute(interaction: ChatInputCommandInteraction) {
         Logger.info(
             "${interaction.user.username} is ending all ongoing games",

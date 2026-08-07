@@ -9,10 +9,6 @@ import dev.kord.core.cache.data.EmbedData
 import dev.kord.core.entity.Message
 import dev.kord.core.entity.User
 
-/**
- * Facade over [GameParsingUtils], [GameStateUtils], and [GameDescriptionUtils]
- * kept so existing call sites don't need to know which of the three owns a given helper.
- */
 class GameUtils(
     private val gameParsingUtils: GameParsingUtils,
     private val gameStateUtils: GameStateUtils,

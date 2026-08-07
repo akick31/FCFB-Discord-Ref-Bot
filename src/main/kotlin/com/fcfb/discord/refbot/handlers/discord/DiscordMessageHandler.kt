@@ -34,11 +34,6 @@ import dev.kord.core.entity.User
 import dev.kord.core.entity.channel.MessageChannel
 import dev.kord.core.entity.channel.thread.TextChannelThread
 
-/**
- * Orchestrates sending game-related Discord messages. Delegates low-level delivery to
- * [DiscordMessageSender], content/embed construction to [GameMessageContentBuilder], and
- * score/chart posting to [GameScorePoster].
- */
 class DiscordMessageHandler(
     private val gameClient: GameClient,
     private val logClient: LogClient,
@@ -67,12 +62,6 @@ class DiscordMessageHandler(
         return messageSender.sendMessageFromChannelObject(channel, messageContent, null)
     }
 
-    /**
-     * Send an announcement to a game
-     * @param client The Discord client
-     * @param game The game object
-     * @param messageContent The message content
-     */
     suspend fun sendGameAnnouncement(
         client: Kord,
         game: Game,
@@ -86,7 +75,6 @@ class DiscordMessageHandler(
                 ),
             )
 
-        // Append user pings
         val homeCoaches = game.homeCoachDiscordIds.map { client.getUser(Snowflake(it)) }
         val awayCoaches = game.awayCoachDiscordIds.map { client.getUser(Snowflake(it)) }
         var updatedMessageContent = gameDescriptionUtils.joinMentions(homeCoaches)
@@ -96,16 +84,6 @@ class DiscordMessageHandler(
         return messageSender.sendMessageFromTextChannelObject(channel, updatedMessageContent, null)
     }
 
-    /**
-     * Send a game message to a game thread
-     * @param client The Discord client
-     * @param game The game object
-     * @param scenario The scenario
-     * @param play The play object
-     * @param message The message object
-     * @param gameThread The game thread object
-     * @param timeoutCalled Whether a timeout was called
-     */
     suspend fun sendGameMessage(
         client: Kord,
         game: Game,
@@ -126,13 +104,6 @@ class DiscordMessageHandler(
         }
     }
 
-    /**
-     * Send a request for a defensive number to the defensive coaches
-     * @param client The Discord client
-     * @param game The game object
-     * @param scenario The scenario
-     * @param play The play object
-     */
     suspend fun sendRequestForDefensiveNumber(
         client: Kord,
         game: Game,
@@ -185,13 +156,6 @@ class DiscordMessageHandler(
         }
     }
 
-    /**
-     * Send a request for a defensive number to the defensive coaches
-     * @param client The Discord client
-     * @param game The game object
-     * @param timeoutCalled Whether a timeout was called
-     * @param previousMessage The previous message object
-     */
     suspend fun sendRequestForOffensiveNumber(
         client: Kord,
         game: Game,
@@ -240,9 +204,6 @@ class DiscordMessageHandler(
         }
     }
 
-    /**
-     * Send a confirmation to the user of their number submission
-     */
     suspend fun sendNumberConfirmationMessage(
         game: Game,
         number: Int,
@@ -265,13 +226,6 @@ class DiscordMessageHandler(
         return messageSender.sendMessageFromMessageObject(message, messageContent, null)
     }
 
-    /**
-     * Send a message to the game that contains the outcome of a play
-     * @param client The Discord client
-     * @param game The game object
-     * @param playOutcome The play object
-     * @param message The message object
-     */
     suspend fun sendPlayOutcomeMessage(
         client: Kord,
         game: Game,
@@ -295,12 +249,6 @@ class DiscordMessageHandler(
         )
     }
 
-    /**
-     * Send a message to the game that contains the coin toss choice and then request a defensive number
-     * @param client The Discord client
-     * @param game The game object
-     * @param message The message object
-     */
     suspend fun sendCoinTossChoiceMessage(
         client: Kord,
         game: Game,
@@ -323,13 +271,6 @@ class DiscordMessageHandler(
         )
     }
 
-    /**
-     * Send a message to the game that contains the coin toss choice specific to overtime
-     * and then request a defensive number
-     * @param client The Discord client
-     * @param game The game object
-     * @param message The message object
-     */
     suspend fun sendOvertimeCoinTossChoiceMessage(
         client: Kord,
         game: Game,
@@ -352,12 +293,6 @@ class DiscordMessageHandler(
         )
     }
 
-    /**
-     * Send a message to the game that contains the outcome of a coin toss
-     * @param client The Discord client
-     * @param game The game object
-     * @param message The message object
-     */
     suspend fun sendCoinTossOutcomeMessage(
         client: Kord,
         game: Game,
@@ -420,12 +355,6 @@ class DiscordMessageHandler(
         }
     }
 
-    /**
-     * Send end of game messages to the game thread and scores channels
-     * @param client The Discord client
-     * @param game The game object
-     * @param message The message object
-     */
     suspend fun sendEndOfGameMessages(
         client: Kord,
         game: Game,
@@ -441,19 +370,11 @@ class DiscordMessageHandler(
             false,
         )
 
-        // No need to post scrimmage scores
         if (game.gameType != GameType.SCRIMMAGE) {
             scorePoster.postGameScore(client, game, message)
         }
     }
 
-    /**
-     * Send message to red zone channel
-     * @param game The game object
-     * @param redZoneChannel The red zone channel object
-     * @param messageContent The message content
-     * @param message The message object
-     */
     suspend fun sendRedZoneMessage(
         game: Game,
         redZoneChannel: MessageChannel,
@@ -478,23 +399,12 @@ class DiscordMessageHandler(
         return messageSender.sendMessageFromChannelObject(redZoneChannel, messageContent, embedData)
     }
 
-    /**
-     * Send a message to a game thread via a text channel object
-     * @param channel The text channel object
-     * @param messageContent The message content
-     * @param embedData The embed data
-     */
     suspend fun sendMessageFromChannelObject(
         channel: MessageChannel,
         messageContent: String,
         embedData: EmbedData?,
     ): Message = messageSender.sendMessageFromChannelObject(channel, messageContent, embedData)
 
-    /**
-     * Send an error message to a user and log the error
-     * @param message The message object
-     * @param error The error object
-     */
     suspend fun sendErrorMessage(
         message: Message?,
         error: Error,
@@ -502,11 +412,6 @@ class DiscordMessageHandler(
         messageSender.sendMessageFromMessageObject(message, error.message, null)
     }
 
-    /**
-     * Send a custom error message to a user
-     * @param message The message object
-     * @param errorMessage The error message
-     */
     suspend fun sendCustomErrorMessage(
         message: Message?,
         errorMessage: String,

@@ -7,6 +7,7 @@ import com.fcfb.discord.refbot.api.game.GameWriteupClient
 import com.fcfb.discord.refbot.api.game.PlayClient
 import com.fcfb.discord.refbot.api.game.ScorebugClient
 import com.fcfb.discord.refbot.api.system.LogClient
+import com.fcfb.discord.refbot.api.team.ConferenceClient
 import com.fcfb.discord.refbot.api.team.TeamClient
 import com.fcfb.discord.refbot.api.user.FCFBUserClient
 import com.fcfb.discord.refbot.api.utils.ApiUtils
@@ -74,19 +75,19 @@ val appModule =
         single { SystemUtils() }
         single { get<Properties>().getDiscordProperties() }
 
-        // Classes with dependencies
         single { ChartClient() }
         single { GameClient(get()) }
         single { GameWriteupClient(get()) }
         single { PlayClient(get()) }
         single { LogClient(get()) }
         single { TeamClient(get()) }
+        single { ConferenceClient(get()) }
         single { FCFBUserClient(get()) }
         single { ErrorHandler(get()) }
-        single { TextChannelThreadHandler(get(), get(), get(), get(), get()) }
+        single { TextChannelThreadHandler(get(), get(), get(), get()) }
         single { GameParsingUtils() }
         single { GameStateUtils() }
-        single { GameDescriptionUtils(get()) }
+        single { GameDescriptionUtils(get(), get()) }
         single { GameUtils(get(), get(), get()) }
         single { StartGameRequest(get(), get()) }
         single { KtorServerConfig(get(), get(), get(), get()) }

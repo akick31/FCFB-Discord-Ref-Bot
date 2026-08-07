@@ -34,11 +34,6 @@ class GameHandler(
     private val redZoneChannelHandler: RedZoneChannelHandler,
     private val errorHandler: ErrorHandler,
 ) {
-    /**
-     * Handles the user side game logic for a message
-     * @param client The Discord client
-     * @param message The message object
-     */
     suspend fun handleGameLogic(
         client: Kord,
         message: Message,
@@ -71,9 +66,6 @@ class GameHandler(
         }
     }
 
-    /**
-     * Send a game ping to the user the game is waiting on
-     */
     suspend fun sendGamePing(
         client: Kord,
         game: Game,
@@ -98,12 +90,6 @@ class GameHandler(
         }
     }
 
-    /**
-     * Handles the offensive number submission for a game
-     * @param client The Discord client
-     * @param game The game object
-     * @param message The message object
-     */
     private suspend fun handleOffensiveNumberSubmission(
         client: Kord,
         game: Game,
@@ -130,9 +116,7 @@ class GameHandler(
         val offensiveSubmitter = message.author?.username ?: return errorHandler.invalidOffensiveSubmitter(message)
         val offensiveSubmitterId = message.author?.id?.value.toString()
 
-        // Handle overtime specifics
         if (game.gameStatus == GameStatus.OVERTIME) {
-            // Ensure you must go for two in the third overtime and beyond
             if (
                 game.currentPlayType == PlayType.PAT &&
                 game.quarter >= 7 &&
@@ -142,7 +126,6 @@ class GameHandler(
             }
         }
 
-        // Submit the offensive number and get the play outcome
         val playApiResponse =
             playClient.submitOffensiveNumber(
                 game.gameId,
@@ -158,8 +141,6 @@ class GameHandler(
         }
         var playOutcome = playApiResponse.keys.firstOrNull() ?: return errorHandler.invalidOffensiveNumberSubmission(message)
 
-        // Verify the play outcome is for the correct game to prevent race conditions
-        // If it's not, fetch the correct play for this game
         if (playOutcome.gameId != game.gameId) {
             val correctPlayResponse = playClient.getPreviousPlay(game.gameId)
             playOutcome = correctPlayResponse.keys.firstOrNull()
@@ -207,18 +188,11 @@ class GameHandler(
         }
     }
 
-    /**
-     * Handles the defensive number submission for a game
-     * @param client The Discord client
-     * @param game The game object
-     * @param message The message object
-     */
     private suspend fun handleDefensiveNumberSubmission(
         client: Kord,
         game: Game,
         message: Message,
     ) {
-        // If the guild is null, it is not a direct message
         if (message.getGuildOrNull() != null) {
             return errorHandler.invalidDefensiveSubmissionLocation(message)
         }
@@ -262,12 +236,6 @@ class GameHandler(
         )
     }
 
-    /**
-     * Handles the coin toss for a game
-     * @param client The Discord client
-     * @param game The game object
-     * @param message The message object
-     */
     private suspend fun handleCoinToss(
         client: Kord,
         game: Game,
@@ -288,12 +256,6 @@ class GameHandler(
         discordMessageHandler.sendCoinTossOutcomeMessage(client, updatedGame, message)
     }
 
-    /**
-     * Handles the coin toss choice for a game
-     * @param client The Discord client
-     * @param game The game object
-     * @param message The message object
-     */
     private suspend fun handleCoinTossChoice(
         client: Kord,
         game: Game,
@@ -319,12 +281,6 @@ class GameHandler(
         discordMessageHandler.sendCoinTossChoiceMessage(client, updatedGame, message)
     }
 
-    /**
-     * Handles the coin toss choice for a game
-     * @param client The Discord client
-     * @param game The game object
-     * @param message The message object
-     */
     private suspend fun handleOvertimeCoinTossChoice(
         client: Kord,
         game: Game,
@@ -351,11 +307,6 @@ class GameHandler(
         discordMessageHandler.sendOvertimeCoinTossChoiceMessage(client, updatedGame, message)
     }
 
-    /**
-     * Ends a game
-     * @param client The Discord client
-     * @param message The message object
-     */
     suspend fun endGame(
         client: Kord,
         updatedGame: Game,

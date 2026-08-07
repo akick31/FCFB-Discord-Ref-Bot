@@ -21,21 +21,11 @@ class ScorebugClient {
         baseUrl = properties.getProperty("api.url")
     }
 
-    /**
-     * Fetch the game scorebug by the game id
-     * @param gameId
-     * @return ByteArray
-     */
     internal suspend fun getScorebugByGameId(gameId: Int): ByteArray? {
         val endpointUrl = "$baseUrl/scorebug?gameId=$gameId"
         return getRequest(endpointUrl)
     }
 
-    /**
-     * Call a get request to the scorebug endpoint and return a byte array
-     * @param endpointUrl
-     * @return ByteArray
-     */
     private suspend fun getRequest(endpointUrl: String): ByteArray? {
         return try {
             val response = httpClient.get(endpointUrl)

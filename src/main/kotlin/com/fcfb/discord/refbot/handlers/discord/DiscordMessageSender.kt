@@ -15,21 +15,10 @@ import dev.kord.rest.builder.message.EmbedBuilder
 import dev.kord.rest.builder.message.addFile
 import kotlin.io.path.Path
 
-/**
- * Low-level delivery of Discord messages (DMs, channel messages, thread messages),
- * including the shared embed-building and attached-image cleanup logic they all need.
- */
 class DiscordMessageSender(
     private val embedBuilder: EmbedBuilder,
     private val fileHandler: FileHandler,
 ) {
-    /**
-     * Send a private message to a user via a user object
-     * @param userList The list of user objects
-     * @param embedData The embed data
-     * @param messageContent The message content
-     * @param previousMessage The previous message object
-     */
     suspend fun sendPrivateMessage(
         userList: List<User?>,
         embedData: EmbedData?,
@@ -91,12 +80,6 @@ class DiscordMessageSender(
         return submittedMessages
     }
 
-    /**
-     * Send a message to a game thread via a message object
-     * @param message The message object
-     * @param messageContent The message content
-     * @param embedData The embed data
-     */
     suspend fun sendMessageFromMessageObject(
         message: Message?,
         messageContent: String,
@@ -155,12 +138,6 @@ class DiscordMessageSender(
         }
     }
 
-    /**
-     * Send a message to a game thread via a text channel object
-     * @param channel The text channel object
-     * @param messageContent The message content
-     * @param embedData The embed data
-     */
     suspend fun sendMessageFromChannelObject(
         channel: MessageChannel,
         messageContent: String,
@@ -215,12 +192,6 @@ class DiscordMessageSender(
         }
     }
 
-    /**
-     * Send a message to a game thread via a text channel object
-     * @param textChannel The text channel object
-     * @param messageContent The message content
-     * @param embedData The embed data
-     */
     suspend fun sendMessageFromTextChannelObject(
         textChannel: TextChannelThread?,
         messageContent: String,

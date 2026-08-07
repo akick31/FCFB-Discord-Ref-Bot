@@ -3,7 +3,6 @@ package com.fcfb.discord.refbot.model.domain
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.databind.PropertyNamingStrategies
 import com.fasterxml.jackson.databind.annotation.JsonNaming
-import com.fcfb.discord.refbot.model.enums.team.Conference
 import com.fcfb.discord.refbot.model.enums.team.DefensivePlaybook
 import com.fcfb.discord.refbot.model.enums.team.OffensivePlaybook
 import com.fcfb.discord.refbot.model.enums.team.Subdivision
@@ -15,6 +14,7 @@ data class Team(
     @JsonProperty("short_name") var location: String? = null,
     @JsonProperty("abbreviation") var abbreviation: String? = null,
     @JsonProperty("logo") var logo: String? = null,
+    @JsonProperty("logo_dark") var logoDark: String? = null,
     @JsonProperty("scorebug_logo") var scorebugLogo: String? = null,
     @JsonProperty("coach_usernames") var coachUsernames: List<String>? = null,
     @JsonProperty("coach_names") var coachNames: List<String>? = null,
@@ -27,7 +27,8 @@ data class Team(
     @JsonProperty("subdivision") var subdivision: Subdivision? = null,
     @JsonProperty("offensive_playbook") var offensivePlaybook: OffensivePlaybook? = null,
     @JsonProperty("defensive_playbook") var defensivePlaybook: DefensivePlaybook? = null,
-    @JsonProperty("conference") var conference: Conference? = null,
+    @JsonProperty("conference") var conference: String? = null,
+    @JsonProperty("division") var division: String? = null,
     @JsonProperty("current_wins") var currentWins: Int = 0,
     @JsonProperty("current_losses") var currentLosses: Int = 0,
     @JsonProperty("overall_wins") var overallWins: Int = 0,

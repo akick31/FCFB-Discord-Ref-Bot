@@ -6,13 +6,6 @@ import com.fcfb.discord.refbot.utils.system.Logger
 import io.ktor.client.statement.HttpResponse
 
 class ApiUtils {
-    /**
-     * Returns the error to surface to the caller, or null when the body is safe to deserialize.
-     * The API signals every failure with a non-2xx status, so a 2xx body is never an error, and a
-     * non-2xx body may be empty or plain text rather than the usual error JSON.
-     * @param response
-     * @param jsonResponse
-     */
     fun errorFrom(
         response: HttpResponse,
         jsonResponse: String,

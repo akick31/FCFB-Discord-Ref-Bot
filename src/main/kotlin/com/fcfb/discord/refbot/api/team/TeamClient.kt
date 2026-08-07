@@ -31,13 +31,6 @@ class TeamClient(
         baseUrl = properties.getProperty("api.url")
     }
 
-    /**
-     * Hire a coach
-     * @param teamName
-     * @param discordId
-     * @param coachPosition
-     * @return Team
-     */
     internal suspend fun hireCoach(
         teamName: String,
         discordId: String,
@@ -57,13 +50,6 @@ class TeamClient(
         return postRequest(endpointUrl)
     }
 
-    /**
-     * Hire an interim coach
-     * @param teamName
-     * @param discordId
-     * @param processedBy
-     * @return Team
-     */
     internal suspend fun hireInterimCoach(
         teamName: String,
         discordId: String,
@@ -81,11 +67,6 @@ class TeamClient(
         return postRequest(endpointUrl)
     }
 
-    /**
-     * Fire all coaches
-     * @param teamName
-     * @return Team
-     */
     internal suspend fun fireCoach(
         teamName: String,
         processedBy: String,
@@ -101,9 +82,6 @@ class TeamClient(
         return postRequest(endpointUrl)
     }
 
-    /**
-     * Get a team by name
-     */
     internal suspend fun getTeamByName(teamName: String): Map<Team?, String?> {
         val endpointUrl =
             "$baseUrl/team/name?" +
@@ -115,20 +93,11 @@ class TeamClient(
         return getRequest(endpointUrl)
     }
 
-    /**
-     * Get all teams
-     * @return List<Team>
-     */
     internal suspend fun getAllTeams(): Map<List<Team>?, String?> {
         val endpointUrl = "$baseUrl/team"
         return getAllRequest(endpointUrl)
     }
 
-    /**
-     * Get all teams
-     * @param endpointUrl
-     * @return List<Team>
-     */
     private suspend fun getAllRequest(endpointUrl: String): Map<List<Team>?, String?> {
         return try {
             val response = httpClient.get(endpointUrl)
@@ -148,11 +117,6 @@ class TeamClient(
         }
     }
 
-    /**
-     * Call a get request to the team endpoint and return a team
-     * @param endpointUrl
-     * @return Team
-     */
     private suspend fun getRequest(endpointUrl: String): Map<Team?, String?> {
         return try {
             val response = httpClient.get(endpointUrl)
@@ -171,11 +135,6 @@ class TeamClient(
         }
     }
 
-    /**
-     * Call a post request to the team endpoint
-     * @param endpointUrl
-     * @return Team
-     */
     private suspend fun postRequest(endpointUrl: String): Map<Team?, String?> {
         return try {
             val response = httpClient.post(endpointUrl)

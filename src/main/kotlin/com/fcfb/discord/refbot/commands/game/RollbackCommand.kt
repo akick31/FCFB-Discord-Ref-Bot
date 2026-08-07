@@ -26,9 +26,6 @@ class RollbackCommand(
         )
     }
 
-    /**
-     * Rollback a game
-     */
     suspend fun execute(interaction: ChatInputCommandInteraction) {
         Logger.info(
             "${interaction.user.username} is rolling back a play at channel ${interaction.channelId.value}",
@@ -66,7 +63,6 @@ class RollbackCommand(
                 gameHandler.sendGamePing(interaction.kord, updatedGame, currentPlay)
                 response.respond { this.content = "Play rollback successful" }
 
-                // Post scorebug
                 val channel = interaction.channel.asChannel()
                 val scorebug = scorebugClient.getScorebugByGameId(game.gameId)
                 val embedData = gameUtils.getScorebugEmbed(scorebug, game, null)

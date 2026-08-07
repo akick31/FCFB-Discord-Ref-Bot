@@ -22,10 +22,6 @@ class RetryWeekCommand(
         }
     }
 
-    /**
-     * Retry failed games from a previous start_week job.
-     * Sends the retry request to the backend, then polls for progress.
-     */
     suspend fun execute(interaction: ChatInputCommandInteraction) {
         val command = interaction.command
         val jobId = command.options["job_id"]!!.value.toString()
@@ -56,7 +52,6 @@ class RetryWeekCommand(
                 this.content = "Retry job started: `$newJobId`\nPolling for progress..."
             }
 
-            // Capture original job ID to avoid shadowing in lambda
             val originalJobId = jobId
 
             val pollingResult =
