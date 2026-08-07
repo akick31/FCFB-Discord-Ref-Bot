@@ -66,7 +66,7 @@ class FCFBDiscordRefBot(
                             Logger.warn("Health checks failed: $health")
                             restartBot()
                         } else {
-                            Logger.info("Heartbeat successful.")
+                            Logger.debug("Heartbeat successful.")
                         }
                     } catch (e: Exception) {
                         Logger.warn("Heartbeat failed: Bot appears disconnected. Attempting to reconnect...")
