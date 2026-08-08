@@ -39,7 +39,7 @@ class FCFBUserClient(
     }
 
     internal suspend fun generateApiKey(userId: Long): Map<String?, String?> {
-        val endpointUrl = "$baseUrl/user/$userId/api-key"
+        val endpointUrl = "$baseUrl/user/api-key/for-user?userId=$userId"
         return try {
             val response =
                 httpClient.post(endpointUrl) {
