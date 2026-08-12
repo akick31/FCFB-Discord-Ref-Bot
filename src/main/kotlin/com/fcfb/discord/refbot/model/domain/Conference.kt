@@ -12,4 +12,5 @@ data class Conference(
     @JsonProperty("logo_url_dark") var logoUrlDark: String? = null,
     @JsonProperty("abbreviation") var abbreviation: String? = null,
     @JsonProperty("active") var active: Boolean = true,
+    @JsonProperty("championship_venue") var championshipVenue: String? = null,
 )

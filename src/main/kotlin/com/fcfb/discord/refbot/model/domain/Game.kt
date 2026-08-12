@@ -41,6 +41,8 @@ data class Game(
     @JsonProperty("tv_channel") val tvChannel: TVChannel?,
     @JsonProperty("start_time") val startTime: String?,
     @JsonProperty("location") val location: String?,
+    @JsonProperty("neutral_site") val neutralSite: Boolean = false,
+    @JsonProperty("venue") val venue: String? = null,
     @JsonProperty("home_team_rank") val homeTeamRank: Int?,
     @JsonProperty("home_wins") val homeWins: Int?,
     @JsonProperty("home_losses") val homeLosses: Int?,
