@@ -156,7 +156,7 @@ class GameClient(
     }
 
     internal suspend fun getGameByGameId(gameId: String): Map<Game?, String?> {
-        val endpointUrl = "$baseUrl/game?id=$gameId"
+        val endpointUrl = "$baseUrl/game/ongoing?id=$gameId"
         return getRequest(endpointUrl)
     }
 

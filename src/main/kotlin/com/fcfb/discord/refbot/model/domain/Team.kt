@@ -16,6 +16,7 @@ data class Team(
     @JsonProperty("logo") var logo: String? = null,
     @JsonProperty("logo_dark") var logoDark: String? = null,
     @JsonProperty("scorebug_logo") var scorebugLogo: String? = null,
+    @JsonProperty("stadium") var stadium: String? = null,
     @JsonProperty("coach_usernames") var coachUsernames: List<String>? = null,
     @JsonProperty("coach_names") var coachNames: List<String>? = null,
     @JsonProperty("coach_discord_tags") var coachDiscordTags: List<String>? = null,

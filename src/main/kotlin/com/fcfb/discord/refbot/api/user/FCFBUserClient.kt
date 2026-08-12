@@ -34,7 +34,7 @@ class FCFBUserClient(
     }
 
     internal suspend fun getAllUsers(): Map<List<FCFBUser>?, String?> {
-        val endpointUrl = "$baseUrl/user"
+        val endpointUrl = "$baseUrl/user/all"
         return getRequestList(endpointUrl)
     }
 

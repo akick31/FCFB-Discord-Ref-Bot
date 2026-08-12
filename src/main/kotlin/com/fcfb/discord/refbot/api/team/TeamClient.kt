@@ -94,7 +94,7 @@ class TeamClient(
     }
 
     internal suspend fun getAllTeams(): Map<List<Team>?, String?> {
-        val endpointUrl = "$baseUrl/team"
+        val endpointUrl = "$baseUrl/team/active"
         return getAllRequest(endpointUrl)
     }
 
