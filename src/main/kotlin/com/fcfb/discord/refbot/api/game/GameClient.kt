@@ -101,6 +101,11 @@ class GameClient(
         return putRequestStatus(endpointUrl)
     }
 
+    internal suspend fun resetDelayOfGameTimer(gameId: Int): Boolean {
+        val endpointUrl = "$baseUrl/game/reset-delay-of-game-timer?gameId=$gameId"
+        return putRequestStatus(endpointUrl)
+    }
+
     internal suspend fun getGameByRequestMessageId(messageId: String): Map<Game?, String?> {
         val endpointUrl = "$baseUrl/game/request-message?requestMessageId=$messageId"
         return getRequest(endpointUrl)

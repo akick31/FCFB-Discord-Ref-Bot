@@ -16,6 +16,7 @@ import com.fcfb.discord.refbot.model.enums.play.PlayCall
 import com.fcfb.discord.refbot.model.enums.play.PlayType
 import com.fcfb.discord.refbot.model.enums.play.Scenario
 import com.fcfb.discord.refbot.utils.game.GameUtils
+import com.fcfb.discord.refbot.utils.system.OffensiveNumberRequestFailedException
 import dev.kord.core.Kord
 import dev.kord.core.entity.Message
 import dev.kord.core.entity.User
@@ -227,13 +228,17 @@ class GameHandler(
             timeoutCalled,
             message,
         )
-        discordMessageHandler.sendRequestForOffensiveNumber(
-            client,
-            game,
-            play,
-            timeoutCalled,
-            message,
-        )
+        try {
+            discordMessageHandler.sendRequestForOffensiveNumber(
+                client,
+                game,
+                play,
+                timeoutCalled,
+                message,
+            )
+        } catch (e: OffensiveNumberRequestFailedException) {
+            // Already logged, both teams notified, and delay of game timer reset in sendRequestForOffensiveNumber.
+        }
     }
 
     private suspend fun handleCoinToss(
