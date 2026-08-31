@@ -28,6 +28,10 @@ enum class Error(val message: String) {
     GAME_THREAD_MESSAGE_EXCEPTION("Could not send message to game thread via message object or text channel object"),
     PRIVATE_MESSAGE_EXCEPTION("Could not send private message to the user"),
     FAILED_TO_SEND_NUMBER_REQUEST_MESSAGE("Failed to send the number request message, please use `/ping` to resend the game message"),
+    OFFENSIVE_NUMBER_POST_FAILED(
+        "Failed to post the offensive number after retrying for several minutes. No delay of game has been " +
+            "assessed for this play. Please use `/ping` in the game thread to try again.",
+    ),
     CHANNEL_NOT_FOUND("Could not find the channel associated with this message"),
     GAME_OVER("This game is already over"),
     INVALID_GAME_STATUS("Invalid game status"),

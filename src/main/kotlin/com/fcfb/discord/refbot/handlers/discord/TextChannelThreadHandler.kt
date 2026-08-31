@@ -40,7 +40,11 @@ class TextChannelThreadHandler(
         game: Game,
     ) {
         val gameChannel = getGameForumChannel(thread.kord)
+        val updatedThreadName = getThreadName(game)
         thread.edit {
+            if (thread.name != updatedThreadName) {
+                name = updatedThreadName
+            }
             appliedTags = getTagsForThread(game, gameChannel)
         }
     }

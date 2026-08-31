@@ -47,6 +47,12 @@ class DiscordMessageHandler(
     private val contentBuilder: GameMessageContentBuilder,
     private val scorePoster: GameScorePoster,
 ) {
+    companion object {
+        private const val OFFENSIVE_NUMBER_REQUEST_RETRIES = 12
+        private const val OFFENSIVE_NUMBER_REQUEST_INITIAL_DELAY_MS = 10_000L
+        private const val OFFENSIVE_NUMBER_REQUEST_MAX_DELAY_MS = 30_000L
+    }
+
     suspend fun sendNotificationToCommissioners(
         client: Kord,
         messageContent: String,
@@ -175,7 +181,11 @@ class DiscordMessageHandler(
 
         return try {
             val numberRequestMessage =
-                systemUtils.retry {
+                systemUtils.retry(
+                    retries = OFFENSIVE_NUMBER_REQUEST_RETRIES,
+                    initialDelay = OFFENSIVE_NUMBER_REQUEST_INITIAL_DELAY_MS,
+                    maxDelay = OFFENSIVE_NUMBER_REQUEST_MAX_DELAY_MS,
+                ) {
                     sendGameMessage(
                         client,
                         game,
@@ -198,10 +208,40 @@ class DiscordMessageHandler(
             )
             numberRequestMessage
         } catch (e: Exception) {
-            Logger.error("Failed to send number request message: ${e.message}")
+            Logger.error("Failed to send number request message after retrying: ${e.message}")
+            gameClient.resetDelayOfGameTimer(game.gameId)
+            notifyBothTeamsOfFailedOffensiveNumberPost(client, game, gameThread)
             previousMessage?.let { sendErrorMessage(it, Error.FAILED_TO_SEND_NUMBER_REQUEST_MESSAGE) }
             throw OffensiveNumberRequestFailedException(game.gameId)
         }
+    }
+
+    private suspend fun notifyBothTeamsOfFailedOffensiveNumberPost(
+        client: Kord,
+        game: Game,
+        gameThread: TextChannelThread,
+    ) {
+        val homeCoaches = game.homeCoachDiscordIds.map { client.getUser(Snowflake(it)) }
+        val awayCoaches = game.awayCoachDiscordIds.map { client.getUser(Snowflake(it)) }
+        val mentions = gameDescriptionUtils.joinMentions(homeCoaches + awayCoaches)
+
+        try {
+            messageSender.sendMessageFromTextChannelObject(
+                gameThread,
+                "$mentions ${Error.OFFENSIVE_NUMBER_POST_FAILED.message}",
+                null,
+            )
+        } catch (e: Exception) {
+            Logger.error("Failed to post offensive number failure notice in game thread: ${e.message}")
+        }
+
+        messageSender.sendPrivateMessage(homeCoaches + awayCoaches, null, Error.OFFENSIVE_NUMBER_POST_FAILED.message)
+
+        sendNotificationToCommissioners(
+            client,
+            "Game ${game.gameId}: failed to post the offensive number after retrying for several minutes. " +
+                "No delay of game has been assessed and both teams have been notified.",
+        )
     }
 
     suspend fun sendNumberConfirmationMessage(
