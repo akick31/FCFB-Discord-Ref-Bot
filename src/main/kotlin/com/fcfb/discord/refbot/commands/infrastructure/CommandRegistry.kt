@@ -97,22 +97,31 @@ class CommandRegistry(
         MDC.put("command", commandName ?: "unknown")
         try {
             withContext(MDCContext()) {
-                val userRole =
+                val (user, lookupError) =
                     try {
-                        val response = fcfbUserClient.getUserByDiscordId(interaction.user.id.toString())
-                        if (response.keys.firstOrNull() == null) {
-                            UserRole.USER
-                        } else {
-                            response.keys.firstOrNull()?.role ?: UserRole.USER
-                        }
+                        val entry = fcfbUserClient.getUserByDiscordId(interaction.user.id.toString()).entries.first()
+                        entry.key to entry.value
                     } catch (e: Exception) {
-                        UserRole.USER
+                        null to (e.message ?: "Unknown error resolving user role")
                     }
 
+                if (lookupError != null) {
+                    Logger.error(
+                        "Failed to resolve role for ${interaction.user.username} (${interaction.user.id}) " +
+                            "while executing `$commandName`: $lookupError",
+                    )
+                }
+
+                val userRole = user?.role ?: UserRole.USER
+
                 if (!hasPermission(userRole, commandName ?: "")) {
-                    interaction.deferPublicResponse().respond {
-                        content = "You do not have permission to execute the command `$commandName`."
-                    }
+                    val message =
+                        if (lookupError != null) {
+                            "Could not verify your permissions right now due to a backend error. Please try again shortly."
+                        } else {
+                            "You do not have permission to execute the command `$commandName`."
+                        }
+                    interaction.deferPublicResponse().respond { content = message }
                     Logger.error("${interaction.user.username} tried to execute `$commandName` without permission")
                     return@withContext
                 }
