@@ -36,4 +36,5 @@ data class FCFBUser(
     @JsonProperty("defensive_playbook") var defensivePlaybook: DefensivePlaybook?,
     @JsonProperty("delay_of_game_warning_opt_out") var delayOfGameWarningOptOut: Boolean = false,
     @JsonProperty("average_response_time") var averageResponseTime: Double = 0.0,
+    @JsonProperty("scouting_report_hidden_columns") var scoutingReportHiddenColumns: List<String>? = null,
 )

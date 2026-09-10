@@ -90,6 +90,7 @@ class JacksonConfig {
             registerModule(KotlinModule.Builder().build())
             registerModule(customFCFBUserModule())
             propertyNamingStrategy = PropertyNamingStrategies.SNAKE_CASE
+            configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
         }
     }
 
