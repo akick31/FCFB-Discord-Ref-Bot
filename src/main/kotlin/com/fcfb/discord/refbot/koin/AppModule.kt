@@ -4,6 +4,7 @@ import com.fcfb.discord.refbot.FCFBDiscordRefBot
 import com.fcfb.discord.refbot.api.game.ChartClient
 import com.fcfb.discord.refbot.api.game.GameClient
 import com.fcfb.discord.refbot.api.game.GameWriteupClient
+import com.fcfb.discord.refbot.api.game.PlayAnimationClient
 import com.fcfb.discord.refbot.api.game.PlayClient
 import com.fcfb.discord.refbot.api.game.ScorebugClient
 import com.fcfb.discord.refbot.api.system.LogClient
@@ -45,6 +46,7 @@ import com.fcfb.discord.refbot.handlers.discord.DiscordMessageHandler
 import com.fcfb.discord.refbot.handlers.discord.DiscordMessageSender
 import com.fcfb.discord.refbot.handlers.discord.GameMessageContentBuilder
 import com.fcfb.discord.refbot.handlers.discord.GameScorePoster
+import com.fcfb.discord.refbot.handlers.discord.PlayAnimationHandler
 import com.fcfb.discord.refbot.handlers.discord.RedZoneChannelHandler
 import com.fcfb.discord.refbot.handlers.discord.TextChannelThreadHandler
 import com.fcfb.discord.refbot.handlers.discord.UpsetAlertHandler
@@ -68,6 +70,7 @@ val appModule =
         single { EmbedBuilder() }
         single { ApiUtils() }
         single { ScorebugClient() }
+        single { PlayAnimationClient() }
         single { FileHandler() }
         single { HelpCommand() }
         single { HealthChecks() }
@@ -91,9 +94,10 @@ val appModule =
         single { GameUtils(get(), get(), get()) }
         single { StartGameRequest(get(), get()) }
         single { KtorServerConfig(get(), get(), get(), get()) }
-        single { GameHandler(get(), get(), get(), get(), get(), get(), get(), get(), get()) }
+        single { GameHandler(get(), get(), get(), get(), get(), get(), get(), get(), get(), get()) }
         single { DelayOfGameRequest(get(), get()) }
         single { RedZoneChannelHandler(get(), get()) }
+        single { PlayAnimationHandler(get(), get()) }
         single { CloseGameAlertHandler(get(), get(), get()) }
         single { UpsetAlertHandler(get(), get(), get(), get()) }
         single { ChewGameCommand(get(), get(), get()) }

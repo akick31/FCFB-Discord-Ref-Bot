@@ -4,6 +4,7 @@ import com.fcfb.discord.refbot.api.game.GameClient
 import com.fcfb.discord.refbot.api.game.PlayClient
 import com.fcfb.discord.refbot.handlers.discord.CloseGameAlertHandler
 import com.fcfb.discord.refbot.handlers.discord.DiscordMessageHandler
+import com.fcfb.discord.refbot.handlers.discord.PlayAnimationHandler
 import com.fcfb.discord.refbot.handlers.discord.RedZoneChannelHandler
 import com.fcfb.discord.refbot.handlers.discord.TextChannelThreadHandler
 import com.fcfb.discord.refbot.handlers.discord.UpsetAlertHandler
@@ -33,6 +34,7 @@ class GameHandler(
     private val closeGameAlertHandler: CloseGameAlertHandler,
     private val upsetAlertHandler: UpsetAlertHandler,
     private val redZoneChannelHandler: RedZoneChannelHandler,
+    private val playAnimationHandler: PlayAnimationHandler,
     private val errorHandler: ErrorHandler,
 ) {
     suspend fun handleGameLogic(
@@ -158,6 +160,7 @@ class GameHandler(
         }
         val updatedGame = gameApiResponse.keys.firstOrNull() ?: return errorHandler.noGameFoundError(message)
 
+        playAnimationHandler.postPlayAnimation(client, playOutcome, message)
         val playOutcomeMessage = discordMessageHandler.sendPlayOutcomeMessage(client, updatedGame, playOutcome, message)
 
         val gameThread = textChannelThreadHandler.getTextChannelThread(message)
