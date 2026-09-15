@@ -56,6 +56,7 @@ import com.fcfb.discord.refbot.utils.game.GameParsingUtils
 import com.fcfb.discord.refbot.utils.game.GameStateUtils
 import com.fcfb.discord.refbot.utils.game.GameUtils
 import com.fcfb.discord.refbot.utils.health.HealthChecks
+import com.fcfb.discord.refbot.utils.system.DiscordReadinessState
 import com.fcfb.discord.refbot.utils.system.Properties
 import com.fcfb.discord.refbot.utils.system.SystemUtils
 import dev.kord.common.annotation.KordPreview
@@ -73,6 +74,7 @@ val appModule =
         single { HealthChecks() }
         single { Properties() }
         single { SystemUtils() }
+        single { DiscordReadinessState() }
         single { get<Properties>().getDiscordProperties() }
 
         single { ChartClient() }
@@ -90,9 +92,9 @@ val appModule =
         single { GameDescriptionUtils(get(), get()) }
         single { GameUtils(get(), get(), get()) }
         single { StartGameRequest(get(), get()) }
-        single { KtorServerConfig(get(), get(), get(), get()) }
+        single { KtorServerConfig(get(), get(), get(), get(), get()) }
         single { GameHandler(get(), get(), get(), get(), get(), get(), get(), get(), get()) }
-        single { DelayOfGameRequest(get(), get()) }
+        single { DelayOfGameRequest(get(), get(), get()) }
         single { RedZoneChannelHandler(get(), get()) }
         single { CloseGameAlertHandler(get(), get(), get()) }
         single { UpsetAlertHandler(get(), get(), get(), get()) }
@@ -127,7 +129,7 @@ val appModule =
                 get(), get(),
             )
         }
-        single { FCFBDiscordRefBot(get(), get(), get(), get()) }
+        single { FCFBDiscordRefBot(get(), get(), get(), get(), get()) }
         single { DiscordMessageSender(get(), get()) }
         single { GameMessageContentBuilder(get(), get(), get(), get(), get()) }
         single { GameScorePoster(get(), get(), get(), get(), get()) }
