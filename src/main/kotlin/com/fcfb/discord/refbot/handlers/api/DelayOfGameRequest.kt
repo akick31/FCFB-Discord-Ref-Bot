@@ -22,6 +22,10 @@ class DelayOfGameRequest(
         game: Game,
         isDelayOfGameOut: Boolean,
     ) {
+        if (game.gameStatus == GameStatus.FINAL) {
+            Logger.warn("Ignoring delay of game notification for game ${game.gameId} because the game has already ended.")
+            return
+        }
         val notification =
             if (game.gameStatus != GameStatus.PREGAME) {
                 Scenario.DELAY_OF_GAME_NOTIFICATION
@@ -67,13 +71,17 @@ class DelayOfGameRequest(
         game: Game,
         instance: Int,
     ) {
+        val postDescription = "delay of game warning (instance $instance)"
+        if (game.gameStatus == GameStatus.FINAL) {
+            Logger.warn("Ignoring $postDescription for game ${game.gameId} because the game has already ended.")
+            return
+        }
         val scenario =
             if (instance == 1) {
                 Scenario.FIRST_DELAY_OF_GAME_WARNING
             } else {
                 Scenario.SECOND_DELAY_OF_GAME_WARNING
             }
-        val postDescription = "delay of game warning (instance $instance)"
         try {
             val gameThread = getGameThread(client, game)
             systemUtils.retry {
