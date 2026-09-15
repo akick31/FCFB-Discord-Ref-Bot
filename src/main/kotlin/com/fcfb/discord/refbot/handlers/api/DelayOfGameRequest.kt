@@ -23,7 +23,7 @@ class DelayOfGameRequest(
         isDelayOfGameOut: Boolean,
     ) {
         if (game.gameStatus == GameStatus.FINAL) {
-            ignoreStaleRequest(client, game, "delay of game notification")
+            Logger.warn("Ignoring delay of game notification for game ${game.gameId} because the game has already ended.")
             return
         }
         val notification =
@@ -73,7 +73,7 @@ class DelayOfGameRequest(
     ) {
         val postDescription = "delay of game warning (instance $instance)"
         if (game.gameStatus == GameStatus.FINAL) {
-            ignoreStaleRequest(client, game, postDescription)
+            Logger.warn("Ignoring $postDescription for game ${game.gameId} because the game has already ended.")
             return
         }
         val scenario =
@@ -118,22 +118,6 @@ class DelayOfGameRequest(
 
         if (dmResult.none { it != null }) {
             throw originalException
-        }
-    }
-
-    private suspend fun ignoreStaleRequest(
-        client: Kord,
-        game: Game,
-        postDescription: String,
-    ) {
-        Logger.warn("Ignoring $postDescription for game ${game.gameId} because the game has already ended.")
-        try {
-            discordMessageHandler.sendNotificationToCommissioners(
-                client,
-                "Game ${game.gameId}: received a $postDescription request after the game had already ended. Ignored it.",
-            )
-        } catch (e: Exception) {
-            Logger.error("Failed to notify commissioners about stale $postDescription for game ${game.gameId}: ${e.message}")
         }
     }
 
