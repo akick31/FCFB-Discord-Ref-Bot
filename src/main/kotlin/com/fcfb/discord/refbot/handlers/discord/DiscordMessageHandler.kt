@@ -110,6 +110,18 @@ class DiscordMessageHandler(
         }
     }
 
+    suspend fun sendGameMessageToBothCoachesAsDirectMessage(
+        client: Kord,
+        game: Game,
+        scenario: Scenario,
+    ): List<Message?> {
+        val gameMessage = contentBuilder.createGameMessage(client, game, scenario, null, false)
+        val (messageContent, embedData) = gameMessage.first
+        val homeCoaches = game.homeCoachDiscordIds.map { client.getUser(Snowflake(it)) }
+        val awayCoaches = game.awayCoachDiscordIds.map { client.getUser(Snowflake(it)) }
+        return messageSender.sendPrivateMessage(homeCoaches + awayCoaches, embedData, messageContent)
+    }
+
     suspend fun sendRequestForDefensiveNumber(
         client: Kord,
         game: Game,
