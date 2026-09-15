@@ -36,6 +36,7 @@ class GameMessageContentBuilder(
         scenario: Scenario,
         play: Play?,
         timeoutCalled: Boolean = false,
+        includePings: Boolean = true,
     ): Pair<Pair<String, EmbedData?>, List<User?>> {
         var (messageContent, playWriteup) =
             when {
@@ -233,6 +234,7 @@ class GameMessageContentBuilder(
                 offensiveCoaches,
                 defensiveCoaches,
                 scorebug,
+                includePings,
             )
         } else if (
             scenario == Scenario.NORMAL_NUMBER_REQUEST ||
@@ -248,6 +250,7 @@ class GameMessageContentBuilder(
                 awayCoaches,
                 offensiveCoaches,
                 defensiveCoaches,
+                includePings,
             )
         } else {
             return createGameMessageWithFallbackScorebug(
@@ -258,6 +261,7 @@ class GameMessageContentBuilder(
                 awayCoaches,
                 offensiveCoaches,
                 defensiveCoaches,
+                includePings,
             )
         }
     }
@@ -270,6 +274,7 @@ class GameMessageContentBuilder(
         awayCoaches: List<User?>,
         offensiveCoaches: List<User?>,
         defensiveCoaches: List<User?>,
+        includePings: Boolean,
     ): Pair<Pair<String, EmbedData?>, List<User?>> {
         val title = gameDescriptionUtils.getGameEmbedTitle(game)
         val embedData =
@@ -279,7 +284,7 @@ class GameMessageContentBuilder(
                 footer = Optional.Value(EmbedFooterData(text = gameDescriptionUtils.getFormattedFooterText(game))),
             )
 
-        val messageToSend = appendUserPings(game, scenario, homeCoaches, awayCoaches, offensiveCoaches)
+        val messageToSend = if (includePings) appendUserPings(game, scenario, homeCoaches, awayCoaches, offensiveCoaches) else ""
 
         return (messageToSend to embedData) to defensiveCoaches
     }
@@ -292,6 +297,7 @@ class GameMessageContentBuilder(
         awayCoaches: List<User?>,
         offensiveCoaches: List<User?>,
         defensiveCoaches: List<User?>,
+        includePings: Boolean,
     ): Pair<Pair<String, EmbedData?>, List<User?>> {
         val textScorebug =
             buildString {
@@ -308,7 +314,7 @@ class GameMessageContentBuilder(
                 footer = Optional.Value(EmbedFooterData(text = gameDescriptionUtils.getFormattedFooterText(game))),
             )
 
-        val messageToSend = appendUserPings(game, scenario, homeCoaches, awayCoaches, offensiveCoaches)
+        val messageToSend = if (includePings) appendUserPings(game, scenario, homeCoaches, awayCoaches, offensiveCoaches) else ""
 
         return (messageToSend to embedData) to defensiveCoaches
     }
@@ -322,6 +328,7 @@ class GameMessageContentBuilder(
         offensiveCoaches: List<User?>,
         defensiveCoaches: List<User?>,
         scorebug: ByteArray,
+        includePings: Boolean,
     ): Pair<Pair<String, EmbedData?>, List<User?>> {
         val embedData =
             gameDescriptionUtils.getScorebugEmbed(scorebug, game, messageContent)
@@ -333,9 +340,10 @@ class GameMessageContentBuilder(
                     awayCoaches,
                     offensiveCoaches,
                     defensiveCoaches,
+                    includePings,
                 )
 
-        val messageToSend = appendUserPings(game, scenario, homeCoaches, awayCoaches, offensiveCoaches)
+        val messageToSend = if (includePings) appendUserPings(game, scenario, homeCoaches, awayCoaches, offensiveCoaches) else ""
 
         return (messageToSend to embedData) to defensiveCoaches
     }

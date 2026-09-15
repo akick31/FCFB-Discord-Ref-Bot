@@ -21,6 +21,7 @@ class PlayAnimationHandler(
         client: Kord,
         playOutcome: Play,
         message: Message,
+        pingContent: String = "",
     ): Message? {
         val bytes = playAnimationClient.getPlayAnimationByPlayId(playOutcome.playId) ?: return null
         val file = File("images/${playOutcome.playId}_animation.gif")
@@ -30,7 +31,11 @@ class PlayAnimationHandler(
                 imagesDir.mkdirs()
             }
             Files.write(file.toPath(), bytes, StandardOpenOption.CREATE)
-            val sent = message.getChannel().createMessage { addFile(Path(file.path)) }
+            val sent =
+                message.getChannel().createMessage {
+                    content = pingContent
+                    addFile(Path(file.path))
+                }
             fileHandler.deleteFile(file.path)
             sent
         } catch (e: Exception) {

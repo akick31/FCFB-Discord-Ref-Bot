@@ -98,12 +98,13 @@ class DiscordMessageHandler(
         message: Message?,
         gameThread: TextChannelThread?,
         timeoutCalled: Boolean = false,
+        includePings: Boolean = true,
     ): Message {
         if (message != null && gameThread == null) {
-            val gameMessage = contentBuilder.createGameMessage(client, game, scenario, play, timeoutCalled)
+            val gameMessage = contentBuilder.createGameMessage(client, game, scenario, play, timeoutCalled, includePings)
             return messageSender.sendMessageFromMessageObject(message, gameMessage.first.first, gameMessage.first.second)
         } else if (message == null && gameThread != null) {
-            val gameMessage = contentBuilder.createGameMessage(client, game, scenario, play, timeoutCalled)
+            val gameMessage = contentBuilder.createGameMessage(client, game, scenario, play, timeoutCalled, includePings)
             return messageSender.sendMessageFromTextChannelObject(gameThread, gameMessage.first.first, gameMessage.first.second)
         } else {
             throw GameMessageFailedException(game.gameId)
@@ -216,6 +217,15 @@ class DiscordMessageHandler(
         }
     }
 
+    suspend fun buildCoachPingMentions(
+        client: Kord,
+        game: Game,
+    ): String {
+        val homeCoaches = game.homeCoachDiscordIds.map { client.getUser(Snowflake(it)) }
+        val awayCoaches = game.awayCoachDiscordIds.map { client.getUser(Snowflake(it)) }
+        return gameDescriptionUtils.joinMentions(homeCoaches + awayCoaches)
+    }
+
     private suspend fun notifyBothTeamsOfFailedOffensiveNumberPost(
         client: Kord,
         game: Game,
@@ -286,6 +296,7 @@ class DiscordMessageHandler(
             message,
             null,
             false,
+            includePings = false,
         )
     }
 
