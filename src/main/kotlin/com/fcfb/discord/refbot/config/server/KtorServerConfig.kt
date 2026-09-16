@@ -1,6 +1,7 @@
 package com.fcfb.discord.refbot.config.server
 
 import com.fcfb.discord.refbot.handlers.api.DelayOfGameRequest
+import com.fcfb.discord.refbot.handlers.api.GameModeRequest
 import com.fcfb.discord.refbot.handlers.api.StartGameRequest
 import com.fcfb.discord.refbot.handlers.discord.DiscordMessageHandler
 import com.fcfb.discord.refbot.model.domain.Game
@@ -34,6 +35,7 @@ class KtorServerConfig(
     private val discordMessageHandler: DiscordMessageHandler,
     private val delayOfGameRequest: DelayOfGameRequest,
     private val startGameRequest: StartGameRequest,
+    private val gameModeRequest: GameModeRequest,
     private val healthChecks: HealthChecks,
     private val discordReadinessState: DiscordReadinessState,
 ) {
@@ -149,6 +151,18 @@ class KtorServerConfig(
                         "Error processing delay of game warning.\n" +
                             "Error: ${e.message}\n",
                     )
+                }
+            }
+
+            post("$serverUrl/game_mode") {
+                try {
+                    val game = call.receive<Game>()
+                    gameModeRequest.notifyGameModeChange(client, game)
+                    call.respondText("Game mode change announced for game ${game.gameId}")
+                    Logger.info("Game mode change announced for game ${game.gameId}")
+                } catch (e: Exception) {
+                    call.respond(HttpStatusCode.BadRequest, "Error processing request: ${e.message}")
+                    Logger.error("Error announcing game mode change: ${e.message}")
                 }
             }
 

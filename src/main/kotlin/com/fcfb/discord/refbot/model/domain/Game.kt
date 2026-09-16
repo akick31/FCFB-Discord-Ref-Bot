@@ -76,6 +76,7 @@ data class Game(
     @JsonProperty("game_status") var gameStatus: GameStatus?,
     @JsonProperty("game_type") val gameType: GameType?,
     @JsonProperty("game_mode") val gameMode: GameMode?,
+    @JsonProperty("game_mode_set_by") val gameModeSetBy: String? = null,
     @JsonProperty("overtime_half") val overtimeHalf: Int?,
     @JsonProperty("close_game") val closeGame: Boolean,
     @JsonProperty("close_game_pinged") val closeGamePinged: Boolean,
