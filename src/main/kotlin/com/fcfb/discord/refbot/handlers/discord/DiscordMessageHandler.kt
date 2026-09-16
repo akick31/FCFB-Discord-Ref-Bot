@@ -281,6 +281,8 @@ class DiscordMessageHandler(
         game: Game,
         playOutcome: Play,
         message: Message?,
+        animationPath: String? = null,
+        pingContent: String = "",
     ): Message {
         val scenario =
             if (playOutcome.actualResult == ActualResult.TOUCHDOWN) {
@@ -288,16 +290,29 @@ class DiscordMessageHandler(
             } else {
                 playOutcome.result ?: throw MissingPlayResultException(game.gameId)
             }
-        return sendGameMessage(
-            client,
-            game,
-            scenario,
-            playOutcome,
-            message,
-            null,
-            false,
-            includePings = false,
-        )
+        if (message == null || (animationPath == null && pingContent.isBlank())) {
+            return sendGameMessage(client, game, scenario, playOutcome, message, null, false, includePings = false)
+        }
+
+        val (messageContent, embedData) =
+            contentBuilder.createGameMessage(
+                client,
+                game,
+                scenario,
+                playOutcome,
+                false,
+                includePings = false,
+            ).first
+        val content = listOf(pingContent, messageContent).filter { it.isNotBlank() }.joinToString("\n")
+        if (animationPath == null) {
+            return messageSender.sendMessageFromMessageObject(message, content, embedData)
+        }
+        return try {
+            messageSender.sendMessageWithAnimation(message, content, animationPath, embedData)
+        } catch (e: Exception) {
+            Logger.error("Posting play ${playOutcome.playId} without its animation after the combined message failed: ${e.message}", e)
+            messageSender.sendMessageFromMessageObject(message, content, embedData)
+        }
     }
 
     suspend fun sendCoinTossChoiceMessage(

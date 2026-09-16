@@ -138,6 +138,53 @@ class DiscordMessageSender(
         }
     }
 
+    /**
+     * Sends the play animation and the result embed as one message. Discord scrolls to the newest message, so posting them
+     * separately would jump readers past the animation to the writeup.
+     */
+    suspend fun sendMessageWithAnimation(
+        message: Message,
+        messageContent: String,
+        animationPath: String,
+        embedData: EmbedData?,
+    ): Message {
+        try {
+            val submittedMessage =
+                message.getChannel().createMessage {
+                    val animation = addFile(Path(animationPath))
+                    val scorebug = embedData?.image?.value?.url?.value?.let { addFile(Path(it)) }
+                    val animationEmbed = EmbedBuilder().apply { image = animation.url }
+                    val resultEmbed =
+                        embedData?.let { embed ->
+                            EmbedBuilder().apply {
+                                title = embed.title.value
+                                description = embed.description.value
+                                scorebug?.let { image = it.url }
+                                footer {
+                                    text = embed.footer.value?.text ?: ""
+                                }
+                            }
+                        }
+                    embeds = listOfNotNull(animationEmbed, resultEmbed).toMutableList()
+                    content = messageContent
+                }
+
+            fileHandler.deleteFile(embedData?.image?.value?.url?.value)
+            return submittedMessage
+        } catch (e: Exception) {
+            Logger.error(
+                "Failed to send message with animation.\n" +
+                    "Channel ID: ${message.channelId.value}\n" +
+                    "Message Content: $messageContent\n" +
+                    "Error: ${e.message}",
+                e,
+            )
+            throw e
+        } finally {
+            fileHandler.deleteFile(animationPath)
+        }
+    }
+
     suspend fun sendMessageFromChannelObject(
         channel: MessageChannel,
         messageContent: String,

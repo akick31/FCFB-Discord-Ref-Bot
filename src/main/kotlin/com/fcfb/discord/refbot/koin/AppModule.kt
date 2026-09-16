@@ -97,7 +97,7 @@ val appModule =
         single { GameHandler(get(), get(), get(), get(), get(), get(), get(), get(), get(), get()) }
         single { DelayOfGameRequest(get(), get()) }
         single { RedZoneChannelHandler(get(), get()) }
-        single { PlayAnimationHandler(get(), get()) }
+        single { PlayAnimationHandler(get()) }
         single { CloseGameAlertHandler(get(), get(), get()) }
         single { UpsetAlertHandler(get(), get(), get(), get()) }
         single { ChewGameCommand(get(), get(), get()) }
@@ -122,7 +122,7 @@ val appModule =
         single { RollbackCommand(get(), get(), get(), get(), get(), get()) }
         single { ScoreChartCommand(get(), get(), get(), get()) }
         single { WinProbabilityCommand(get(), get(), get(), get()) }
-        single { PreviousPlayCommand(get(), get(), get()) }
+        single { PreviousPlayCommand(get(), get(), get(), get()) }
         single { ApiKeyCommand(get()) }
         single {
             CommandRegistry(

@@ -3,6 +3,7 @@ package com.fcfb.discord.refbot.commands.game
 import com.fcfb.discord.refbot.api.game.GameClient
 import com.fcfb.discord.refbot.api.game.PlayClient
 import com.fcfb.discord.refbot.handlers.discord.DiscordMessageHandler
+import com.fcfb.discord.refbot.handlers.discord.PlayAnimationHandler
 import com.fcfb.discord.refbot.utils.system.Logger
 import dev.kord.core.Kord
 import dev.kord.core.behavior.interaction.response.respond
@@ -12,6 +13,7 @@ class PreviousPlayCommand(
     private val gameClient: GameClient,
     private val playClient: PlayClient,
     private val discordMessageHandler: DiscordMessageHandler,
+    private val playAnimationHandler: PlayAnimationHandler,
 ) {
     suspend fun register(client: Kord) {
         client.createGlobalChatInputCommand(
@@ -62,6 +64,7 @@ class PreviousPlayCommand(
                 game,
                 play,
                 responseMessage.message,
+                playAnimationHandler.downloadPlayAnimation(play),
             )
             Logger.info(
                 "${interaction.user.username} successfully posted previous play for game ${game.gameId} " +

@@ -161,8 +161,9 @@ class GameHandler(
         val updatedGame = gameApiResponse.keys.firstOrNull() ?: return errorHandler.noGameFoundError(message)
 
         val coachPing = discordMessageHandler.buildCoachPingMentions(client, updatedGame)
-        playAnimationHandler.postPlayAnimation(client, playOutcome, message, coachPing)
-        val playOutcomeMessage = discordMessageHandler.sendPlayOutcomeMessage(client, updatedGame, playOutcome, message)
+        val animationPath = playAnimationHandler.downloadPlayAnimation(playOutcome)
+        val playOutcomeMessage =
+            discordMessageHandler.sendPlayOutcomeMessage(client, updatedGame, playOutcome, message, animationPath, coachPing)
 
         val gameThread = textChannelThreadHandler.getTextChannelThread(message)
         textChannelThreadHandler.updateThread(gameThread, updatedGame)
