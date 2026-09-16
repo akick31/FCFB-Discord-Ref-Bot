@@ -6,7 +6,6 @@ import com.fcfb.discord.refbot.commands.coach.GetTeamCoachesCommand
 import com.fcfb.discord.refbot.commands.coach.HireCoachCommand
 import com.fcfb.discord.refbot.commands.coach.HireInterimCoachCommand
 import com.fcfb.discord.refbot.commands.coach.SubCoachCommand
-import com.fcfb.discord.refbot.commands.game.ChewGameCommand
 import com.fcfb.discord.refbot.commands.game.DeleteGameCommand
 import com.fcfb.discord.refbot.commands.game.EndAllGamesCommand
 import com.fcfb.discord.refbot.commands.game.EndGameCommand
@@ -37,7 +36,6 @@ import org.slf4j.MDC
 
 class CommandRegistry(
     private val fcfbUserClient: FCFBUserClient,
-    private val chewGameCommand: ChewGameCommand,
     private val deleteGameCommand: DeleteGameCommand,
     private val restartGameCommand: RestartGameCommand,
     private val endGameCommand: EndGameCommand,
@@ -64,7 +62,6 @@ class CommandRegistry(
     private val apiKeyCommand: ApiKeyCommand,
 ) {
     suspend fun registerCommands(client: Kord) {
-        chewGameCommand.register(client)
         deleteGameCommand.register(client)
         endAllGamesCommand.register(client)
         endGameCommand.register(client)
@@ -127,7 +124,6 @@ class CommandRegistry(
                 }
 
                 when (commandName) {
-                    "chew_game" -> chewGameCommand.execute(interaction)
                     "delete_game" -> deleteGameCommand.execute(interaction)
                     "restart_game" -> restartGameCommand.execute(interaction)
                     "end_game" -> endGameCommand.execute(interaction)
