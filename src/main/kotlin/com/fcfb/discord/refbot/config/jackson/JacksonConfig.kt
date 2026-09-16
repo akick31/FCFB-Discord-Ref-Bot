@@ -67,6 +67,7 @@ class JacksonConfig {
             registerModule(KotlinModule.Builder().build())
             registerModule(customGameModule())
             propertyNamingStrategy = PropertyNamingStrategies.SNAKE_CASE
+            configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
         }
     }
 
