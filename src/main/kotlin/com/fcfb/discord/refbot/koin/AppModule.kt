@@ -22,6 +22,7 @@ import com.fcfb.discord.refbot.commands.game.DeleteGameCommand
 import com.fcfb.discord.refbot.commands.game.EndAllGamesCommand
 import com.fcfb.discord.refbot.commands.game.EndGameCommand
 import com.fcfb.discord.refbot.commands.game.GameInfoCommand
+import com.fcfb.discord.refbot.commands.game.HighlightCommand
 import com.fcfb.discord.refbot.commands.game.MessageAllGamesCommand
 import com.fcfb.discord.refbot.commands.game.PreviousPlayCommand
 import com.fcfb.discord.refbot.commands.game.RestartGameCommand
@@ -96,7 +97,7 @@ val appModule =
         single { KtorServerConfig(get(), get(), get(), get()) }
         single { GameHandler(get(), get(), get(), get(), get(), get(), get(), get(), get(), get()) }
         single { DelayOfGameRequest(get(), get()) }
-        single { RedZoneChannelHandler(get(), get()) }
+        single { RedZoneChannelHandler(get(), get(), get()) }
         single { PlayAnimationHandler(get()) }
         single { CloseGameAlertHandler(get(), get(), get()) }
         single { UpsetAlertHandler(get(), get(), get(), get()) }
@@ -123,12 +124,13 @@ val appModule =
         single { ScoreChartCommand(get(), get(), get(), get()) }
         single { WinProbabilityCommand(get(), get(), get(), get()) }
         single { PreviousPlayCommand(get(), get(), get(), get()) }
+        single { HighlightCommand(get(), get(), get()) }
         single { ApiKeyCommand(get()) }
         single {
             CommandRegistry(
                 get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(),
                 get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(),
-                get(), get(),
+                get(), get(), get(),
             )
         }
         single { FCFBDiscordRefBot(get(), get(), get(), get()) }

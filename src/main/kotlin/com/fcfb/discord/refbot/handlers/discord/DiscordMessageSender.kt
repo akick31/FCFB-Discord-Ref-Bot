@@ -189,37 +189,26 @@ class DiscordMessageSender(
         channel: MessageChannel,
         messageContent: String,
         embedData: EmbedData?,
+        animationPath: String? = null,
     ): Message {
         try {
             val submittedMessage =
                 channel.createMessage {
-                    embedData?.let { embed ->
-                        if (embed.image.value?.url?.value == null) {
-                            embeds =
-                                mutableListOf(
-                                    embedBuilder.apply {
-                                        title = embed.title.value
-                                        description = embed.description.value
-                                        footer {
-                                            text = embed.footer.value?.text ?: ""
-                                        }
-                                    },
-                                )
-                        } else {
-                            val file = addFile(Path(embed.image.value?.url?.value.toString()))
-                            embeds =
-                                mutableListOf(
-                                    embedBuilder.apply {
-                                        title = embed.title.value
-                                        description = embed.description.value
-                                        image = file.url
-                                        footer {
-                                            text = embed.footer.value?.text ?: ""
-                                        }
-                                    },
-                                )
+                    val animation = animationPath?.let { addFile(Path(it)) }
+                    val animationEmbed = animation?.let { EmbedBuilder().apply { image = it.url } }
+                    val resultEmbed =
+                        embedData?.let { embed ->
+                            val scorebug = embed.image.value?.url?.value?.let { addFile(Path(it)) }
+                            embedBuilder.apply {
+                                title = embed.title.value
+                                description = embed.description.value
+                                scorebug?.let { image = it.url }
+                                footer {
+                                    text = embed.footer.value?.text ?: ""
+                                }
+                            }
                         }
-                    }
+                    embeds = listOfNotNull(animationEmbed, resultEmbed).toMutableList()
                     content = messageContent
                 }
 
@@ -236,6 +225,8 @@ class DiscordMessageSender(
                 e,
             )
             throw e
+        } finally {
+            fileHandler.deleteFile(animationPath)
         }
     }
 

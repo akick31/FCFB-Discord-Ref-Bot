@@ -15,6 +15,7 @@ import dev.kord.core.entity.channel.MessageChannel
 
 class RedZoneChannelHandler(
     private val discordMessageHandler: DiscordMessageHandler,
+    private val playAnimationHandler: PlayAnimationHandler,
     private val properties: Properties,
 ) {
     suspend fun handleRedZone(
@@ -199,6 +200,8 @@ class RedZoneChannelHandler(
                 }
             }
         val redZoneChannel = client.getChannel(Snowflake(properties.getDiscordProperties().redzoneChannelId)) as MessageChannel
-        return discordMessageHandler.sendRedZoneMessage(game, redZoneChannel, messageContent, playMessage)
+        // A fresh download: the play outcome message deletes its own copy once it has been sent.
+        val animationPath = playAnimationHandler.downloadPlayAnimation(play)
+        return discordMessageHandler.sendRedZoneMessage(game, redZoneChannel, messageContent, playMessage, animationPath)
     }
 }

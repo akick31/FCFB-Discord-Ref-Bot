@@ -446,6 +446,7 @@ class DiscordMessageHandler(
         redZoneChannel: MessageChannel,
         messageContent: String,
         message: Message?,
+        animationPath: String? = null,
     ): Message {
         val scorebug =
             scorebugClient.getScorebugByGameId(game.gameId)
@@ -453,6 +454,7 @@ class DiscordMessageHandler(
                     redZoneChannel,
                     messageContent + message?.getJumpUrl(),
                     null,
+                    animationPath,
                 )
         val embedData =
             gameDescriptionUtils.getScorebugEmbed(scorebug, game, message?.getJumpUrl())
@@ -460,9 +462,10 @@ class DiscordMessageHandler(
                     redZoneChannel,
                     messageContent + message?.getJumpUrl(),
                     null,
+                    animationPath,
                 )
 
-        return messageSender.sendMessageFromChannelObject(redZoneChannel, messageContent, embedData)
+        return messageSender.sendMessageFromChannelObject(redZoneChannel, messageContent, embedData, animationPath)
     }
 
     suspend fun sendMessageFromChannelObject(

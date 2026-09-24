@@ -14,6 +14,7 @@ object Permissions {
             "score_chart",
             "win_probability",
             "previous_play",
+            "highlight",
             "generate_dog_report",
             "api_key",
         )

@@ -11,6 +11,7 @@ import com.fcfb.discord.refbot.commands.game.DeleteGameCommand
 import com.fcfb.discord.refbot.commands.game.EndAllGamesCommand
 import com.fcfb.discord.refbot.commands.game.EndGameCommand
 import com.fcfb.discord.refbot.commands.game.GameInfoCommand
+import com.fcfb.discord.refbot.commands.game.HighlightCommand
 import com.fcfb.discord.refbot.commands.game.MessageAllGamesCommand
 import com.fcfb.discord.refbot.commands.game.PreviousPlayCommand
 import com.fcfb.discord.refbot.commands.game.RestartGameCommand
@@ -60,6 +61,7 @@ class CommandRegistry(
     private val scoreChartCommand: ScoreChartCommand,
     private val winProbabilityCommand: WinProbabilityCommand,
     private val previousPlayCommand: PreviousPlayCommand,
+    private val highlightCommand: HighlightCommand,
     private val dogReportCommand: DogReportCommand,
     private val apiKeyCommand: ApiKeyCommand,
 ) {
@@ -78,6 +80,7 @@ class CommandRegistry(
         messageAllGamesCommand.register(client)
         pingCommand.register(client)
         previousPlayCommand.register(client)
+        highlightCommand.register(client)
         restartGameCommand.register(client)
         rollbackCommand.register(client)
         scoreChartCommand.register(client)
@@ -141,6 +144,7 @@ class CommandRegistry(
                     "message_all_games" -> messageAllGamesCommand.execute(interaction)
                     "ping" -> pingCommand.execute(interaction)
                     "previous_play" -> previousPlayCommand.execute(interaction)
+                    "highlight" -> highlightCommand.execute(interaction)
                     "start_game" -> startGameCommand.execute(interaction)
                     "start_scrimmage" -> startScrimmageCommand.execute(interaction)
                     "start_week" -> startWeekCommand.execute(interaction)
