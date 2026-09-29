@@ -139,10 +139,10 @@ class GameHandler(
                 runoffType,
                 timeoutCalled,
             )
-        if (playApiResponse.keys.firstOrNull() == null) {
-            return errorHandler.customErrorMessage(message, playApiResponse.values.firstOrNull() ?: "Could not determine error")
-        }
-        var playOutcome = playApiResponse.keys.firstOrNull() ?: return errorHandler.invalidOffensiveNumberSubmission(message)
+        var playOutcome =
+            playApiResponse.keys.firstOrNull()
+                ?: recoverProcessedPlay(game)
+                ?: return errorHandler.customErrorMessage(message, playApiResponse.values.firstOrNull() ?: "Could not determine error")
 
         if (playOutcome.gameId != game.gameId) {
             val correctPlayResponse = playClient.getPreviousPlay(game.gameId)
@@ -192,6 +192,14 @@ class GameHandler(
                 )
             }
         }
+    }
+
+    private suspend fun recoverProcessedPlay(game: Game): Play? {
+        val currentGame = gameClient.getGameByGameId(game.gameId.toString()).keys.firstOrNull() ?: return null
+        if (currentGame.currentPlayId == game.currentPlayId) {
+            return null
+        }
+        return playClient.getPreviousPlay(game.gameId).keys.firstOrNull()
     }
 
     private suspend fun handleDefensiveNumberSubmission(

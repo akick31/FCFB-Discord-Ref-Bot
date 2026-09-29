@@ -17,7 +17,6 @@ import com.fcfb.discord.refbot.commands.coach.GetTeamCoachesCommand
 import com.fcfb.discord.refbot.commands.coach.HireCoachCommand
 import com.fcfb.discord.refbot.commands.coach.HireInterimCoachCommand
 import com.fcfb.discord.refbot.commands.coach.SubCoachCommand
-import com.fcfb.discord.refbot.commands.game.ChewGameCommand
 import com.fcfb.discord.refbot.commands.game.DeleteGameCommand
 import com.fcfb.discord.refbot.commands.game.EndAllGamesCommand
 import com.fcfb.discord.refbot.commands.game.EndGameCommand
@@ -41,6 +40,7 @@ import com.fcfb.discord.refbot.commands.user.GetRoleCommand
 import com.fcfb.discord.refbot.commands.user.PingCommand
 import com.fcfb.discord.refbot.config.server.KtorServerConfig
 import com.fcfb.discord.refbot.handlers.api.DelayOfGameRequest
+import com.fcfb.discord.refbot.handlers.api.GameModeRequest
 import com.fcfb.discord.refbot.handlers.api.StartGameRequest
 import com.fcfb.discord.refbot.handlers.discord.CloseGameAlertHandler
 import com.fcfb.discord.refbot.handlers.discord.DiscordMessageHandler
@@ -59,16 +59,15 @@ import com.fcfb.discord.refbot.utils.game.GameParsingUtils
 import com.fcfb.discord.refbot.utils.game.GameStateUtils
 import com.fcfb.discord.refbot.utils.game.GameUtils
 import com.fcfb.discord.refbot.utils.health.HealthChecks
+import com.fcfb.discord.refbot.utils.system.DiscordReadinessState
 import com.fcfb.discord.refbot.utils.system.Properties
 import com.fcfb.discord.refbot.utils.system.SystemUtils
 import dev.kord.common.annotation.KordPreview
-import dev.kord.rest.builder.message.EmbedBuilder
 import org.koin.dsl.module
 
 @OptIn(KordPreview::class)
 val appModule =
     module {
-        single { EmbedBuilder() }
         single { ApiUtils() }
         single { ScorebugClient() }
         single { PlayAnimationClient() }
@@ -77,6 +76,7 @@ val appModule =
         single { HealthChecks() }
         single { Properties() }
         single { SystemUtils() }
+        single { DiscordReadinessState() }
         single { get<Properties>().getDiscordProperties() }
 
         single { ChartClient() }
@@ -94,14 +94,14 @@ val appModule =
         single { GameDescriptionUtils(get(), get()) }
         single { GameUtils(get(), get(), get()) }
         single { StartGameRequest(get(), get()) }
-        single { KtorServerConfig(get(), get(), get(), get()) }
+        single { KtorServerConfig(get(), get(), get(), get(), get(), get()) }
         single { GameHandler(get(), get(), get(), get(), get(), get(), get(), get(), get(), get()) }
-        single { DelayOfGameRequest(get(), get()) }
+        single { DelayOfGameRequest(get(), get(), get(), get(), get()) }
+        single { GameModeRequest(get(), get()) }
         single { RedZoneChannelHandler(get(), get(), get()) }
         single { PlayAnimationHandler(get()) }
         single { CloseGameAlertHandler(get(), get(), get()) }
         single { UpsetAlertHandler(get(), get(), get(), get()) }
-        single { ChewGameCommand(get(), get(), get()) }
         single { DeleteGameCommand(get()) }
         single { RestartGameCommand(get()) }
         single { EndGameCommand(get(), get(), get()) }
@@ -130,11 +130,11 @@ val appModule =
             CommandRegistry(
                 get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(),
                 get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(),
-                get(), get(), get(),
+                get(), get(),
             )
         }
-        single { FCFBDiscordRefBot(get(), get(), get(), get()) }
-        single { DiscordMessageSender(get(), get()) }
+        single { FCFBDiscordRefBot(get(), get(), get(), get(), get()) }
+        single { DiscordMessageSender(get()) }
         single { GameMessageContentBuilder(get(), get(), get(), get(), get()) }
         single { GameScorePoster(get(), get(), get(), get(), get()) }
         single { DiscordMessageHandler(get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get()) }

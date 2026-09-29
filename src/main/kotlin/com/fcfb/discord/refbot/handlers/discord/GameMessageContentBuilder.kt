@@ -48,7 +48,7 @@ class GameMessageContentBuilder(
                         Scenario.OVERTIME_START, Scenario.GAME_OVER, Scenario.END_OF_HALF,
                         Scenario.DELAY_OF_GAME, Scenario.FIRST_DELAY_OF_GAME_WARNING,
                         Scenario.SECOND_DELAY_OF_GAME_WARNING, Scenario.DELAY_OF_GAME_NOTIFICATION,
-                        Scenario.CHEW_MODE_ENABLED,
+                        Scenario.CHEW_MODE_ENABLED, Scenario.CHEW_MODE_DISABLED, Scenario.PREGAME_DELAY_OF_GAME_NOTIFICATION,
                     )
                 -> {
                     val messageContentApiResponse = gameWriteupClient.getGameMessageByScenario(scenario, null)
@@ -194,6 +194,7 @@ class GameMessageContentBuilder(
                 "{result}" to result,
                 "{timeout_called}" to gameDescriptionUtils.getTimeoutMessage(game, play, timeoutCalled),
                 "{clock_status}" to if (game.clockStopped) "The clock is stopped." else "The clock is running.",
+                "{game_mode_changed_by}" to (game.gameModeSetBy ?: "an admin"),
                 "{game_status}" to if (game.gameMode == GameMode.CHEW) " The game is in chew mode." else "",
                 "{ball_location}" to gameDescriptionUtils.getLocationDescription(game),
                 "{ball_location_scenario}" to gameDescriptionUtils.getBallLocationScenarioMessage(game, play),
@@ -222,6 +223,7 @@ class GameMessageContentBuilder(
         if (scorebug != null &&
             scenario != Scenario.NORMAL_NUMBER_REQUEST &&
             scenario != Scenario.CHEW_MODE_ENABLED &&
+            scenario != Scenario.CHEW_MODE_DISABLED &&
             scenario != Scenario.FIRST_DELAY_OF_GAME_WARNING &&
             scenario != Scenario.SECOND_DELAY_OF_GAME_WARNING
         ) {
@@ -239,6 +241,7 @@ class GameMessageContentBuilder(
         } else if (
             scenario == Scenario.NORMAL_NUMBER_REQUEST ||
             scenario == Scenario.CHEW_MODE_ENABLED ||
+            scenario == Scenario.CHEW_MODE_DISABLED ||
             scenario == Scenario.FIRST_DELAY_OF_GAME_WARNING ||
             scenario == Scenario.SECOND_DELAY_OF_GAME_WARNING
         ) {

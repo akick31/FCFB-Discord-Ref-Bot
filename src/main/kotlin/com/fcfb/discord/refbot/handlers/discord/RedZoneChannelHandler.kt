@@ -83,9 +83,9 @@ class RedZoneChannelHandler(
                 }
                 ActualResult.KICKING_TEAM_TOUCHDOWN -> {
                     if (play.possession == TeamSide.HOME) {
-                        "$homeTeam scores a touchdown on a kickoff return!"
+                        "$homeTeam scores a touchdown on the kickoff!"
                     } else {
-                        "$awayTeam scores a touchdown on a kickoff return!"
+                        "$awayTeam scores a touchdown on the kickoff!"
                     }
                 }
                 ActualResult.MUFFED_PUNT -> {

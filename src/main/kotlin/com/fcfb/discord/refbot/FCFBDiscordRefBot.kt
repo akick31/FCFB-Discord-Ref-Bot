@@ -5,10 +5,12 @@ import com.fcfb.discord.refbot.config.server.KtorServerConfig
 import com.fcfb.discord.refbot.handlers.discord.MessageProcessor
 import com.fcfb.discord.refbot.koin.appModule
 import com.fcfb.discord.refbot.utils.health.HealthChecks
+import com.fcfb.discord.refbot.utils.system.DiscordReadinessState
 import com.fcfb.discord.refbot.utils.system.Logger
 import com.fcfb.discord.refbot.utils.system.Properties
 import dev.kord.common.annotation.KordPreview
 import dev.kord.core.Kord
+import dev.kord.core.event.gateway.ReadyEvent
 import dev.kord.core.event.interaction.ChatInputCommandInteractionCreateEvent
 import dev.kord.core.event.message.MessageCreateEvent
 import dev.kord.core.on
@@ -35,11 +37,17 @@ class FCFBDiscordRefBot(
     private val commandRegistry: CommandRegistry,
     private val ktorServerConfig: KtorServerConfig,
     private val healthChecks: HealthChecks,
+    private val discordReadinessState: DiscordReadinessState,
 ) {
+    companion object {
+        private const val HEARTBEAT_FAILURE_THRESHOLD = 3
+    }
+
     private lateinit var client: Kord
     private var heartbeatJob: Job? = null
     private var restartJob: Job? = null
     private val restartMutex = Mutex()
+    private var consecutiveHeartbeatFailures = 0
 
     fun start() =
         runBlocking {
@@ -55,6 +63,7 @@ class FCFBDiscordRefBot(
 
     private fun startHeartbeat() {
         heartbeatJob?.cancel()
+        consecutiveHeartbeatFailures = 0
         heartbeatJob =
             CoroutineScope(Dispatchers.IO).launch {
                 while (isActive) {
@@ -63,17 +72,26 @@ class FCFBDiscordRefBot(
                         client.getSelf()
                         val health = healthChecks.healthChecks(client, heartbeatJob, restartJob)
                         if (health.status == "DOWN") {
-                            Logger.warn("Health checks failed: $health")
-                            restartBot()
+                            onHeartbeatFailure("Health checks failed: $health")
                         } else {
+                            consecutiveHeartbeatFailures = 0
                             Logger.debug("Heartbeat successful.")
                         }
                     } catch (e: Exception) {
-                        Logger.warn("Heartbeat failed: Bot appears disconnected. Attempting to reconnect...")
-                        restartBot()
+                        onHeartbeatFailure("Heartbeat failed: Bot appears disconnected: ${e.message}")
                     }
                 }
             }
+    }
+
+    private suspend fun onHeartbeatFailure(reason: String) {
+        consecutiveHeartbeatFailures++
+        Logger.warn("$reason ($consecutiveHeartbeatFailures/$HEARTBEAT_FAILURE_THRESHOLD)")
+        if (consecutiveHeartbeatFailures >= HEARTBEAT_FAILURE_THRESHOLD) {
+            Logger.warn("Heartbeat failed $consecutiveHeartbeatFailures times in a row, restarting the bot.")
+            consecutiveHeartbeatFailures = 0
+            restartBot()
+        }
     }
 
     private fun startRestartJob() {
@@ -121,6 +139,7 @@ class FCFBDiscordRefBot(
     }
 
     private suspend fun initializeBot() {
+        discordReadinessState.markNotReady()
         client = Kord(properties.getDiscordProperties().token)
         try {
             commandRegistry.registerCommands(client)
@@ -156,6 +175,7 @@ class FCFBDiscordRefBot(
 
     private suspend fun logoutOfDiscord() {
         Logger.info("Shutting down the Discord Ref Bot...")
+        discordReadinessState.markNotReady()
         runBlocking {
             ktorServerConfig.stopKtorServer()
         }
@@ -171,6 +191,14 @@ class FCFBDiscordRefBot(
     private fun setupEventHandlers() {
         setupCommandExecuter()
         setupMessageProcessor()
+        setupReadyListener()
+    }
+
+    private fun setupReadyListener() {
+        client.on<ReadyEvent> {
+            discordReadinessState.markReady()
+            Logger.info("Discord gateway is ready.")
+        }
     }
 
     private fun setupCommandExecuter() {

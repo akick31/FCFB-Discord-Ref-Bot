@@ -32,7 +32,6 @@ object Permissions {
             "message_all_games",
             "fire_coach",
             "sub_coach",
-            "chew_game",
             "rollback",
         )
 

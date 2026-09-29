@@ -51,6 +51,12 @@ class DiscordMessageHandler(
         private const val OFFENSIVE_NUMBER_REQUEST_RETRIES = 12
         private const val OFFENSIVE_NUMBER_REQUEST_INITIAL_DELAY_MS = 10_000L
         private const val OFFENSIVE_NUMBER_REQUEST_MAX_DELAY_MS = 30_000L
+        private const val PLAY_OUTCOME_POST_RETRIES = 8
+        private const val DEFENSIVE_NUMBER_REQUEST_RETRIES = 6
+        private const val DISCORD_POST_INITIAL_DELAY_MS = 5_000L
+        private const val DISCORD_POST_MAX_DELAY_MS = 30_000L
+        private const val ANIMATED_POST_RETRIES = 3
+        private const val ANIMATED_POST_INITIAL_DELAY_MS = 2_000L
     }
 
     suspend fun sendNotificationToCommissioners(
@@ -111,6 +117,18 @@ class DiscordMessageHandler(
         }
     }
 
+    suspend fun sendGameMessageToBothCoachesAsDirectMessage(
+        client: Kord,
+        game: Game,
+        scenario: Scenario,
+    ): List<Message?> {
+        val gameMessage = contentBuilder.createGameMessage(client, game, scenario, null, false)
+        val (messageContent, embedData) = gameMessage.first
+        val homeCoaches = game.homeCoachDiscordIds.map { client.getUser(Snowflake(it)) }
+        val awayCoaches = game.awayCoachDiscordIds.map { client.getUser(Snowflake(it)) }
+        return messageSender.sendPrivateMessage(homeCoaches + awayCoaches, embedData, messageContent)
+    }
+
     suspend fun sendRequestForDefensiveNumber(
         client: Kord,
         game: Game,
@@ -121,7 +139,11 @@ class DiscordMessageHandler(
         var defensiveCoaches: List<User?> = emptyList()
         return try {
             val numberRequestMessage =
-                systemUtils.retry {
+                systemUtils.retry(
+                    retries = DEFENSIVE_NUMBER_REQUEST_RETRIES,
+                    initialDelay = DISCORD_POST_INITIAL_DELAY_MS,
+                    maxDelay = DISCORD_POST_MAX_DELAY_MS,
+                ) {
                     val gameMessage = contentBuilder.createGameMessage(client, game, scenario, play, false)
                     val (messageContent, embedData) = gameMessage.first
                     defensiveCoaches = gameMessage.second
@@ -291,7 +313,7 @@ class DiscordMessageHandler(
                 playOutcome.result ?: throw MissingPlayResultException(game.gameId)
             }
         if (message == null || (animationPath == null && pingContent.isBlank())) {
-            return sendGameMessage(client, game, scenario, playOutcome, message, null, false, includePings = false)
+            return retryPlayOutcomePost { sendGameMessage(client, game, scenario, playOutcome, message, null, false, includePings = false) }
         }
 
         val (messageContent, embedData) =
@@ -304,16 +326,40 @@ class DiscordMessageHandler(
                 includePings = false,
             ).first
         val content = listOf(pingContent, messageContent).filter { it.isNotBlank() }.joinToString("\n")
-        if (animationPath == null) {
-            return messageSender.sendMessageFromMessageObject(message, content, embedData)
-        }
         return try {
-            messageSender.sendMessageWithAnimation(message, content, animationPath, embedData)
-        } catch (e: Exception) {
-            Logger.error("Posting play ${playOutcome.playId} without its animation after the combined message failed: ${e.message}", e)
-            messageSender.sendMessageFromMessageObject(message, content, embedData)
+            sendPlayOutcomeWithOptionalAnimation(message, content, animationPath, embedData, playOutcome)
+        } finally {
+            animationPath?.let { messageSender.discardAnimation(it) }
         }
     }
+
+    private suspend fun sendPlayOutcomeWithOptionalAnimation(
+        message: Message,
+        content: String,
+        animationPath: String?,
+        embedData: EmbedData?,
+        playOutcome: Play,
+    ): Message {
+        if (animationPath == null) {
+            return retryPlayOutcomePost { messageSender.sendMessageFromMessageObject(message, content, embedData) }
+        }
+        return try {
+            systemUtils.retry(retries = ANIMATED_POST_RETRIES, initialDelay = ANIMATED_POST_INITIAL_DELAY_MS) {
+                messageSender.sendMessageWithAnimation(message, content, animationPath, embedData)
+            }
+        } catch (e: Exception) {
+            Logger.error("Posting play ${playOutcome.playId} without its animation after the combined message failed: ${e.message}", e)
+            retryPlayOutcomePost { messageSender.sendMessageFromMessageObject(message, content, embedData) }
+        }
+    }
+
+    private suspend fun retryPlayOutcomePost(post: suspend () -> Message): Message =
+        systemUtils.retry(
+            retries = PLAY_OUTCOME_POST_RETRIES,
+            initialDelay = DISCORD_POST_INITIAL_DELAY_MS,
+            maxDelay = DISCORD_POST_MAX_DELAY_MS,
+            block = post,
+        )
 
     suspend fun sendCoinTossChoiceMessage(
         client: Kord,

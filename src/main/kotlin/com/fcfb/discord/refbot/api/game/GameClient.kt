@@ -185,11 +185,6 @@ class GameClient(
         return putRequest(endpointUrl)
     }
 
-    internal suspend fun chewGame(channelId: ULong): Map<Game?, String?> {
-        val endpointUrl = "$baseUrl/game/chew?channelId=$channelId"
-        return postRequest(endpointUrl)
-    }
-
     internal suspend fun markCloseGamePinged(gameId: Int): Map<Game?, String?> {
         val endpointUrl = "$baseUrl/game/close-game-pinged?gameId=$gameId"
         return putRequest(endpointUrl)

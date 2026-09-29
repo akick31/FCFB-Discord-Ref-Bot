@@ -1,11 +1,13 @@
 package com.fcfb.discord.refbot.config.server
 
 import com.fcfb.discord.refbot.handlers.api.DelayOfGameRequest
+import com.fcfb.discord.refbot.handlers.api.GameModeRequest
 import com.fcfb.discord.refbot.handlers.api.StartGameRequest
 import com.fcfb.discord.refbot.handlers.discord.DiscordMessageHandler
 import com.fcfb.discord.refbot.model.domain.Game
 import com.fcfb.discord.refbot.model.dto.SignupInfoDTO
 import com.fcfb.discord.refbot.utils.health.HealthChecks
+import com.fcfb.discord.refbot.utils.system.DiscordReadinessState
 import com.fcfb.discord.refbot.utils.system.Logger
 import com.fcfb.discord.refbot.utils.system.Properties
 import com.google.gson.FieldNamingPolicy
@@ -26,15 +28,34 @@ import io.ktor.server.routing.get
 import io.ktor.server.routing.post
 import io.ktor.server.routing.routing
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import java.text.DateFormat
 
 class KtorServerConfig(
     private val discordMessageHandler: DiscordMessageHandler,
     private val delayOfGameRequest: DelayOfGameRequest,
     private val startGameRequest: StartGameRequest,
+    private val gameModeRequest: GameModeRequest,
     private val healthChecks: HealthChecks,
+    private val discordReadinessState: DiscordReadinessState,
 ) {
+    companion object {
+        private const val READINESS_POLL_INTERVAL_MS = 500L
+        private const val READINESS_MAX_WAIT_MS = 30_000L
+    }
+
     private var server: NettyApplicationEngine? = null
+
+    private suspend fun awaitDiscordReady() {
+        var waited = 0L
+        while (!discordReadinessState.isReady() && waited < READINESS_MAX_WAIT_MS) {
+            delay(READINESS_POLL_INTERVAL_MS)
+            waited += READINESS_POLL_INTERVAL_MS
+        }
+        if (!discordReadinessState.isReady()) {
+            Logger.warn("Discord client still not ready after ${READINESS_MAX_WAIT_MS}ms wait, proceeding anyway.")
+        }
+    }
 
     fun startKtorServer(
         client: Kord,
@@ -73,6 +94,7 @@ class KtorServerConfig(
         val serverUrl = "/fcfb_discord"
         routing {
             post("$serverUrl/start_game") {
+                awaitDiscordReady()
                 try {
                     val game = call.receive<Game>()
                     val gameThread = startGameRequest.startGameThread(client, game)
@@ -88,6 +110,7 @@ class KtorServerConfig(
             }
 
             post("$serverUrl/delay_of_game") {
+                awaitDiscordReady()
                 try {
                     val isDelayOfGameOut: Boolean =
                         call.request.queryParameters["isDelayOfGameOut"]?.toBoolean()
@@ -103,6 +126,7 @@ class KtorServerConfig(
             }
 
             post("$serverUrl/delay_of_game_warning") {
+                awaitDiscordReady()
                 try {
                     val game = call.receive<Game>()
                     val instance = call.request.queryParameters["instance"]?.toIntOrNull()
@@ -130,7 +154,20 @@ class KtorServerConfig(
                 }
             }
 
+            post("$serverUrl/game_mode") {
+                try {
+                    val game = call.receive<Game>()
+                    gameModeRequest.notifyGameModeChange(client, game)
+                    call.respondText("Game mode change announced for game ${game.gameId}")
+                    Logger.info("Game mode change announced for game ${game.gameId}")
+                } catch (e: Exception) {
+                    call.respond(HttpStatusCode.BadRequest, "Error processing request: ${e.message}")
+                    Logger.error("Error announcing game mode change: ${e.message}")
+                }
+            }
+
             post("$serverUrl/new_signup") {
+                awaitDiscordReady()
                 try {
                     val signupInfo = call.receive<SignupInfoDTO>()
                     val messageContent =

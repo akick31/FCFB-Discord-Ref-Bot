@@ -2,6 +2,7 @@ package com.fcfb.discord.refbot.api.game
 
 import com.fcfb.discord.refbot.api.utils.HttpClientConfig
 import com.fcfb.discord.refbot.utils.system.Logger
+import io.ktor.client.plugins.timeout
 import io.ktor.client.request.get
 import io.ktor.client.statement.bodyAsChannel
 import io.ktor.http.isSuccess
@@ -28,7 +29,7 @@ class PlayAnimationClient {
 
     private suspend fun getRequest(endpointUrl: String): ByteArray? {
         return try {
-            val response = httpClient.get(endpointUrl)
+            val response = httpClient.get(endpointUrl) { timeout { requestTimeoutMillis = ANIMATION_REQUEST_TIMEOUT_MS } }
             if (!response.status.isSuccess()) {
                 Logger.error("Failed to make a get request to the play animation endpoint")
                 return null
@@ -38,5 +39,9 @@ class PlayAnimationClient {
             Logger.error(e.message ?: "Unknown error occurred while making a get request to the play animation endpoint")
             null
         }
+    }
+
+    companion object {
+        private const val ANIMATION_REQUEST_TIMEOUT_MS = 30_000L
     }
 }
