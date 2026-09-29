@@ -155,6 +155,7 @@ class KtorServerConfig(
             }
 
             post("$serverUrl/game_mode") {
+                awaitDiscordReady()
                 try {
                     val game = call.receive<Game>()
                     gameModeRequest.notifyGameModeChange(client, game)
