@@ -23,8 +23,6 @@ data class Team(
     @JsonProperty("coach_discord_ids") var coachDiscordIds: List<String>? = null,
     @JsonProperty("primary_color") var primaryColor: String? = null,
     @JsonProperty("secondary_color") var secondaryColor: String? = null,
-    @JsonProperty("coaches_poll_ranking") var coachesPollRanking: Int? = null,
-    @JsonProperty("playoff_committee_ranking") var playoffCommitteeRanking: Int? = null,
     @JsonProperty("subdivision") var subdivision: Subdivision? = null,
     @JsonProperty("offensive_playbook") var offensivePlaybook: OffensivePlaybook? = null,
     @JsonProperty("defensive_playbook") var defensivePlaybook: DefensivePlaybook? = null,
