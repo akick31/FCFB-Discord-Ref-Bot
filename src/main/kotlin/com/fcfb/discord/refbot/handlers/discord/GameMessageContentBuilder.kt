@@ -194,7 +194,12 @@ class GameMessageContentBuilder(
                 "{timeout_called}" to gameDescriptionUtils.getTimeoutMessage(game, play, timeoutCalled),
                 "{clock_status}" to if (game.clockStopped) "The clock is stopped." else "The clock is running.",
                 "{game_mode_changed_by}" to (game.gameModeSetBy ?: "an admin"),
-                "{game_status}" to if (game.gameMode == GameMode.CHEW) " The game is in chew mode." else "",
+                "{game_status}" to
+                    if (game.gameMode == GameMode.CHEW && playWriteup == null && scenario !in NUMBER_REQUEST_SCENARIOS) {
+                        " The game is in chew mode."
+                    } else {
+                        ""
+                    },
                 "{ball_location}" to gameDescriptionUtils.getLocationDescription(game),
                 "{ball_location_scenario}" to gameDescriptionUtils.getBallLocationScenarioMessage(game, play),
                 "{dog_deadline}" to game.gameTimer.toString(),
@@ -213,6 +218,8 @@ class GameMessageContentBuilder(
                 messageContent = messageContent.replace(placeholder, replacement ?: "")
             }
         }
+
+        messageContent = applyChewModeNotice(messageContent, game, scenario, playWriteup)
 
         messageContent += "\n\n[Game Details](https://fakecollegefootball.com/game-details/${game.gameId})\n" +
             "[Ranges](https://docs.google.com/spreadsheets/d/1yXG2Xe1W_G5uq_1Tus3AbP4u8HOwjgmJ1LOQDV-dhvc/edit#gid=1822037032)"
@@ -262,6 +269,21 @@ class GameMessageContentBuilder(
                 offensiveCoaches,
                 defensiveCoaches,
             )
+        }
+    }
+
+    private fun applyChewModeNotice(
+        content: String,
+        game: Game,
+        scenario: Scenario,
+        playWriteup: String?,
+    ): String {
+        if (game.gameMode != GameMode.CHEW) return content
+        return when {
+            playWriteup != null -> "$CHEW_MODE_PLAY_RESULT_HEADER\n\n$content"
+            scenario in NUMBER_REQUEST_SCENARIOS ->
+                content.replaceFirst(NUMBER_PROMPT_ANCHOR, "$NUMBER_PROMPT_ANCHOR\n\n$CHEW_MODE_NUMBER_REQUEST_NOTICE")
+            else -> content
         }
     }
 
@@ -404,5 +426,17 @@ class GameMessageContentBuilder(
                 else -> {}
             }
         }
+    }
+
+    companion object {
+        private const val CHEW_MODE_PLAY_RESULT_HEADER = "The game is currently in chew mode"
+        private const val CHEW_MODE_NUMBER_REQUEST_NOTICE = "**The game is in chew mode**"
+        private const val NUMBER_PROMPT_ANCHOR = "1 and 1500 (inclusive)"
+        private val NUMBER_REQUEST_SCENARIOS =
+            setOf(
+                Scenario.DM_NUMBER_REQUEST,
+                Scenario.KICKOFF_NUMBER_REQUEST,
+                Scenario.NORMAL_NUMBER_REQUEST,
+            )
     }
 }

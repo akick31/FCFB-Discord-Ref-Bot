@@ -60,7 +60,11 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3")
     implementation("io.github.oshai:kotlin-logging-jvm:7.0.3")
     implementation("io.insert-koin:koin-core:3.5.0")
-    testImplementation("io.insert-koin:koin-test:3.5.0")
+    testImplementation("io.insert-koin:koin-test:3.5.0") {
+        exclude(group = "org.jetbrains.kotlin", module = "kotlin-test-junit")
+    }
+    testImplementation("io.mockk:mockk:1.13.13")
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.8.1")
 }
 
 tasks.test {

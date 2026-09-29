@@ -10,7 +10,6 @@ import com.fcfb.discord.refbot.utils.health.HealthChecks
 import com.fcfb.discord.refbot.utils.system.DiscordReadinessState
 import com.fcfb.discord.refbot.utils.system.Logger
 import com.fcfb.discord.refbot.utils.system.Properties
-import com.google.gson.FieldNamingPolicy
 import dev.kord.core.Kord
 import io.ktor.http.HttpStatusCode
 import io.ktor.serialization.gson.gson
@@ -29,7 +28,6 @@ import io.ktor.server.routing.post
 import io.ktor.server.routing.routing
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
-import java.text.DateFormat
 
 class KtorServerConfig(
     private val discordMessageHandler: DiscordMessageHandler,
@@ -83,11 +81,7 @@ class KtorServerConfig(
     ) {
         install(ContentNegotiation) {
             gson {
-                setDateFormat(DateFormat.LONG)
-                setPrettyPrinting()
-                serializeNulls()
-                disableHtmlEscaping()
-                setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES)
+                configureForGamePayloads()
             }
         }
 
@@ -155,6 +149,7 @@ class KtorServerConfig(
             }
 
             post("$serverUrl/game_mode") {
+                awaitDiscordReady()
                 try {
                     val game = call.receive<Game>()
                     gameModeRequest.notifyGameModeChange(client, game)
