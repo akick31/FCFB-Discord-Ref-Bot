@@ -60,13 +60,11 @@ import com.fcfb.discord.refbot.utils.system.DiscordReadinessState
 import com.fcfb.discord.refbot.utils.system.Properties
 import com.fcfb.discord.refbot.utils.system.SystemUtils
 import dev.kord.common.annotation.KordPreview
-import dev.kord.rest.builder.message.EmbedBuilder
 import org.koin.dsl.module
 
 @OptIn(KordPreview::class)
 val appModule =
     module {
-        single { EmbedBuilder() }
         single { ApiUtils() }
         single { ScorebugClient() }
         single { FileHandler() }
@@ -130,7 +128,7 @@ val appModule =
             )
         }
         single { FCFBDiscordRefBot(get(), get(), get(), get(), get()) }
-        single { DiscordMessageSender(get(), get()) }
+        single { DiscordMessageSender(get()) }
         single { GameMessageContentBuilder(get(), get(), get(), get(), get()) }
         single { GameScorePoster(get(), get(), get(), get(), get()) }
         single { DiscordMessageHandler(get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get()) }
