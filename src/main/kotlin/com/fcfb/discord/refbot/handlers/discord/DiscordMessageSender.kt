@@ -16,7 +16,6 @@ import dev.kord.rest.builder.message.addFile
 import kotlin.io.path.Path
 
 class DiscordMessageSender(
-    private val embedBuilder: EmbedBuilder,
     private val fileHandler: FileHandler,
 ) {
     suspend fun sendPrivateMessage(
@@ -35,7 +34,7 @@ class DiscordMessageSender(
                                 if (embed.image.value?.url?.value == null) {
                                     embeds =
                                         mutableListOf(
-                                            embedBuilder.apply {
+                                            EmbedBuilder().apply {
                                                 title = embed.title.value
                                                 description = embed.description.value
                                                 footer {
@@ -47,7 +46,7 @@ class DiscordMessageSender(
                                     val file = addFile(Path(embed.image.value?.url?.value.toString()))
                                     embeds =
                                         mutableListOf(
-                                            embedBuilder.apply {
+                                            EmbedBuilder().apply {
                                                 title = embed.title.value
                                                 description = embed.description.value
                                                 image = file.url
@@ -93,7 +92,7 @@ class DiscordMessageSender(
                             if (embed.image.value?.url?.value == null) {
                                 embeds =
                                     mutableListOf(
-                                        embedBuilder.apply {
+                                        EmbedBuilder().apply {
                                             title = embed.title.value
                                             description = embed.description.value
                                             footer {
@@ -105,7 +104,7 @@ class DiscordMessageSender(
                                 val file = addFile(Path(embed.image.value?.url?.value.toString()))
                                 embeds =
                                     mutableListOf(
-                                        embedBuilder.apply {
+                                        EmbedBuilder().apply {
                                             title = embed.title.value
                                             description = embed.description.value
                                             image = file.url
@@ -150,7 +149,7 @@ class DiscordMessageSender(
                         if (embed.image.value?.url?.value == null) {
                             embeds =
                                 mutableListOf(
-                                    embedBuilder.apply {
+                                    EmbedBuilder().apply {
                                         title = embed.title.value
                                         description = embed.description.value
                                         footer {
@@ -162,7 +161,7 @@ class DiscordMessageSender(
                             val file = addFile(Path(embed.image.value?.url?.value.toString()))
                             embeds =
                                 mutableListOf(
-                                    embedBuilder.apply {
+                                    EmbedBuilder().apply {
                                         title = embed.title.value
                                         description = embed.description.value
                                         image = file.url
@@ -205,7 +204,7 @@ class DiscordMessageSender(
                             if (embed.image.value?.url?.value == null) {
                                 embeds =
                                     mutableListOf(
-                                        embedBuilder.apply {
+                                        EmbedBuilder().apply {
                                             title = embed.title.value
                                             description = embed.description.value
                                             footer {
@@ -217,7 +216,7 @@ class DiscordMessageSender(
                                 val file = addFile(Path(embed.image.value?.url?.value.toString()))
                                 embeds =
                                     mutableListOf(
-                                        embedBuilder.apply {
+                                        EmbedBuilder().apply {
                                             title = embed.title.value
                                             description = embed.description.value
                                             image = file.url
