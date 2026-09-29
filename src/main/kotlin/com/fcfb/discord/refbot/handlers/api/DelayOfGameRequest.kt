@@ -1,21 +1,26 @@
 package com.fcfb.discord.refbot.handlers.api
 
+import com.fcfb.discord.refbot.api.game.GameClient
 import com.fcfb.discord.refbot.handlers.discord.DiscordMessageHandler
 import com.fcfb.discord.refbot.handlers.game.GameHandler
 import com.fcfb.discord.refbot.model.domain.Game
 import com.fcfb.discord.refbot.model.enums.game.GameStatus
 import com.fcfb.discord.refbot.model.enums.play.Scenario
+import com.fcfb.discord.refbot.utils.game.GameStateUtils
 import com.fcfb.discord.refbot.utils.system.Logger
 import com.fcfb.discord.refbot.utils.system.MissingPlatformIdException
 import com.fcfb.discord.refbot.utils.system.SystemUtils
 import dev.kord.common.entity.Snowflake
 import dev.kord.core.Kord
+import dev.kord.core.entity.Message
 import dev.kord.core.entity.channel.thread.TextChannelThread
 
 class DelayOfGameRequest(
     private val discordMessageHandler: DiscordMessageHandler,
     private val gameHandler: GameHandler,
     private val systemUtils: SystemUtils,
+    private val gameClient: GameClient,
+    private val gameStateUtils: GameStateUtils,
 ) {
     suspend fun notifyDelayOfGame(
         client: Kord,
@@ -51,7 +56,8 @@ class DelayOfGameRequest(
                     game.gameStatus = GameStatus.FINAL
                     gameHandler.endGame(client, game, message)
                 }
-                game.gameStatus != GameStatus.PREGAME ->
+                game.gameStatus == GameStatus.PREGAME -> repostCoinTossPrompt(client, game, gameThread, message)
+                else ->
                     discordMessageHandler.sendRequestForDefensiveNumber(
                         client,
                         game,
@@ -63,6 +69,23 @@ class DelayOfGameRequest(
             Logger.error("Failed to post delay of game notification in game thread for game ${game.gameId} after retrying: ${e.message}")
             notifyCommissionersOfFailedPost(client, game, "delay of game notification", e)
             deliverToCoachesOrThrow(client, game, notification, "delay of game notification", e)
+        }
+    }
+
+    private suspend fun repostCoinTossPrompt(
+        client: Kord,
+        game: Game,
+        gameThread: TextChannelThread,
+        notification: Message,
+    ) {
+        if (gameStateUtils.isPreGameAfterCoinToss(game)) {
+            discordMessageHandler.sendCoinTossOutcomeMessage(client, game, notification)
+        } else {
+            val coinTossRequest =
+                systemUtils.retry {
+                    discordMessageHandler.sendGameMessage(client, game, Scenario.GAME_START, null, null, gameThread)
+                }
+            gameClient.updateRequestMessageId(game.gameId, listOf(coinTossRequest))
         }
     }
 

@@ -47,7 +47,7 @@ class GameMessageContentBuilder(
                         Scenario.OVERTIME_START, Scenario.GAME_OVER, Scenario.END_OF_HALF,
                         Scenario.DELAY_OF_GAME, Scenario.FIRST_DELAY_OF_GAME_WARNING,
                         Scenario.SECOND_DELAY_OF_GAME_WARNING, Scenario.DELAY_OF_GAME_NOTIFICATION,
-                        Scenario.CHEW_MODE_ENABLED, Scenario.CHEW_MODE_DISABLED,
+                        Scenario.CHEW_MODE_ENABLED, Scenario.CHEW_MODE_DISABLED, Scenario.PREGAME_DELAY_OF_GAME_NOTIFICATION,
                     )
                 -> {
                     val messageContentApiResponse = gameWriteupClient.getGameMessageByScenario(scenario, null)

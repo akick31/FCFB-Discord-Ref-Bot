@@ -94,7 +94,7 @@ val appModule =
         single { StartGameRequest(get(), get()) }
         single { KtorServerConfig(get(), get(), get(), get(), get(), get()) }
         single { GameHandler(get(), get(), get(), get(), get(), get(), get(), get(), get()) }
-        single { DelayOfGameRequest(get(), get(), get()) }
+        single { DelayOfGameRequest(get(), get(), get(), get(), get()) }
         single { GameModeRequest(get(), get()) }
         single { RedZoneChannelHandler(get(), get()) }
         single { CloseGameAlertHandler(get(), get(), get()) }
