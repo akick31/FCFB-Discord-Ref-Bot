@@ -43,6 +43,7 @@ class GameModeRequest(
             }
         } catch (e: Exception) {
             Logger.error("Failed to post game mode change in game thread for game ${game.gameId} after retrying: ${e.message}")
+            throw e
         }
     }
 }
