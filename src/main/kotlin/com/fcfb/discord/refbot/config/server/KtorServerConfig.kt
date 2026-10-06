@@ -197,9 +197,15 @@ class KtorServerConfig(
     }
 }
 
+/** Constant-time check of the inbound service key; separated out so it can be unit tested without a running server. */
+fun isValidServiceKey(
+    provided: String?,
+    expected: String,
+): Boolean = provided != null && MessageDigest.isEqual(provided.toByteArray(), expected.toByteArray())
+
 private suspend fun ApplicationCall.verifyServiceKey(expected: String): Boolean {
-    val provided = request.header("X-Service-Key")
-    if (provided != null && MessageDigest.isEqual(provided.toByteArray(), expected.toByteArray())) return true
+    if (isValidServiceKey(request.header("X-Service-Key"), expected)) return true
+    Logger.error("Rejected a request to ${request.local.uri} with a missing or invalid X-Service-Key")
     respond(HttpStatusCode.Unauthorized, "Invalid or missing service key")
     return false
 }
