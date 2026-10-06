@@ -32,7 +32,7 @@ class GameClient(
     private val apiUtils: ApiUtils,
 ) {
     private val baseUrl: String
-    private val httpClient = HttpClientConfig.createClient()
+    private val httpClient = HttpClientConfig.client
 
     init {
         val stream =

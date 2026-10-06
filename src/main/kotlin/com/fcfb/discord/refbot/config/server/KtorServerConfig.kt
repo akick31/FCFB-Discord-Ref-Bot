@@ -14,12 +14,14 @@ import dev.kord.core.Kord
 import io.ktor.http.HttpStatusCode
 import io.ktor.serialization.gson.gson
 import io.ktor.server.application.Application
+import io.ktor.server.application.ApplicationCall
 import io.ktor.server.application.call
 import io.ktor.server.application.install
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
 import io.ktor.server.netty.NettyApplicationEngine
 import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.server.request.header
 import io.ktor.server.request.receive
 import io.ktor.server.response.respond
 import io.ktor.server.response.respondText
@@ -28,6 +30,7 @@ import io.ktor.server.routing.post
 import io.ktor.server.routing.routing
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import java.security.MessageDigest
 
 class KtorServerConfig(
     private val discordMessageHandler: DiscordMessageHandler,
@@ -85,9 +88,11 @@ class KtorServerConfig(
             }
         }
 
+        val serviceKey = Properties().getServiceKey()
         val serverUrl = "/fcfb_discord"
         routing {
             post("$serverUrl/start_game") {
+                if (!call.verifyServiceKey(serviceKey)) return@post
                 awaitDiscordReady()
                 try {
                     val game = call.receive<Game>()
@@ -104,6 +109,7 @@ class KtorServerConfig(
             }
 
             post("$serverUrl/delay_of_game") {
+                if (!call.verifyServiceKey(serviceKey)) return@post
                 awaitDiscordReady()
                 try {
                     val isDelayOfGameOut: Boolean =
@@ -120,6 +126,7 @@ class KtorServerConfig(
             }
 
             post("$serverUrl/delay_of_game_warning") {
+                if (!call.verifyServiceKey(serviceKey)) return@post
                 awaitDiscordReady()
                 try {
                     val game = call.receive<Game>()
@@ -149,6 +156,7 @@ class KtorServerConfig(
             }
 
             post("$serverUrl/game_mode") {
+                if (!call.verifyServiceKey(serviceKey)) return@post
                 awaitDiscordReady()
                 try {
                     val game = call.receive<Game>()
@@ -162,6 +170,7 @@ class KtorServerConfig(
             }
 
             post("$serverUrl/new_signup") {
+                if (!call.verifyServiceKey(serviceKey)) return@post
                 awaitDiscordReady()
                 try {
                     val signupInfo = call.receive<SignupInfoDTO>()
@@ -186,4 +195,11 @@ class KtorServerConfig(
             }
         }
     }
+}
+
+private suspend fun ApplicationCall.verifyServiceKey(expected: String): Boolean {
+    val provided = request.header("X-Service-Key")
+    if (provided != null && MessageDigest.isEqual(provided.toByteArray(), expected.toByteArray())) return true
+    respond(HttpStatusCode.Unauthorized, "Invalid or missing service key")
+    return false
 }

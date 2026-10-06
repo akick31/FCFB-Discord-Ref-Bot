@@ -11,7 +11,7 @@ import java.util.Properties
 
 class PlayAnimationClient {
     private val baseUrl: String
-    private val httpClient = HttpClientConfig.createClient()
+    private val httpClient = HttpClientConfig.client
 
     init {
         val stream =

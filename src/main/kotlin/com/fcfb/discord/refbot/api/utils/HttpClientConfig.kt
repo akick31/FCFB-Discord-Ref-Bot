@@ -20,7 +20,10 @@ object HttpClientConfig {
             ?: throw RuntimeException("bot.service.key not set in application.properties")
     }
 
-    fun createClient(): HttpClient {
+    /** One shared client for the whole bot: a per-caller client would spin up a separate engine and connection pool. */
+    val client: HttpClient by lazy { buildClient() }
+
+    private fun buildClient(): HttpClient {
         val serviceKey = loadServiceKey()
         return HttpClient(CIO) {
             defaultRequest {

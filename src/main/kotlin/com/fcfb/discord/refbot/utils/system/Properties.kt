@@ -37,4 +37,13 @@ class Properties {
         properties.load(configFile)
         return properties.getProperty("server.port").toInt()
     }
+
+    @OptIn(KordPreview::class)
+    fun getServiceKey(): String {
+        val properties = java.util.Properties()
+        val configFile = FCFBDiscordRefBot::class.java.classLoader.getResourceAsStream("application.properties")
+        properties.load(configFile)
+        return properties.getProperty("bot.service.key")
+            ?: throw RuntimeException("bot.service.key not set in application.properties")
+    }
 }
