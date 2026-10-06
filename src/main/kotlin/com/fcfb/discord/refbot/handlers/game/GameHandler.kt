@@ -41,10 +41,7 @@ class GameHandler(
     ) {
         val requestMessageId = message.referencedMessage?.id?.value.toString()
         val response = gameClient.getGameByRequestMessageId(requestMessageId)
-        if (response.keys.firstOrNull() == null) {
-            return errorHandler.customErrorMessage(message, response.values.firstOrNull() ?: "Could not determine error")
-        }
-        val game = response.keys.firstOrNull() ?: return errorHandler.noGameFoundError(message)
+        val game = response.keys.firstOrNull() ?: return handleUnmatchedReply(message, requestMessageId)
         MDC.put("game_id", game.gameId.toString())
         try {
             withContext(MDCContext()) {
@@ -64,6 +61,16 @@ class GameHandler(
             }
         } finally {
             MDC.remove("game_id")
+        }
+    }
+
+    private suspend fun handleUnmatchedReply(
+        message: Message,
+        requestMessageId: String,
+    ) {
+        val gameByChannel = gameClient.getGameByPlatformId(message.channelId.value.toString())
+        if (gameByChannel.keys.firstOrNull() != null) {
+            errorHandler.customErrorMessage(message, "${Error.NO_GAME_FOUND.message}\n\nRequest Message ID: $requestMessageId")
         }
     }
 

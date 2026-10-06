@@ -2,8 +2,9 @@ package com.fcfb.discord.refbot.model.enums.message
 
 enum class Error(val message: String) {
     NO_GAME_FOUND(
-        "Could not find a game associated with this number request message. " +
-            "Please try to regenerate the play message with `/ping`",
+        "Could not find a game associated with the message you replied to. If you believe you received this message in " +
+            "error, please use `/previous_play` to get the previous play result and `/ping` to re-ping the defensive " +
+            "player for their number, as the result may not have been posted due to a Discord API hiccup.",
     ),
     WAITING_FOR_NUMBER_IN_DMS("This game is currently waiting on a number from you in your DMs"),
     WAITING_FOR_COIN_TOSS("This game is currently waiting on the away coach to call **heads** or **tails**"),
