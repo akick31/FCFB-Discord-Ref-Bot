@@ -199,7 +199,7 @@ class GameClient(
         season: Int,
         week: Int,
     ): Map<String?, String?> {
-        val endpointUrl = "$baseUrl/game/week?season=$season&week=$week"
+        val endpointUrl = "$baseUrl/start-game-week-job?season=$season&week=$week"
         return try {
             val response: HttpResponse = httpClient.post(endpointUrl)
             val jsonResponse = response.bodyAsText()
@@ -219,7 +219,7 @@ class GameClient(
     }
 
     internal suspend fun getGameWeekJobStatus(jobId: String): Map<String, Any?>? {
-        val endpointUrl = "$baseUrl/game/week/status?jobId=$jobId"
+        val endpointUrl = "$baseUrl/start-game-week-job/status?jobId=$jobId"
         return try {
             val response =
                 httpClient.get(endpointUrl) {
@@ -235,7 +235,7 @@ class GameClient(
     }
 
     internal suspend fun retryFailedGames(jobId: String): Map<String?, String?> {
-        val endpointUrl = "$baseUrl/game/week/retry?jobId=$jobId"
+        val endpointUrl = "$baseUrl/start-game-week-job/retry?jobId=$jobId"
         return try {
             val response: HttpResponse = httpClient.post(endpointUrl)
             val jsonResponse = response.bodyAsText()
