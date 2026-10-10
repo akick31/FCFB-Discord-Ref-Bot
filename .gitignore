@@ -45,6 +45,7 @@ bin/
 
 ### Claude ###
 .claude/
+.agents/
 
 ### VS Code ###
 .vscode/
