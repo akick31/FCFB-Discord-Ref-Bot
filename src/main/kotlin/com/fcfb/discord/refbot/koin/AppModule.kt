@@ -40,6 +40,7 @@ import com.fcfb.discord.refbot.commands.user.GetRoleCommand
 import com.fcfb.discord.refbot.commands.user.PingCommand
 import com.fcfb.discord.refbot.config.server.KtorServerConfig
 import com.fcfb.discord.refbot.handlers.api.DelayOfGameRequest
+import com.fcfb.discord.refbot.handlers.api.GameFinalizationRollbackRequest
 import com.fcfb.discord.refbot.handlers.api.GameModeRequest
 import com.fcfb.discord.refbot.handlers.api.StartGameRequest
 import com.fcfb.discord.refbot.handlers.discord.CloseGameAlertHandler
@@ -94,10 +95,11 @@ val appModule =
         single { GameDescriptionUtils(get(), get()) }
         single { GameUtils(get(), get(), get()) }
         single { StartGameRequest(get(), get()) }
-        single { KtorServerConfig(get(), get(), get(), get(), get(), get()) }
+        single { KtorServerConfig(get(), get(), get(), get(), get(), get(), get()) }
         single { GameHandler(get(), get(), get(), get(), get(), get(), get(), get(), get(), get()) }
         single { DelayOfGameRequest(get(), get(), get(), get(), get()) }
         single { GameModeRequest(get(), get()) }
+        single { GameFinalizationRollbackRequest(get()) }
         single { RedZoneChannelHandler(get(), get(), get()) }
         single { PlayAnimationHandler(get()) }
         single { CloseGameAlertHandler(get(), get(), get()) }

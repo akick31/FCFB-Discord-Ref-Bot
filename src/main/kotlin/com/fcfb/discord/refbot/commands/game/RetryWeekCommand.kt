@@ -64,7 +64,11 @@ class RetryWeekCommand(
                             title = "Retry Job -- `$newJobId`\n(Original job: `$originalJobId`)",
                             onComplete = { pollingResult ->
                                 buildString {
-                                    if (pollingResult.failedGames > 0) {
+                                    val interrupted = GameWeekPollingUtils.interruptedJobMessage(pollingResult)
+                                    if (interrupted != null) {
+                                        appendLine(interrupted)
+                                        appendLine("Job ID: `$newJobId`")
+                                    } else if (pollingResult.failedGames > 0) {
                                         appendLine(
                                             "Retry completed with ${pollingResult.failedGames} failure(s). " +
                                                 "Use `/retry_week` again with job ID `$newJobId` to retry remaining failures.",

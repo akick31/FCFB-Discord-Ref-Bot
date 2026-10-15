@@ -13,6 +13,7 @@ import com.fcfb.discord.refbot.model.enums.system.Platform
 import com.fcfb.discord.refbot.model.enums.team.Subdivision
 import com.fcfb.discord.refbot.utils.system.Logger
 import dev.kord.core.entity.Message
+import io.ktor.client.HttpClient
 import io.ktor.client.request.delete
 import io.ktor.client.request.get
 import io.ktor.client.request.post
@@ -30,17 +31,18 @@ import java.util.Properties
 
 class GameClient(
     private val apiUtils: ApiUtils,
+    private val httpClient: HttpClient = HttpClientConfig.client,
+    private val baseUrl: String = loadBaseUrl(),
 ) {
-    private val baseUrl: String
-    private val httpClient = HttpClientConfig.client
-
-    init {
-        val stream =
-            this::class.java.classLoader.getResourceAsStream("application.properties")
-                ?: throw RuntimeException("application.properties file not found")
-        val properties = Properties()
-        properties.load(stream)
-        baseUrl = properties.getProperty("api.url")
+    private companion object {
+        fun loadBaseUrl(): String {
+            val stream =
+                GameClient::class.java.classLoader.getResourceAsStream("application.properties")
+                    ?: throw RuntimeException("application.properties file not found")
+            val properties = Properties()
+            properties.load(stream)
+            return properties.getProperty("api.url")
+        }
     }
 
     internal suspend fun startGame(
@@ -61,7 +63,7 @@ class GameClient(
                 gameType = gameType,
             )
 
-        val endpointUrl = "$baseUrl/game"
+        val endpointUrl = "$baseUrl/game-creation"
         return postRequestWithBody(endpointUrl, startRequest)
     }
 
@@ -83,7 +85,7 @@ class GameClient(
                 gameType = gameType,
             )
 
-        val endpointUrl = "$baseUrl/game/overtime"
+        val endpointUrl = "$baseUrl/game-creation/overtime"
         return postRequestWithBody(endpointUrl, startRequest)
     }
 
@@ -115,7 +117,7 @@ class GameClient(
         gameId: Int,
         coinTossCall: String,
     ): Map<Game?, String?> {
-        val endpointUrl = "$baseUrl/game/coin-toss?gameId=$gameId&coinTossCall=$coinTossCall"
+        val endpointUrl = "$baseUrl/game-coin-toss/call?gameId=$gameId&coinTossCall=$coinTossCall"
         return putRequest(endpointUrl)
     }
 
@@ -123,7 +125,7 @@ class GameClient(
         gameId: Int,
         coinTossChoice: String,
     ): Map<Game?, String?> {
-        val endpointUrl = "$baseUrl/game/coin-toss-choice?gameId=$gameId&coinTossChoice=$coinTossChoice"
+        val endpointUrl = "$baseUrl/game-coin-toss/choice?gameId=$gameId&coinTossChoice=$coinTossChoice"
         return putRequest(endpointUrl)
     }
 
@@ -131,17 +133,17 @@ class GameClient(
         gameId: Int,
         coinTossChoice: String,
     ): Map<Game?, String?> {
-        val endpointUrl = "$baseUrl/game/overtime-coin-toss-choice?gameId=$gameId&coinTossChoice=$coinTossChoice"
+        val endpointUrl = "$baseUrl/game-coin-toss/overtime-choice?gameId=$gameId&coinTossChoice=$coinTossChoice"
         return putRequest(endpointUrl)
     }
 
     internal suspend fun endGame(channelId: ULong): Map<Game?, String?> {
-        val endpointUrl = "$baseUrl/game/end?channelId=$channelId"
+        val endpointUrl = "$baseUrl/game-finalization?channelId=$channelId"
         return postRequest(endpointUrl)
     }
 
     internal suspend fun endAllGames(): Map<List<Game>?, String?> {
-        val endpointUrl = "$baseUrl/game/end-all"
+        val endpointUrl = "$baseUrl/game-finalization/all"
         return postRequestList(endpointUrl)
     }
 
@@ -151,7 +153,7 @@ class GameClient(
     }
 
     internal suspend fun restartGame(channelId: ULong): Map<Game?, String?> {
-        val endpointUrl = "$baseUrl/game/restart?channelId=$channelId"
+        val endpointUrl = "$baseUrl/game-creation/restart?channelId=$channelId"
         return postRequest(endpointUrl)
     }
 
@@ -185,14 +187,14 @@ class GameClient(
         return putRequest(endpointUrl)
     }
 
-    internal suspend fun markCloseGamePinged(gameId: Int): Map<Game?, String?> {
+    internal suspend fun markCloseGamePinged(gameId: Int): Boolean {
         val endpointUrl = "$baseUrl/game/close-game-pinged?gameId=$gameId"
-        return putRequest(endpointUrl)
+        return putRequestStatus(endpointUrl, expectedStatus = 204)
     }
 
-    internal suspend fun markUpsetAlertPinged(gameId: Int): Map<Game?, String?> {
+    internal suspend fun markUpsetAlertPinged(gameId: Int): Boolean {
         val endpointUrl = "$baseUrl/game/upset-alert-pinged?gameId=$gameId"
-        return putRequest(endpointUrl)
+        return putRequestStatus(endpointUrl, expectedStatus = 204)
     }
 
     internal suspend fun startWeek(
@@ -272,10 +274,13 @@ class GameClient(
         }
     }
 
-    private suspend fun putRequestStatus(endpointUrl: String): Boolean {
+    private suspend fun putRequestStatus(
+        endpointUrl: String,
+        expectedStatus: Int = 200,
+    ): Boolean {
         return try {
             val response = httpClient.put(endpointUrl)
-            response.status.value == 200
+            response.status.value == expectedStatus
         } catch (e: Exception) {
             Logger.error(e.message ?: "Unknown error occurred while making a put request to the game endpoint")
             false

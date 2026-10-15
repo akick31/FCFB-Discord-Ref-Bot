@@ -30,6 +30,18 @@ object GameWeekPollingUtils {
         val onTimeout: (String) -> String,
     )
 
+    fun interruptedJobMessage(result: PollingResult): String? {
+        val unfinished = result.totalGames - result.startedGames - result.failedGames
+        if (result.finalStatus != "FAILED" || unfinished <= 0) return null
+        return buildString {
+            append("Processing stopped with $unfinished game(s) unfinished. ")
+            append("Check the schedule and existing game threads before restarting remaining games.")
+            if (result.failedGames > 0) {
+                append(" Use `/retry_week` for the ${result.failedGames} recorded failure(s).")
+            }
+        }
+    }
+
     suspend fun pollGameWeekJob(
         gameClient: GameClient,
         response: DeferredPublicMessageInteractionResponseBehavior,

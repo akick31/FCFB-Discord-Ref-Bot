@@ -63,7 +63,11 @@ class StartWeekCommand(
                             title = "Game Week Start -- Season $season, Week $week",
                             onComplete = { pollingResult ->
                                 buildString {
-                                    if (pollingResult.failedGames > 0) {
+                                    val interrupted = GameWeekPollingUtils.interruptedJobMessage(pollingResult)
+                                    if (interrupted != null) {
+                                        appendLine(interrupted)
+                                        appendLine("Job ID: `$jobId`")
+                                    } else if (pollingResult.failedGames > 0) {
                                         appendLine(
                                             "Completed with ${pollingResult.failedGames} failure(s). " +
                                                 "Use `/retry_week` or the website to retry failed games.",

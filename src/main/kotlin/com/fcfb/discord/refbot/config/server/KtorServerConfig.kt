@@ -1,10 +1,12 @@
 package com.fcfb.discord.refbot.config.server
 
 import com.fcfb.discord.refbot.handlers.api.DelayOfGameRequest
+import com.fcfb.discord.refbot.handlers.api.GameFinalizationRollbackRequest
 import com.fcfb.discord.refbot.handlers.api.GameModeRequest
 import com.fcfb.discord.refbot.handlers.api.StartGameRequest
 import com.fcfb.discord.refbot.handlers.discord.DiscordMessageHandler
 import com.fcfb.discord.refbot.model.domain.Game
+import com.fcfb.discord.refbot.model.dto.GameFinalizationRollbackDTO
 import com.fcfb.discord.refbot.model.dto.SignupInfoDTO
 import com.fcfb.discord.refbot.utils.health.HealthChecks
 import com.fcfb.discord.refbot.utils.system.DiscordReadinessState
@@ -20,14 +22,18 @@ import io.ktor.server.application.install
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
 import io.ktor.server.netty.NettyApplicationEngine
+import io.ktor.server.plugins.BadRequestException
+import io.ktor.server.plugins.ContentTransformationException
 import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.server.request.header
 import io.ktor.server.request.receive
+import io.ktor.server.request.receiveNullable
 import io.ktor.server.response.respond
 import io.ktor.server.response.respondText
 import io.ktor.server.routing.get
 import io.ktor.server.routing.post
 import io.ktor.server.routing.routing
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import java.security.MessageDigest
@@ -39,6 +45,7 @@ class KtorServerConfig(
     private val gameModeRequest: GameModeRequest,
     private val healthChecks: HealthChecks,
     private val discordReadinessState: DiscordReadinessState,
+    private val gameFinalizationRollbackRequest: GameFinalizationRollbackRequest,
 ) {
     companion object {
         private const val READINESS_POLL_INTERVAL_MS = 500L
@@ -77,7 +84,7 @@ class KtorServerConfig(
         Logger.info("Ktor server stopped!")
     }
 
-    private fun Application.configureServer(
+    internal fun Application.configureServer(
         client: Kord,
         heartbeatJob: Job?,
         restartJob: Job?,
@@ -166,6 +173,27 @@ class KtorServerConfig(
                 } catch (e: Exception) {
                     call.respond(HttpStatusCode.BadRequest, "Error processing request: ${e.message}")
                     Logger.error("Error announcing game mode change: ${e.message}")
+                }
+            }
+
+            post("$serverUrl/game_finalization_rollback") {
+                if (!call.verifyServiceKey(serviceKey)) return@post
+                awaitDiscordReady()
+                try {
+                    val request = requireNotNull(call.receiveNullable<GameFinalizationRollbackDTO>())
+                    gameFinalizationRollbackRequest.notifyRollback(client, request)
+                    call.respondText("Finalization rollback reported")
+                } catch (e: CancellationException) {
+                    throw e
+                } catch (e: Exception) {
+                    when (e) {
+                        is BadRequestException, is ContentTransformationException, is IllegalArgumentException ->
+                            call.respond(HttpStatusCode.BadRequest, "Invalid finalization rollback notification")
+                        else -> {
+                            Logger.error("Unable to report finalization rollback", e)
+                            call.respond(HttpStatusCode.InternalServerError, "Unable to report finalization rollback")
+                        }
+                    }
                 }
             }
 
