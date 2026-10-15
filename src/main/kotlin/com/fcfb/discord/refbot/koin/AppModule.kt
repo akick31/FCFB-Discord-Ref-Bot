@@ -7,7 +7,6 @@ import com.fcfb.discord.refbot.api.game.GameWriteupClient
 import com.fcfb.discord.refbot.api.game.PlayAnimationClient
 import com.fcfb.discord.refbot.api.game.PlayClient
 import com.fcfb.discord.refbot.api.game.ScorebugClient
-import com.fcfb.discord.refbot.api.system.LogClient
 import com.fcfb.discord.refbot.api.team.ConferenceClient
 import com.fcfb.discord.refbot.api.team.TeamClient
 import com.fcfb.discord.refbot.api.user.FCFBUserClient
@@ -84,7 +83,6 @@ val appModule =
         single { GameClient(get()) }
         single { GameWriteupClient(get()) }
         single { PlayClient(get()) }
-        single { LogClient(get()) }
         single { TeamClient(get()) }
         single { ConferenceClient(get()) }
         single { FCFBUserClient(get()) }
@@ -139,5 +137,5 @@ val appModule =
         single { DiscordMessageSender(get()) }
         single { GameMessageContentBuilder(get(), get(), get(), get(), get()) }
         single { GameScorePoster(get(), get(), get(), get(), get()) }
-        single { DiscordMessageHandler(get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get()) }
+        single { DiscordMessageHandler(get(), get(), get(), get(), get(), get(), get(), get(), get(), get()) }
     }

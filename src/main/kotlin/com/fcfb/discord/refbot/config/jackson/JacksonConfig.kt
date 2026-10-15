@@ -11,7 +11,6 @@ import com.fcfb.discord.refbot.config.jackson.deserializers.DefensivePlaybookDes
 import com.fcfb.discord.refbot.config.jackson.deserializers.GameModeDeserializer
 import com.fcfb.discord.refbot.config.jackson.deserializers.GameStatusDeserializer
 import com.fcfb.discord.refbot.config.jackson.deserializers.GameTypeDeserializer
-import com.fcfb.discord.refbot.config.jackson.deserializers.MessageTypeDeserializer
 import com.fcfb.discord.refbot.config.jackson.deserializers.OffensivePlaybookDeserializer
 import com.fcfb.discord.refbot.config.jackson.deserializers.PlatformDeserializer
 import com.fcfb.discord.refbot.config.jackson.deserializers.PlayCallDeserializer
@@ -26,7 +25,6 @@ import com.fcfb.discord.refbot.model.enums.game.GameMode
 import com.fcfb.discord.refbot.model.enums.game.GameStatus
 import com.fcfb.discord.refbot.model.enums.game.GameType
 import com.fcfb.discord.refbot.model.enums.game.TVChannel
-import com.fcfb.discord.refbot.model.enums.message.MessageType
 import com.fcfb.discord.refbot.model.enums.play.ActualResult
 import com.fcfb.discord.refbot.model.enums.play.PlayCall
 import com.fcfb.discord.refbot.model.enums.play.PlayType
@@ -122,20 +120,6 @@ class JacksonConfig {
             registerModule(KotlinModule.Builder().build())
             registerModule(customPlayModule())
             propertyNamingStrategy = PropertyNamingStrategies.SNAKE_CASE
-        }
-    }
-
-    fun configureRequestMessageLogMapping(): ObjectMapper {
-        return ObjectMapper().apply {
-            registerModule(KotlinModule.Builder().build())
-            registerModule(customRequestMessageLogModule())
-            propertyNamingStrategy = PropertyNamingStrategies.SNAKE_CASE
-        }
-    }
-
-    private fun customRequestMessageLogModule(): SimpleModule {
-        return SimpleModule().apply {
-            addDeserializer(MessageType::class.java, MessageTypeDeserializer())
         }
     }
 }

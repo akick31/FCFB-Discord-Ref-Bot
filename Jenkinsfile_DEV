@@ -107,6 +107,9 @@ pipeline {
                             --memory=1024m \\
                             -p 11312:1312 \\
                             -v ${env.APP_PROPERTIES}:/app/application.properties \\
+                            --log-driver=loki \\
+                            --log-opt loki-url="http://localhost:3100/loki/api/v1/push" \\
+                            --log-opt loki-external-labels="job=refbot,env=dev" \\
                             ${IMAGE_NAME}:${DOCKERFILE}
                     """
                 }
@@ -159,6 +162,9 @@ pipeline {
                         docker run --network="host" -d --restart=always --name ${CONTAINER_NAME} \\
                             --memory=1024m \\
                             -v ${env.APP_PROPERTIES}:/app/application.properties \\
+                            --log-driver=loki \\
+                            --log-opt loki-url="http://localhost:3100/loki/api/v1/push" \\
+                            --log-opt loki-external-labels="job=refbot,env=dev" \\
                             ${IMAGE_NAME}:${DOCKERFILE}
                     """
                 }

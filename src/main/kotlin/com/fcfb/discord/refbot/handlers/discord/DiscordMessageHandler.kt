@@ -2,7 +2,6 @@ package com.fcfb.discord.refbot.handlers.discord
 
 import com.fcfb.discord.refbot.api.game.GameClient
 import com.fcfb.discord.refbot.api.game.ScorebugClient
-import com.fcfb.discord.refbot.api.system.LogClient
 import com.fcfb.discord.refbot.model.domain.Game
 import com.fcfb.discord.refbot.model.domain.Play
 import com.fcfb.discord.refbot.model.enums.game.GameStatus
@@ -33,10 +32,10 @@ import dev.kord.core.entity.Message
 import dev.kord.core.entity.User
 import dev.kord.core.entity.channel.MessageChannel
 import dev.kord.core.entity.channel.thread.TextChannelThread
+import net.logstash.logback.argument.StructuredArguments.kv
 
 class DiscordMessageHandler(
     private val gameClient: GameClient,
-    private val logClient: LogClient,
     private val scorebugClient: ScorebugClient,
     private val gameStateUtils: GameStateUtils,
     private val gameDescriptionUtils: GameDescriptionUtils,
@@ -163,12 +162,13 @@ class DiscordMessageHandler(
             gameClient.updateLastMessageTimestamp(game.gameId)
 
             numberRequestMessage.forEach { message ->
-                logClient.logRequestMessage(
-                    MessageType.PRIVATE_MESSAGE,
-                    game.gameId,
-                    play?.playId ?: 0,
-                    message?.id?.value ?: 0.toULong(),
-                    defensiveCoaches.mapNotNull { it?.username }.toString(),
+                Logger.info(
+                    "Delivered request message",
+                    kv("message_type", MessageType.PRIVATE_MESSAGE),
+                    kv("game_id", game.gameId),
+                    kv("play_id", play?.playId ?: 0),
+                    kv("message_id", message?.id?.value ?: 0.toULong()),
+                    kv("message_location", defensiveCoaches.mapNotNull { it?.username }.toString()),
                 )
             }
 
@@ -222,12 +222,13 @@ class DiscordMessageHandler(
 
             gameClient.updateRequestMessageId(game.gameId, listOf(numberRequestMessage))
             gameClient.updateLastMessageTimestamp(game.gameId)
-            logClient.logRequestMessage(
-                MessageType.GAME_THREAD,
-                game.gameId,
-                play?.playId ?: 0,
-                numberRequestMessage.id.value,
-                numberRequestMessage.getJumpUrl(),
+            Logger.info(
+                "Delivered request message",
+                kv("message_type", MessageType.GAME_THREAD),
+                kv("game_id", game.gameId),
+                kv("play_id", play?.playId ?: 0),
+                kv("message_id", numberRequestMessage.id.value),
+                kv("message_location", numberRequestMessage.getJumpUrl()),
             )
             numberRequestMessage
         } catch (e: Exception) {
