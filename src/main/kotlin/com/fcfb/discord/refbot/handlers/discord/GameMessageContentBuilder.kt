@@ -222,8 +222,7 @@ class GameMessageContentBuilder(
 
         messageContent = applyChewModeNotice(messageContent, game, scenario, playWriteup)
 
-        messageContent += "\n\n[Game Details](https://fakecollegefootball.com/game-details/${game.gameId})\n" +
-            "[Ranges](https://docs.google.com/spreadsheets/d/1yXG2Xe1W_G5uq_1Tus3AbP4u8HOwjgmJ1LOQDV-dhvc/edit#gid=1822037032)"
+        messageContent += "\n\n" + gameLinks(game, play)
 
         val scorebug = scorebugClient.getScorebugByGameId(game.gameId)
 
@@ -447,4 +446,14 @@ class GameMessageContentBuilder(
                 Scenario.NORMAL_NUMBER_REQUEST,
             )
     }
+
+    private fun gameLinks(
+        game: Game,
+        play: Play?,
+    ): String =
+        listOfNotNull(
+            play?.let { "[Play Details](https://fakecollegefootball.com/play-details/${it.playId})" },
+            "[Game Details](https://fakecollegefootball.com/game-details/${game.gameId})",
+            "[Ranges](https://docs.google.com/spreadsheets/d/1yXG2Xe1W_G5uq_1Tus3AbP4u8HOwjgmJ1LOQDV-dhvc/edit#gid=1822037032)",
+        ).joinToString("\n")
 }
