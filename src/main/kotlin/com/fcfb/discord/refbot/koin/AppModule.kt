@@ -23,6 +23,7 @@ import com.fcfb.discord.refbot.commands.game.GameInfoCommand
 import com.fcfb.discord.refbot.commands.game.HighlightCommand
 import com.fcfb.discord.refbot.commands.game.MessageAllGamesCommand
 import com.fcfb.discord.refbot.commands.game.PreviousPlayCommand
+import com.fcfb.discord.refbot.commands.game.ReopenGameCommand
 import com.fcfb.discord.refbot.commands.game.RestartGameCommand
 import com.fcfb.discord.refbot.commands.game.RetryWeekCommand
 import com.fcfb.discord.refbot.commands.game.RollbackCommand
@@ -121,6 +122,7 @@ val appModule =
         single { GetRoleCommand(get()) }
         single { GetTeamCoachesCommand(get()) }
         single { RollbackCommand(get(), get(), get(), get(), get(), get()) }
+        single { ReopenGameCommand(get(), get()) }
         single { ScoreChartCommand(get(), get(), get(), get()) }
         single { WinProbabilityCommand(get(), get(), get(), get()) }
         single { PreviousPlayCommand(get(), get(), get(), get()) }
@@ -130,7 +132,7 @@ val appModule =
             CommandRegistry(
                 get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(),
                 get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(),
-                get(), get(),
+                get(), get(), get(),
             )
         }
         single { FCFBDiscordRefBot(get(), get(), get(), get(), get()) }

@@ -32,15 +32,9 @@ class GameParsingUtils {
         return validNumbers.first()
     }
 
-    fun parseTimeoutFromMessage(message: Message): Boolean {
-        val containsTimeout = message.content.contains("timeout", ignoreCase = true)
-
-        return if (containsTimeout) {
-            true
-        } else {
-            false
-        }
-    }
+    fun parseTimeoutFromMessage(message: Message): Boolean =
+        message.content.contains("timeout", ignoreCase = true) ||
+            message.content.contains("time out", ignoreCase = true)
 
     fun parsePlayCallFromMessage(
         game: Game,
@@ -84,10 +78,11 @@ class GameParsingUtils {
                 "hurry" to RunoffType.HURRY,
                 "chew" to RunoffType.CHEW,
                 "final" to RunoffType.FINAL,
+                "last play" to RunoffType.FINAL,
                 "normal" to RunoffType.NORMAL,
             )
 
-        val matchedTypes = runoffTypes.filterKeys { it in content }.values
+        val matchedTypes = runoffTypes.filterKeys { it in content }.values.distinct()
 
         return matchedTypes.singleOrNull() ?: if (game.gameMode == GameMode.CHEW) RunoffType.CHEW else RunoffType.NONE
     }
