@@ -140,6 +140,11 @@ class GameClient(
         return postRequest(endpointUrl)
     }
 
+    internal suspend fun reopenGame(gameId: Int): Map<Game?, String?> {
+        val endpointUrl = "$baseUrl/game/reopen?gameId=$gameId"
+        return postRequest(endpointUrl)
+    }
+
     internal suspend fun endAllGames(): Map<List<Game>?, String?> {
         val endpointUrl = "$baseUrl/game/end-all"
         return postRequestList(endpointUrl)

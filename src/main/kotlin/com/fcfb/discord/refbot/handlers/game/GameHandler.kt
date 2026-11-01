@@ -319,6 +319,16 @@ class GameHandler(
         discordMessageHandler.sendOvertimeCoinTossChoiceMessage(client, updatedGame, message)
     }
 
+    suspend fun reopenGame(
+        client: Kord,
+        reopenedGame: Game,
+        message: Message,
+    ) {
+        val gameThread = textChannelThreadHandler.getTextChannelThread(message)
+        textChannelThreadHandler.updateThread(gameThread, reopenedGame)
+        sendGamePing(client, reopenedGame, null)
+    }
+
     suspend fun endGame(
         client: Kord,
         updatedGame: Game,
