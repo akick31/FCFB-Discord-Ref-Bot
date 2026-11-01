@@ -12,6 +12,7 @@ import com.fcfb.discord.refbot.commands.game.EndGameCommand
 import com.fcfb.discord.refbot.commands.game.GameInfoCommand
 import com.fcfb.discord.refbot.commands.game.MessageAllGamesCommand
 import com.fcfb.discord.refbot.commands.game.PreviousPlayCommand
+import com.fcfb.discord.refbot.commands.game.ReopenGameCommand
 import com.fcfb.discord.refbot.commands.game.RestartGameCommand
 import com.fcfb.discord.refbot.commands.game.RetryWeekCommand
 import com.fcfb.discord.refbot.commands.game.RollbackCommand
@@ -55,6 +56,7 @@ class CommandRegistry(
     private val subCoachCommand: SubCoachCommand,
     private val getRoleCommand: GetRoleCommand,
     private val rollbackCommand: RollbackCommand,
+    private val reopenGameCommand: ReopenGameCommand,
     private val scoreChartCommand: ScoreChartCommand,
     private val winProbabilityCommand: WinProbabilityCommand,
     private val previousPlayCommand: PreviousPlayCommand,
@@ -77,6 +79,7 @@ class CommandRegistry(
         previousPlayCommand.register(client)
         restartGameCommand.register(client)
         rollbackCommand.register(client)
+        reopenGameCommand.register(client)
         scoreChartCommand.register(client)
         startGameCommand.register(client)
         startScrimmageCommand.register(client)
@@ -145,6 +148,7 @@ class CommandRegistry(
                     "get_role" -> getRoleCommand.execute(interaction)
                     "api_key" -> apiKeyCommand.execute(interaction)
                     "rollback" -> rollbackCommand.execute(interaction)
+                    "reopen_game" -> reopenGameCommand.execute(interaction)
                     "score_chart" -> scoreChartCommand.handle(interaction)
                     "win_probability" -> winProbabilityCommand.handle(interaction)
                     "generate_dog_report" -> dogReportCommand.execute(interaction)

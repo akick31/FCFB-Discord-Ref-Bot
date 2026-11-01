@@ -32,6 +32,7 @@ object Permissions {
             "fire_coach",
             "sub_coach",
             "rollback",
+            "reopen_game",
         )
 
     private val rolePermissions =
